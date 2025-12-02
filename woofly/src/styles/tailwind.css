@@ -1,0 +1,217 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Primary Colors */
+    --color-primary: #4A7C59; /* green-700 - Forest green for growth and health */
+    --color-primary-foreground: #FFFFFF; /* white - High contrast for accessibility */
+    
+    /* Secondary Colors */
+    --color-secondary: #6B9BD1; /* blue-400 - Soft blue for trust */
+    --color-secondary-foreground: #FFFFFF; /* white - High contrast */
+    
+    /* Accent Colors */
+    --color-accent: #E8B86D; /* amber-300 - Warm beige for approachability */
+    --color-accent-foreground: #2C3E50; /* gray-800 - Dark text for contrast */
+    
+    /* Background Colors */
+    --color-background: #FAFBFC; /* gray-50 - Near-white with warmth */
+    --color-foreground: #2C3E50; /* gray-800 - Deep blue-gray for readability */
+    
+    /* Surface Colors */
+    --color-card: #F5F7F8; /* gray-100 - Light neutral for elevation */
+    --color-card-foreground: #2C3E50; /* gray-800 - Consistent text color */
+    --color-popover: #FFFFFF; /* white - Clean popover background */
+    --color-popover-foreground: #2C3E50; /* gray-800 - Readable text */
+    
+    /* Muted Colors */
+    --color-muted: #F5F7F8; /* gray-100 - Subtle background variation */
+    --color-muted-foreground: #64748B; /* gray-500 - Medium gray for hierarchy */
+    
+    /* Border & Input */
+    --color-border: #E2E8F0; /* gray-200 - Minimal borders */
+    --color-input: #E2E8F0; /* gray-200 - Form field borders */
+    --color-ring: #4A7C59; /* green-700 - Focus ring matches primary */
+    
+    /* Status Colors */
+    --color-success: #10B981; /* green-500 - Natural green for health milestones */
+    --color-success-foreground: #FFFFFF; /* white - High contrast */
+    
+    --color-warning: #F59E0B; /* amber-500 - Amber for reminders */
+    --color-warning-foreground: #FFFFFF; /* white - High contrast */
+    
+    --color-error: #EF4444; /* red-500 - Clear red for health alerts */
+    --color-error-foreground: #FFFFFF; /* white - High contrast */
+    
+    --color-destructive: #EF4444; /* red-500 - Destructive actions */
+    --color-destructive-foreground: #FFFFFF; /* white - High contrast */
+    
+    /* Radius */
+    --radius: 0.5rem; /* 8px - Consistent border radius */
+  }
+
+  .dark {
+    /* Primary Colors */
+    --color-primary: #5A9B6B; /* green-600 - Lighter green for dark mode */
+    --color-primary-foreground: #FFFFFF; /* white - Maintained contrast */
+    
+    /* Secondary Colors */
+    --color-secondary: #7BADD9; /* blue-300 - Lighter blue for dark mode */
+    --color-secondary-foreground: #0A0A0A; /* gray-950 - Dark text */
+    
+    /* Accent Colors */
+    --color-accent: #F0C87D; /* amber-200 - Lighter warm beige */
+    --color-accent-foreground: #1F2937; /* gray-800 - Readable dark text */
+    
+    /* Background Colors */
+    --color-background: #0A0A0A; /* gray-950 - Deep dark background */
+    --color-foreground: #F5F7F8; /* gray-100 - Light text for readability */
+    
+    /* Surface Colors */
+    --color-card: #1F2937; /* gray-800 - Elevated dark surface */
+    --color-card-foreground: #F5F7F8; /* gray-100 - Light text */
+    --color-popover: #1F2937; /* gray-800 - Dark popover */
+    --color-popover-foreground: #F5F7F8; /* gray-100 - Light text */
+    
+    /* Muted Colors */
+    --color-muted: #374151; /* gray-700 - Subtle dark variation */
+    --color-muted-foreground: #9CA3AF; /* gray-400 - Medium light gray */
+    
+    /* Border & Input */
+    --color-border: #374151; /* gray-700 - Dark borders */
+    --color-input: #374151; /* gray-700 - Dark form fields */
+    --color-ring: #5A9B6B; /* green-600 - Focus ring */
+    
+    /* Status Colors */
+    --color-success: #34D399; /* green-400 - Lighter success for dark mode */
+    --color-success-foreground: #0A0A0A; /* gray-950 - Dark text */
+    
+    --color-warning: #FBBF24; /* amber-400 - Lighter warning */
+    --color-warning-foreground: #0A0A0A; /* gray-950 - Dark text */
+    
+    --color-error: #F87171; /* red-400 - Lighter error */
+    --color-error-foreground: #0A0A0A; /* gray-950 - Dark text */
+    
+    --color-destructive: #F87171; /* red-400 - Lighter destructive */
+    --color-destructive-foreground: #0A0A0A; /* gray-950 - Dark text */
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Source Sans 3', sans-serif;
+    font-weight: 400;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Inter', sans-serif;
+  }
+  
+  .font-caption {
+    font-family: 'Nunito Sans', sans-serif;
+  }
+  
+  .font-data {
+    font-family: 'JetBrains Mono', monospace;
+  }
+}
+
+@layer components {
+  .tab-navigation {
+    @apply fixed bottom-0 left-0 right-0 bg-card border-t border-border z-[100];
+    height: 60px;
+    padding: 0 16px;
+  }
+  
+  .tab-navigation-desktop {
+    @apply lg:relative lg:border-b lg:border-t-0;
+  }
+  
+  .tab-item {
+    @apply flex flex-col items-center justify-center gap-1 px-4 py-2 text-muted-foreground transition-colors duration-150;
+    min-width: 80px;
+  }
+  
+  .tab-item:hover {
+    @apply text-foreground;
+  }
+  
+  .tab-item.active {
+    @apply text-primary;
+  }
+  
+  .tab-item-desktop {
+    @apply lg:flex-row lg:gap-2 lg:px-6;
+    min-width: 120px;
+  }
+  
+  .profile-switcher {
+    @apply relative;
+  }
+  
+  .profile-switcher-dropdown {
+    @apply absolute top-full left-0 mt-2 bg-popover border border-border rounded-lg shadow-lg z-[200];
+    min-width: 200px;
+  }
+  
+  .profile-switcher-item {
+    @apply px-4 py-3 hover:bg-muted transition-colors duration-150 cursor-pointer;
+  }
+  
+  .profile-switcher-item:first-child {
+    @apply rounded-t-lg;
+  }
+  
+  .profile-switcher-item:last-child {
+    @apply rounded-b-lg;
+  }
+  
+  .auth-shell {
+    @apply min-h-screen flex items-center justify-center bg-background p-4;
+  }
+  
+  .auth-container {
+    @apply w-full max-w-md bg-card rounded-lg shadow-lg p-8;
+  }
+  
+  .brand-header {
+    @apply flex items-center justify-center mb-8;
+  }
+.brand-logo  {
+    @apply w-16 h-16 rounded-lg flex items-center justify-center;
+  }
+  
+  .main-content {
+    @apply pb-[76px] lg:pb-0;
+  }
+}
+
+@layer utilities {
+  .shadow-soft {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+  
+  .shadow-elevated {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+  
+  .transition-smooth {
+    transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .transition-gentle {
+    transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
