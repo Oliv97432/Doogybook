@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { supabase } from '../../../lib/supabase';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
@@ -9,12 +10,16 @@ const AddDogModal = ({ isOpen, onClose, onSubmit }) => {
     name: '',
     breed: '',
     age: '',
-    ageUnit: 'years', // 'years' or 'months'
+    ageUnit: 'years',
     weight: '',
+    gender: '',
+    isSterilized: 'no',
     image: ''
   });
 
   const [errors, setErrors] = useState({});
+  const [uploading, setUploading] = useState(false);
+  const [photoFile, setPhotoFile] = useState(null);
 
   const breedOptions = [
     { value: 'malinois', label: 'Malinois' },
@@ -36,10 +41,80 @@ const AddDogModal = ({ isOpen, onClose, onSubmit }) => {
     { value: 'years', label: 'Ans' }
   ];
 
+  const genderOptions = [
+    { value: 'male', label: 'Mâle' },
+    { value: 'female', label: 'Femelle' }
+  ];
+
+  const sterilizedOptions = [
+    { value: 'yes', label: 'Oui' },
+    { value: 'no', label: 'Non' }
+  ];
+
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     if (errors?.[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
+    }
+  };
+
+  const handlePhotoChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Vérifier le type de fichier
+      if (!file.type.startsWith('image/')) {
+        setErrors(prev => ({ ...prev, photo: 'Veuillez sélectionner une image' }));
+        return;
+      }
+
+      // Vérifier la taille (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        setErrors(prev => ({ ...prev, photo: 'L\'image ne doit pas dépasser 5 MB' }));
+        return;
+      }
+
+      setPhotoFile(file);
+      setErrors(prev => ({ ...prev, photo: '' }));
+
+      // Créer une preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData(prev => ({ ...prev, image: reader.result }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const uploadPhoto = async (userId) => {
+    if (!photoFile) return null;
+
+    try {
+      // Créer un nom de fichier unique
+      const fileExt = photoFile.name.split('.').pop();
+      const fileName = `${userId}/${Date.now()}.${fileExt}`;
+
+      // Upload vers Supabase Storage
+      const { data, error } = await supabase.storage
+        .from('dog-photos')
+        .upload(fileName, photoFile, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (error) {
+        console.error('Erreur upload photo:', error);
+        return null;
+      }
+
+      // Obtenir l'URL publique
+      const { data: urlData } = supabase.storage
+        .from('dog-photos')
+        .getPublicUrl(fileName);
+
+      return urlData.publicUrl;
+    } catch (err) {
+      console.error('Erreur upload:', err);
+      return null;
     }
   };
 
@@ -52,6 +127,10 @@ const AddDogModal = ({ isOpen, onClose, onSubmit }) => {
     
     if (!formData?.breed) {
       newErrors.breed = 'La race est requise';
+    }
+
+    if (!formData?.gender) {
+      newErrors.gender = 'Le sexe est requis';
     }
     
     if (!formData?.age?.trim()) {
@@ -76,17 +155,31 @@ const AddDogModal = ({ isOpen, onClose, onSubmit }) => {
     return Object.keys(newErrors)?.length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e?.preventDefault();
-    if (validateForm()) {
-      // Envoyer les données dans le bon format
+    
+    if (!validateForm()) return;
+
+    setUploading(true);
+
+    try {
+      // Upload la photo si présente
+      let photoUrl = null;
+      if (photoFile) {
+        const { data: { user } } = await supabase.auth.getUser();
+        photoUrl = await uploadPhoto(user?.id);
+      }
+
+      // Envoyer les données
       onSubmit({
         name: formData.name.trim(),
         breed: formData.breed,
-        age: parseFloat(formData.age), // Convertir en nombre
+        age: parseFloat(formData.age),
         ageUnit: formData.ageUnit,
-        weight: parseFloat(formData.weight), // Convertir en nombre
-        image: formData.image.trim() || null
+        weight: parseFloat(formData.weight),
+        gender: formData.gender,
+        isSterilized: formData.isSterilized === 'yes',
+        image: photoUrl || formData.image.trim() || null
       });
       
       // Reset form
@@ -95,10 +188,18 @@ const AddDogModal = ({ isOpen, onClose, onSubmit }) => {
         breed: '', 
         age: '', 
         ageUnit: 'years',
-        weight: '', 
+        weight: '',
+        gender: '',
+        isSterilized: 'no',
         image: '' 
       });
+      setPhotoFile(null);
       setErrors({});
+    } catch (err) {
+      console.error('Erreur soumission:', err);
+      alert('Une erreur est survenue lors de l\'ajout du chien');
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -108,9 +209,12 @@ const AddDogModal = ({ isOpen, onClose, onSubmit }) => {
       breed: '', 
       age: '', 
       ageUnit: 'years',
-      weight: '', 
+      weight: '',
+      gender: '',
+      isSterilized: 'no',
       image: '' 
     });
+    setPhotoFile(null);
     setErrors({});
     onClose();
   };
@@ -134,6 +238,59 @@ const AddDogModal = ({ isOpen, onClose, onSubmit }) => {
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          {/* Photo */}
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-foreground">
+              Photo du chien
+            </label>
+            
+            {/* Preview */}
+            {formData.image && (
+              <div className="relative w-32 h-32 mx-auto mb-3">
+                <img
+                  src={formData.image}
+                  alt="Aperçu"
+                  className="w-full h-full object-cover rounded-full border-2 border-border"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFormData(prev => ({ ...prev, image: '' }));
+                    setPhotoFile(null);
+                  }}
+                  className="absolute -top-2 -right-2 bg-destructive text-white rounded-full p-1 hover:bg-destructive/90"
+                >
+                  <Icon name="X" size={16} />
+                </button>
+              </div>
+            )}
+
+            {/* Upload button */}
+            <div className="flex gap-3">
+              <label className="flex-1">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handlePhotoChange}
+                  className="hidden"
+                />
+                <div className="flex items-center justify-center gap-2 px-4 py-2 border border-border rounded-lg hover:bg-muted cursor-pointer transition-smooth">
+                  <Icon name="Upload" size={20} />
+                  <span className="text-sm">
+                    {photoFile ? 'Changer la photo' : 'Choisir une photo'}
+                  </span>
+                </div>
+              </label>
+            </div>
+            {errors?.photo && (
+              <p className="text-xs text-destructive mt-1">{errors.photo}</p>
+            )}
+            <p className="text-xs text-muted-foreground">
+              Format: JPG, PNG, WEBP • Max: 5 MB
+            </p>
+          </div>
+
+          {/* Nom */}
           <Input
             label="Nom du chien"
             type="text"
@@ -144,6 +301,7 @@ const AddDogModal = ({ isOpen, onClose, onSubmit }) => {
             required
           />
 
+          {/* Race */}
           <Select
             label="Race"
             placeholder="Sélectionnez une race"
@@ -155,6 +313,27 @@ const AddDogModal = ({ isOpen, onClose, onSubmit }) => {
             searchable
           />
 
+          {/* Sexe */}
+          <Select
+            label="Sexe"
+            placeholder="Sélectionnez le sexe"
+            options={genderOptions}
+            value={formData?.gender}
+            onChange={(value) => handleChange('gender', value)}
+            error={errors?.gender}
+            required
+          />
+
+          {/* Stérilisé */}
+          <Select
+            label="Stérilisé(e)"
+            options={sterilizedOptions}
+            value={formData?.isSterilized}
+            onChange={(value) => handleChange('isSterilized', value)}
+            required
+          />
+
+          {/* Âge */}
           <div className="space-y-2">
             <label className="block text-sm font-medium text-foreground">
               Âge <span className="text-destructive">*</span>
@@ -182,6 +361,7 @@ const AddDogModal = ({ isOpen, onClose, onSubmit }) => {
             )}
           </div>
 
+          {/* Poids */}
           <Input
             label="Poids (kg)"
             type="number"
@@ -195,21 +375,14 @@ const AddDogModal = ({ isOpen, onClose, onSubmit }) => {
             required
           />
 
-          <Input
-            label="Photo (URL)"
-            type="url"
-            placeholder="https://exemple.com/photo.jpg"
-            description="Optionnel - Ajoutez une photo de votre chien"
-            value={formData?.image}
-            onChange={(e) => handleChange('image', e?.target?.value)}
-          />
-
+          {/* Boutons */}
           <div className="flex gap-3 pt-4">
             <Button
               type="button"
               variant="outline"
               fullWidth
               onClick={handleClose}
+              disabled={uploading}
             >
               Annuler
             </Button>
@@ -217,10 +390,11 @@ const AddDogModal = ({ isOpen, onClose, onSubmit }) => {
               type="submit"
               variant="default"
               fullWidth
-              iconName="Check"
+              iconName={uploading ? "Loader" : "Check"}
               iconPosition="left"
+              disabled={uploading}
             >
-              Ajouter
+              {uploading ? 'Ajout en cours...' : 'Ajouter'}
             </Button>
           </div>
         </form>
