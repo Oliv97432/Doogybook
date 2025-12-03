@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '../../lib/supabase';
+import { useAuth } from '../../contexts/AuthContext';
 import TabNavigation from '../../components/TabNavigation';
 import ProfileSwitcher from '../../components/ProfileSwitcher';
 import Icon from '../../components/AppIcon';
@@ -14,6 +16,7 @@ import AddDogModal from './components/AddDogModal';
 
 const MultiProfileManagement = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [dogProfiles, setDogProfiles] = useState([]);
   const [activeProfileId, setActiveProfileId] = useState(null);
   const [selectedProfiles, setSelectedProfiles] = useState([]);
@@ -21,83 +24,82 @@ const MultiProfileManagement = () => {
   const [filterBreed, setFilterBreed] = useState('');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isBulkMode, setIsBulkMode] = useState(false);
+  const [loading, setLoading] = useState(true);
 
+  // Charger les chiens depuis Supabase
   useEffect(() => {
-    const mockProfiles = [
-    {
-      id: 1,
-      name: 'Max',
-      breed: 'Malinois',
-      age: '3 ans',
-      weight: '32 kg',
-      image: "https://images.unsplash.com/photo-1713917032646-4703f3feffde",
-      imageAlt: 'Malinois adulte au pelage fauve et noir assis dans un parc verdoyant avec un regard attentif',
-      healthStatus: 'excellent',
-      upcomingReminders: ['Vaccination antirabique - 15/12/2025', 'Vermifuge - 20/12/2025'],
-      recentActivity: 'Dernière mise à jour il y a 2 jours'
-    },
-    {
-      id: 2,
-      name: 'Luna',
-      breed: 'Shih-Tzu',
-      age: '5 ans',
-      weight: '6.5 kg',
-      image: "https://images.unsplash.com/photo-1592336167298-e12e4e556f09",
-      imageAlt: 'Shih-Tzu femelle au pelage blanc et doré avec nœud rose dans les cheveux regardant la caméra',
-      healthStatus: 'good',
-      upcomingReminders: ['Traitement anti-puces - 10/12/2025'],
-      recentActivity: 'Dernière mise à jour il y a 5 jours'
-    },
-    {
-      id: 3,
-      name: 'Rocky',
-      breed: 'American Bully',
-      age: '2 ans',
-      weight: '28 kg',
-      image: "https://images.unsplash.com/photo-1558641480-8f9c31eea530",
-      imageAlt: 'American Bully musclé au pelage gris avec collier rouge posant fièrement dans un jardin',
-      healthStatus: 'attention',
-      upcomingReminders: ['Visite vétérinaire - 08/12/2025', 'Vaccination - 12/12/2025', 'Vermifuge - 18/12/2025'],
-      recentActivity: 'Dernière mise à jour il y a 1 jour'
-    },
-    {
-      id: 4,
-      name: 'Bella',
-      breed: 'Labrador',
-      age: '4 ans',
-      weight: '29 kg',
-      image: "https://images.unsplash.com/photo-1690469019639-1827f83f6c62",
-      imageAlt: 'Labrador retriever femelle au pelage doré courant joyeusement dans un champ avec la langue sortie',
-      healthStatus: 'excellent',
-      upcomingReminders: [],
-      recentActivity: 'Dernière mise à jour il y a 3 jours'
-    },
-    {
-      id: 5,
-      name: 'Charlie',
-      breed: 'Bouledogue Français',
-      age: '1 an',
-      weight: '12 kg',
-      image: "https://images.unsplash.com/photo-1583252224982-f5064eb19ece",
-      imageAlt: 'Bouledogue français au pelage fauve avec masque noir assis sur un canapé beige',
-      healthStatus: 'good',
-      upcomingReminders: ['Stérilisation - 22/12/2025'],
-      recentActivity: 'Dernière mise à jour il y a 1 semaine'
-    }];
+    if (!user?.id) return;
 
+    const fetchDogs = async () => {
+      setLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from('dogs')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('is_active', true)
+          .order('created_at', { ascending: false });
 
-    setDogProfiles(mockProfiles);
-    setActiveProfileId(mockProfiles?.[0]?.id || null);
-  }, []);
+        if (error) {
+          console.error('Erreur chargement chiens:', error);
+          setDogProfiles([]);
+        } else {
+          // Transformer les données pour correspondre au format attendu
+          const formattedProfiles = data.map(dog => {
+            // Calculer l'âge depuis birth_date
+            const birthDate = new Date(dog.birth_date);
+            const today = new Date();
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const monthDiff = today.getMonth() - birthDate.getMonth();
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+              age--;
+            }
+
+            return {
+              id: dog.id,
+              name: dog.name,
+              breed: dog.breed || 'Race inconnue',
+              age: age > 0 ? `${age} an${age > 1 ? 's' : ''}` : 'Moins d\'un an',
+              weight: dog.weight ? `${dog.weight} kg` : 'Non renseigné',
+              image: dog.photo_url || 'https://images.pexels.com/photos/1490908/pexels-photo-1490908.jpeg',
+              imageAlt: `${dog.name} - ${dog.breed}`,
+              healthStatus: 'good', // À améliorer avec de vraies données
+              upcomingReminders: [], // À charger depuis la table reminders
+              recentActivity: `Dernière mise à jour le ${new Date(dog.updated_at).toLocaleDateString('fr-FR')}`
+            };
+          });
+
+          setDogProfiles(formattedProfiles);
+          if (formattedProfiles.length > 0 && !activeProfileId) {
+            setActiveProfileId(formattedProfiles[0].id);
+          }
+        }
+      } catch (err) {
+        console.error('Erreur:', err);
+        setDogProfiles([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDogs();
+  }, [user?.id]);
 
   const breedOptions = [
-  { value: '', label: 'Toutes les races' },
-  { value: 'malinois', label: 'Malinois' },
-  { value: 'shih-tzu', label: 'Shih-Tzu' },
-  { value: 'american-bully', label: 'American Bully' },
-  { value: 'labrador', label: 'Labrador' },
-  { value: 'bouledogue-francais', label: 'Bouledogue Français' }];
-
+    { value: '', label: 'Toutes les races' },
+    { value: 'malinois', label: 'Malinois' },
+    { value: 'shih-tzu', label: 'Shih-Tzu' },
+    { value: 'american-bully', label: 'American Bully' },
+    { value: 'labrador', label: 'Labrador' },
+    { value: 'bouledogue-francais', label: 'Bouledogue Français' },
+    { value: 'golden-retriever', label: 'Golden Retriever' },
+    { value: 'berger-allemand', label: 'Berger Allemand' },
+    { value: 'chihuahua', label: 'Chihuahua' },
+    { value: 'husky', label: 'Husky Sibérien' },
+    { value: 'beagle', label: 'Beagle' },
+    { value: 'mixed', label: 'Race Mixte' },
+    { value: 'other', label: 'Autre' }
+  ];
 
   const filteredProfiles = dogProfiles?.filter((profile) => {
     const matchesSearch = profile?.name?.toLowerCase()?.includes(searchQuery?.toLowerCase());
@@ -108,9 +110,9 @@ const MultiProfileManagement = () => {
   const handleSelectProfile = (profileId) => {
     if (isBulkMode) {
       setSelectedProfiles((prev) =>
-      prev?.includes(profileId) ?
-      prev?.filter((id) => id !== profileId) :
-      [...prev, profileId]
+        prev?.includes(profileId)
+          ? prev?.filter((id) => id !== profileId)
+          : [...prev, profileId]
       );
     } else {
       setActiveProfileId(profileId);
@@ -123,22 +125,70 @@ const MultiProfileManagement = () => {
     navigate('/dog-profile');
   };
 
-  const handleAddDog = (formData) => {
-    const newProfile = {
-      id: dogProfiles?.length + 1,
-      name: formData?.name,
-      breed: formData?.breed,
-      age: formData?.age,
-      weight: formData?.weight,
-      image: formData?.image || 'https://images.pexels.com/photos/1490908/pexels-photo-1490908.jpeg',
-      imageAlt: `${formData?.name} - ${formData?.breed} de ${formData?.age} pesant ${formData?.weight}`,
-      healthStatus: 'good',
-      upcomingReminders: [],
-      recentActivity: 'Profil créé à l\'instant'
-    };
+  const handleAddDog = async (formData) => {
+    try {
+      // Calculer la date de naissance
+      const calculateBirthDate = (age, ageUnit) => {
+        const today = new Date();
+        let birthDate = new Date(today);
+        
+        if (ageUnit === 'years') {
+          birthDate.setFullYear(today.getFullYear() - parseInt(age));
+        } else {
+          birthDate.setMonth(today.getMonth() - parseInt(age));
+        }
+        
+        return birthDate.toISOString().split('T')[0];
+      };
 
-    setDogProfiles((prev) => [...prev, newProfile]);
-    setIsAddModalOpen(false);
+      const birthDate = calculateBirthDate(
+        formData?.age || 0,
+        formData?.ageUnit || 'years'
+      );
+
+      // Insérer dans Supabase
+      const { data, error } = await supabase
+        .from('dogs')
+        .insert([{
+          user_id: user?.id,
+          name: formData?.name,
+          breed: formData?.breed,
+          birth_date: birthDate,
+          weight: formData?.weight ? parseFloat(formData.weight) : null,
+          photo_url: formData?.image || null,
+          is_active: true
+        }])
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Erreur ajout chien:', error);
+        alert('Erreur lors de l\'ajout du chien. Veuillez réessayer.');
+        return;
+      }
+
+      // Ajouter le nouveau chien à la liste locale
+      const newProfile = {
+        id: data.id,
+        name: data.name,
+        breed: data.breed || 'Race inconnue',
+        age: formData?.ageUnit === 'years' 
+          ? `${formData.age} an${formData.age > 1 ? 's' : ''}`
+          : `${formData.age} mois`,
+        weight: data.weight ? `${data.weight} kg` : 'Non renseigné',
+        image: data.photo_url || 'https://images.pexels.com/photos/1490908/pexels-photo-1490908.jpeg',
+        imageAlt: `${data.name} - ${data.breed}`,
+        healthStatus: 'good',
+        upcomingReminders: [],
+        recentActivity: 'Profil créé à l\'instant'
+      };
+
+      setDogProfiles((prev) => [...prev, newProfile]);
+      setIsAddModalOpen(false);
+    } catch (err) {
+      console.error('Erreur:', err);
+      alert('Une erreur inattendue s\'est produite.');
+    }
   };
 
   const handleScheduleVisit = () => {
@@ -151,8 +201,20 @@ const MultiProfileManagement = () => {
 
   const activeProfile = dogProfiles?.find((p) => p?.id === activeProfileId);
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          <p className="mt-4 text-muted-foreground">Chargement de vos chiens...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
+      {/* Header */}
       <div className="sticky top-0 z-40 bg-card border-b border-border shadow-soft">
         <div className="max-w-screen-xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between mb-4">
@@ -160,8 +222,8 @@ const MultiProfileManagement = () => {
               <button
                 onClick={() => navigate('/dog-profile')}
                 className="text-muted-foreground hover:text-foreground transition-smooth"
-                aria-label="Retour">
-
+                aria-label="Retour"
+              >
                 <Icon name="ArrowLeft" size={24} />
               </button>
               <div>
@@ -175,44 +237,53 @@ const MultiProfileManagement = () => {
             </div>
 
             <div className="flex items-center gap-3">
-              <ProfileSwitcher
-                profiles={dogProfiles}
-                currentProfile={activeProfile}
-                onProfileChange={(profile) => setActiveProfileId(profile?.id)} />
+              {dogProfiles?.length > 0 && (
+                <ProfileSwitcher
+                  profiles={dogProfiles}
+                  currentProfile={activeProfile}
+                  onProfileChange={(profile) => setActiveProfileId(profile?.id)}
+                />
+              )}
 
-              
-              <Button
-                variant={isBulkMode ? 'default' : 'outline'}
-                size="sm"
-                iconName="CheckSquare"
-                iconPosition="left"
-                onClick={() => {
-                  setIsBulkMode(!isBulkMode);
-                  setSelectedProfiles([]);
-                }}>
-
-                <span className="hidden lg:inline">
-                  {isBulkMode ? 'Terminer' : 'Sélection'}
-                </span>
-              </Button>
+              {dogProfiles?.length > 0 && (
+                <Button
+                  variant={isBulkMode ? 'default' : 'outline'}
+                  size="sm"
+                  iconName="CheckSquare"
+                  iconPosition="left"
+                  onClick={() => {
+                    setIsBulkMode(!isBulkMode);
+                    setSelectedProfiles([]);
+                  }}
+                >
+                  <span className="hidden lg:inline">
+                    {isBulkMode ? 'Terminer' : 'Sélection'}
+                  </span>
+                </Button>
+              )}
             </div>
           </div>
 
-          <SearchFilterBar
-            searchQuery={searchQuery}
-            onSearchChange={setSearchQuery}
-            filterBreed={filterBreed}
-            onFilterChange={setFilterBreed}
-            breeds={breedOptions} />
-
+          {dogProfiles?.length > 0 && (
+            <SearchFilterBar
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              filterBreed={filterBreed}
+              onFilterChange={setFilterBreed}
+              breeds={breedOptions}
+            />
+          )}
         </div>
       </div>
+
       <TabNavigation />
+
+      {/* Main Content */}
       <main className="main-content max-w-screen-xl mx-auto px-4 py-6">
-        {filteredProfiles?.length === 0 && !searchQuery && !filterBreed ?
-        <EmptyState onAddDog={() => setIsAddModalOpen(true)} /> :
-        filteredProfiles?.length === 0 ?
-        <div className="text-center py-16">
+        {filteredProfiles?.length === 0 && !searchQuery && !filterBreed ? (
+          <EmptyState onAddDog={() => setIsAddModalOpen(true)} />
+        ) : filteredProfiles?.length === 0 ? (
+          <div className="text-center py-16">
             <Icon name="Search" size={48} className="text-muted-foreground mx-auto mb-4" />
             <h3 className="text-lg font-heading font-semibold text-foreground mb-2">
               Aucun résultat
@@ -220,53 +291,57 @@ const MultiProfileManagement = () => {
             <p className="text-muted-foreground">
               Essayez de modifier vos critères de recherche
             </p>
-          </div> :
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredProfiles?.map((profile) =>
-          <div key={profile?.id} className="relative">
-                {isBulkMode &&
-            <div className="absolute top-3 left-3 z-20">
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredProfiles?.map((profile) => (
+              <div key={profile?.id} className="relative">
+                {isBulkMode && (
+                  <div className="absolute top-3 left-3 z-20">
                     <Checkbox
-                checked={selectedProfiles?.includes(profile?.id)}
-                onChange={(e) => {
-                  if (e?.target?.checked) {
-                    setSelectedProfiles((prev) => [...prev, profile?.id]);
-                  } else {
-                    setSelectedProfiles((prev) => prev?.filter((id) => id !== profile?.id));
-                  }
-                }}
-                size="lg"
-                className="bg-card shadow-elevated" />
-
+                      checked={selectedProfiles?.includes(profile?.id)}
+                      onChange={(e) => {
+                        if (e?.target?.checked) {
+                          setSelectedProfiles((prev) => [...prev, profile?.id]);
+                        } else {
+                          setSelectedProfiles((prev) => prev?.filter((id) => id !== profile?.id));
+                        }
+                      }}
+                      size="lg"
+                      className="bg-card shadow-elevated"
+                    />
                   </div>
-            }
+                )}
                 <DogProfileCard
-              profile={profile}
-              isActive={profile?.id === activeProfileId}
-              onSelect={() => handleSelectProfile(profile?.id)}
-              onEdit={() => handleEditProfile(profile?.id)} />
-
+                  profile={profile}
+                  isActive={profile?.id === activeProfileId}
+                  onSelect={() => handleSelectProfile(profile?.id)}
+                  onEdit={() => handleEditProfile(profile?.id)}
+                />
               </div>
-          )}
+            ))}
 
             <AddDogCard onClick={() => setIsAddModalOpen(true)} />
           </div>
-        }
+        )}
       </main>
+
+      {/* Bulk Actions Bar */}
       <BulkActionsBar
         selectedCount={selectedProfiles?.length}
         onClearSelection={() => setSelectedProfiles([])}
         onScheduleVisit={handleScheduleVisit}
-        onUpdateMedication={handleUpdateMedication} />
+        onUpdateMedication={handleUpdateMedication}
+      />
 
+      {/* Add Dog Modal */}
       <AddDogModal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
-        onSubmit={handleAddDog} />
-
-    </div>);
-
+        onSubmit={handleAddDog}
+      />
+    </div>
+  );
 };
 
 export default MultiProfileManagement;
