@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../contexts/AuthContext';
+import { supabase } from '../../../lib/supabase';
 import Input from '../../../components/ui/Input';
 import Button from '../../../components/ui/Button';
 import { Checkbox } from '../../../components/ui/Checkbox';
@@ -24,7 +25,8 @@ const RegistrationForm = () => {
   const [dogData, setDogData] = useState({
     dogName: '',
     breed: '',
-    age: ''
+    age: '',
+    ageUnit: 'years' // 'years' or 'months'
   });
 
   const [acceptTerms, setAcceptTerms] = useState(false);
@@ -44,6 +46,11 @@ const RegistrationForm = () => {
     { value: 'beagle', label: 'Beagle' },
     { value: 'mixed', label: 'Race Mixte' },
     { value: 'other', label: 'Autre' }
+  ];
+
+  const ageUnitOptions = [
+    { value: 'months', label: 'Mois' },
+    { value: 'years', label: 'Ans' }
   ];
 
   const validateStep1 = () => {
@@ -94,8 +101,12 @@ const RegistrationForm = () => {
 
     if (!dogData?.age) {
       newErrors.age = 'L\'âge est requis';
-    } else if (isNaN(dogData?.age) || dogData?.age < 0 || dogData?.age > 30) {
+    } else if (isNaN(dogData?.age) || dogData?.age < 0) {
+      newErrors.age = 'Veuillez entrer un âge valide';
+    } else if (dogData?.ageUnit === 'years' && dogData?.age > 30) {
       newErrors.age = 'Veuillez entrer un âge valide (0-30 ans)';
+    } else if (dogData?.ageUnit === 'months' && dogData?.age > 360) {
+      newErrors.age = 'Veuillez entrer un âge valide (0-360 mois)';
     }
 
     if (!acceptTerms) {
@@ -131,6 +142,20 @@ const RegistrationForm = () => {
     setErrors({});
   };
 
+  // Calcul de la date de naissance basée sur l'âge
+  const calculateBirthDate = (age, ageUnit) => {
+    const today = new Date();
+    let birthDate = new Date(today);
+    
+    if (ageUnit === 'years') {
+      birthDate.setFullYear(today.getFullYear() - parseInt(age));
+    } else {
+      birthDate.setMonth(today.getMonth() - parseInt(age));
+    }
+    
+    return birthDate.toISOString().split('T')[0]; // Format YYYY-MM-DD
+  };
+
   const handleSubmit = async (e) => {
     e?.preventDefault();
     
@@ -142,23 +167,69 @@ const RegistrationForm = () => {
     setErrors({});
 
     try {
-      const { data, error } = await signUp(
+      // Étape 1 : Créer le compte utilisateur avec Supabase Auth
+      const { data: authData, error: authError } = await signUp(
         ownerData?.email,
-        ownerData?.password,
-        `${ownerData?.firstName} ${ownerData?.lastName}`,
-        dogData?.dogName,
-        dogData?.breed,
-        dogData?.age
+        ownerData?.password
       );
 
-      if (error) {
+      if (authError) {
         setErrors({
-          general: error?.message || 'Échec de l\'inscription. Veuillez réessayer.'
+          general: authError?.message || 'Échec de l\'inscription. Veuillez réessayer.'
         });
-      } else if (data?.user) {
-        setCurrentStep(3);
+        setLoading(false);
+        return;
       }
+
+      const userId = authData?.user?.id;
+
+      if (!userId) {
+        setErrors({
+          general: 'Erreur lors de la création du compte'
+        });
+        setLoading(false);
+        return;
+      }
+
+      // Étape 2 : Créer le profil utilisateur dans la table users
+      const { error: userProfileError } = await supabase
+        .from('users')
+        .insert([{
+          id: userId,
+          email: ownerData?.email,
+          full_name: `${ownerData?.firstName} ${ownerData?.lastName}`
+        }]);
+
+      if (userProfileError) {
+        console.error('Erreur création profil utilisateur:', userProfileError);
+        // On continue quand même car le user auth est créé
+      }
+
+      // Étape 3 : Créer le profil du chien dans la table dogs
+      const birthDate = calculateBirthDate(dogData?.age, dogData?.ageUnit);
+      
+      const { error: dogError } = await supabase
+        .from('dogs')
+        .insert([{
+          user_id: userId,
+          name: dogData?.dogName,
+          breed: dogData?.breed,
+          birth_date: birthDate,
+          is_active: true
+        }]);
+
+      if (dogError) {
+        console.error('Erreur création profil chien:', dogError);
+        setErrors({
+          general: 'Compte créé mais erreur lors de l\'ajout du chien. Vous pouvez l\'ajouter plus tard.'
+        });
+      }
+
+      // Étape 4 : Rediriger vers le dashboard
+      navigate('/multi-profile-management');
+
     } catch (err) {
+      console.error('Erreur inscription:', err);
       setErrors({
         general: 'Une erreur inattendue s\'est produite. Veuillez réessayer.'
       });
@@ -169,6 +240,7 @@ const RegistrationForm = () => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Progress indicator */}
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-4 flex-1">
           <div className={`flex items-center justify-center w-10 h-10 rounded-full ${currentStep >= 1 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
@@ -182,6 +254,15 @@ const RegistrationForm = () => {
           </div>
         </div>
       </div>
+
+      {/* Afficher les erreurs générales */}
+      {errors?.general && (
+        <div className="bg-destructive/10 border border-destructive/20 text-destructive rounded-lg p-4">
+          <p className="text-sm font-medium">{errors.general}</p>
+        </div>
+      )}
+
+      {/* Step 1: Owner Information */}
       {currentStep === 1 && (
         <div className="space-y-6">
           <div className="text-center mb-6">
@@ -272,6 +353,8 @@ const RegistrationForm = () => {
           </div>
         </div>
       )}
+
+      {/* Step 2: Dog Information */}
       {currentStep === 2 && (
         <div className="space-y-6">
           <div className="text-center mb-6">
@@ -304,17 +387,33 @@ const RegistrationForm = () => {
             required
           />
 
-          <Input
-            label="Âge (en années)"
-            type="number"
-            placeholder="Ex: 3"
-            value={dogData?.age}
-            onChange={(e) => handleDogChange('age', e?.target?.value)}
-            error={errors?.age}
-            min="0"
-            max="30"
-            required
-          />
+          {/* Âge avec sélecteur mois/ans */}
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-foreground">
+              Âge <span className="text-destructive">*</span>
+            </label>
+            <div className="grid grid-cols-2 gap-3">
+              <Input
+                type="number"
+                placeholder="Ex: 2"
+                value={dogData?.age}
+                onChange={(e) => handleDogChange('age', e?.target?.value)}
+                error={errors?.age}
+                min="0"
+                max={dogData?.ageUnit === 'years' ? "30" : "360"}
+                required
+              />
+              <Select
+                options={ageUnitOptions}
+                value={dogData?.ageUnit}
+                onChange={(value) => handleDogChange('ageUnit', value)}
+                required
+              />
+            </div>
+            {errors?.age && (
+              <p className="text-xs text-destructive mt-1">{errors.age}</p>
+            )}
+          </div>
 
           <div className="bg-muted/50 rounded-lg p-4 border border-border">
             <Checkbox
