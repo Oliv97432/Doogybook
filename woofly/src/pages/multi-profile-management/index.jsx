@@ -44,9 +44,7 @@ const MultiProfileManagement = () => {
           console.error('Erreur chargement chiens:', error);
           setDogProfiles([]);
         } else {
-          // Transformer les données pour correspondre au format attendu
           const formattedProfiles = data.map(dog => {
-            // Calculer l'âge depuis birth_date
             const birthDate = new Date(dog.birth_date);
             const today = new Date();
             let age = today.getFullYear() - birthDate.getFullYear();
@@ -63,8 +61,8 @@ const MultiProfileManagement = () => {
               weight: dog.weight ? `${dog.weight} kg` : 'Non renseigné',
               image: dog.photo_url || 'https://images.pexels.com/photos/1490908/pexels-photo-1490908.jpeg',
               imageAlt: `${dog.name} - ${dog.breed}`,
-              healthStatus: 'good', // À améliorer avec de vraies données
-              upcomingReminders: [], // À charger depuis la table reminders
+              healthStatus: 'good',
+              upcomingReminders: [],
               recentActivity: `Dernière mise à jour le ${new Date(dog.updated_at).toLocaleDateString('fr-FR')}`
             };
           });
@@ -146,7 +144,7 @@ const MultiProfileManagement = () => {
         formData?.ageUnit || 'years'
       );
 
-      // Insérer dans Supabase
+      // Insérer dans Supabase avec gender et is_sterilized
       const { data, error } = await supabase
         .from('dogs')
         .insert([{
@@ -155,6 +153,8 @@ const MultiProfileManagement = () => {
           breed: formData?.breed,
           birth_date: birthDate,
           weight: formData?.weight ? parseFloat(formData.weight) : null,
+          gender: formData?.gender, // ✅ AJOUTÉ
+          is_sterilized: formData?.isSterilized, // ✅ AJOUTÉ
           photo_url: formData?.image || null,
           is_active: true
         }])
@@ -185,6 +185,9 @@ const MultiProfileManagement = () => {
 
       setDogProfiles((prev) => [...prev, newProfile]);
       setIsAddModalOpen(false);
+
+      // Message de succès
+      alert(`✅ ${data.name} a été ajouté avec succès !`);
     } catch (err) {
       console.error('Erreur:', err);
       alert('Une erreur inattendue s\'est produite.');
