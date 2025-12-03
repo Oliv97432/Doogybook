@@ -9,6 +9,7 @@ const AddDogModal = ({ isOpen, onClose, onSubmit }) => {
     name: '',
     breed: '',
     age: '',
+    ageUnit: 'years', // 'years' or 'months'
     weight: '',
     image: ''
   });
@@ -24,7 +25,15 @@ const AddDogModal = ({ isOpen, onClose, onSubmit }) => {
     { value: 'berger-allemand', label: 'Berger Allemand' },
     { value: 'bouledogue-francais', label: 'Bouledogue Français' },
     { value: 'chihuahua', label: 'Chihuahua' },
-    { value: 'mixed', label: 'Race mixte' }
+    { value: 'husky', label: 'Husky Sibérien' },
+    { value: 'beagle', label: 'Beagle' },
+    { value: 'mixed', label: 'Race mixte' },
+    { value: 'other', label: 'Autre' }
+  ];
+
+  const ageUnitOptions = [
+    { value: 'months', label: 'Mois' },
+    { value: 'years', label: 'Ans' }
   ];
 
   const handleChange = (field, value) => {
@@ -36,10 +45,32 @@ const AddDogModal = ({ isOpen, onClose, onSubmit }) => {
 
   const validateForm = () => {
     const newErrors = {};
-    if (!formData?.name?.trim()) newErrors.name = 'Le nom est requis';
-    if (!formData?.breed) newErrors.breed = 'La race est requise';
-    if (!formData?.age?.trim()) newErrors.age = "L'âge est requis";
-    if (!formData?.weight?.trim()) newErrors.weight = 'Le poids est requis';
+    
+    if (!formData?.name?.trim()) {
+      newErrors.name = 'Le nom est requis';
+    }
+    
+    if (!formData?.breed) {
+      newErrors.breed = 'La race est requise';
+    }
+    
+    if (!formData?.age?.trim()) {
+      newErrors.age = "L'âge est requis";
+    } else if (isNaN(formData?.age) || formData?.age < 0) {
+      newErrors.age = "Veuillez entrer un nombre valide";
+    } else if (formData?.ageUnit === 'years' && formData?.age > 30) {
+      newErrors.age = "L'âge maximum est de 30 ans";
+    } else if (formData?.ageUnit === 'months' && formData?.age > 360) {
+      newErrors.age = "L'âge maximum est de 360 mois";
+    }
+    
+    if (!formData?.weight?.trim()) {
+      newErrors.weight = 'Le poids est requis';
+    } else if (isNaN(formData?.weight) || formData?.weight <= 0) {
+      newErrors.weight = "Veuillez entrer un poids valide";
+    } else if (formData?.weight > 100) {
+      newErrors.weight = "Le poids maximum est de 100 kg";
+    }
     
     setErrors(newErrors);
     return Object.keys(newErrors)?.length === 0;
@@ -48,23 +79,53 @@ const AddDogModal = ({ isOpen, onClose, onSubmit }) => {
   const handleSubmit = (e) => {
     e?.preventDefault();
     if (validateForm()) {
-      onSubmit(formData);
-      setFormData({ name: '', breed: '', age: '', weight: '', image: '' });
+      // Envoyer les données dans le bon format
+      onSubmit({
+        name: formData.name.trim(),
+        breed: formData.breed,
+        age: parseFloat(formData.age), // Convertir en nombre
+        ageUnit: formData.ageUnit,
+        weight: parseFloat(formData.weight), // Convertir en nombre
+        image: formData.image.trim() || null
+      });
+      
+      // Reset form
+      setFormData({ 
+        name: '', 
+        breed: '', 
+        age: '', 
+        ageUnit: 'years',
+        weight: '', 
+        image: '' 
+      });
       setErrors({});
     }
+  };
+
+  const handleClose = () => {
+    setFormData({ 
+      name: '', 
+      breed: '', 
+      age: '', 
+      ageUnit: 'years',
+      weight: '', 
+      image: '' 
+    });
+    setErrors({});
+    onClose();
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
       <div className="bg-card rounded-lg shadow-elevated max-w-md w-full max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-card border-b border-border p-4 flex items-center justify-between">
+        <div className="sticky top-0 bg-card border-b border-border p-4 flex items-center justify-between z-10">
           <h2 className="text-xl font-heading font-semibold text-foreground">
             Ajouter un nouveau chien
           </h2>
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="text-muted-foreground hover:text-foreground transition-smooth"
             aria-label="Fermer"
           >
@@ -94,23 +155,43 @@ const AddDogModal = ({ isOpen, onClose, onSubmit }) => {
             searchable
           />
 
-          <Input
-            label="Âge"
-            type="text"
-            placeholder="Ex: 2 ans, 6 mois..."
-            value={formData?.age}
-            onChange={(e) => handleChange('age', e?.target?.value)}
-            error={errors?.age}
-            required
-          />
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-foreground">
+              Âge <span className="text-destructive">*</span>
+            </label>
+            <div className="grid grid-cols-2 gap-3">
+              <Input
+                type="number"
+                placeholder="Ex: 2"
+                value={formData?.age}
+                onChange={(e) => handleChange('age', e?.target?.value)}
+                min="0"
+                max={formData?.ageUnit === 'years' ? "30" : "360"}
+                step="0.1"
+                required
+              />
+              <Select
+                options={ageUnitOptions}
+                value={formData?.ageUnit}
+                onChange={(value) => handleChange('ageUnit', value)}
+                required
+              />
+            </div>
+            {errors?.age && (
+              <p className="text-xs text-destructive mt-1">{errors.age}</p>
+            )}
+          </div>
 
           <Input
-            label="Poids"
-            type="text"
-            placeholder="Ex: 25 kg, 8.5 kg..."
+            label="Poids (kg)"
+            type="number"
+            placeholder="Ex: 25 ou 8.5"
             value={formData?.weight}
             onChange={(e) => handleChange('weight', e?.target?.value)}
             error={errors?.weight}
+            min="0"
+            max="100"
+            step="0.1"
             required
           />
 
@@ -128,7 +209,7 @@ const AddDogModal = ({ isOpen, onClose, onSubmit }) => {
               type="button"
               variant="outline"
               fullWidth
-              onClick={onClose}
+              onClick={handleClose}
             >
               Annuler
             </Button>
