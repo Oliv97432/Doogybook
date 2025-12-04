@@ -6,6 +6,7 @@ import TipArchive from './components/TipArchive';
 import AdSensePlaceholder from '../../components/AdSensePlaceholder';
 import CategoryFilter from './components/CategoryFilter';
 import ShareModal from './components/ShareModal';
+import Footer from '../../components/Footer';  // ✅ AJOUTÉ
 
 const DailyTip = () => {
   const [currentTip, setCurrentTip] = useState(null);
@@ -211,6 +212,8 @@ const DailyTip = () => {
         isOpen={shareModalOpen}
         onClose={() => setShareModalOpen(false)} />
 
+      {/* Footer */}
+      <Footer />
     </div>);
 
 };
