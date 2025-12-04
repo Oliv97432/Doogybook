@@ -16,6 +16,8 @@ import AddTreatmentModal from './components/AddTreatmentModal';
 import AddWeightModal from './components/AddWeightModal';
 import EditProfileModal from './components/EditProfileModal';
 import PhotoGalleryModal from './components/PhotoGalleryModal';
+import PhotoGalleryModal from './components/PhotoGalleryModal';
+import Footer from '../../components/Footer';
 
 const DogProfile = () => {
   const navigate = useNavigate();
@@ -771,7 +773,14 @@ const DogProfile = () => {
         photos={photoGallery}
         onAddPhoto={() => alert('Fonctionnalité d\'ajout de photo en cours de développement')}
       />
-    </div>
+      
+   <PhotoGalleryModal
+        isOpen={modals.gallery}
+        onClose={() => closeModal('gallery')}
+        photos={photoGallery}
+        onAddPhoto={() => alert('Fonctionnalité d\'ajout de photo en cours de développement')}
+      />
+    </div>  {/* ← Cette div ferme le composant DogProfile */}
   );
 };
 
