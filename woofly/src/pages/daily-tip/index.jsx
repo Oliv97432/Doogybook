@@ -1,304 +1,368 @@
 import React, { useState, useEffect } from 'react';
-import TabNavigation from '../../components/TabNavigation';
-import ProfileSwitcher from '../../components/ProfileSwitcher';
-import ForumCard from '../forum-hub/components/ForumCard';
-import SearchBar from '../forum-hub/components/SearchBar';
-import FeaturedDiscussion from '../forum-hub/components/FeaturedDiscussion';
-import QuickActions from '../forum-hub/components/QuickActions';
-import CommunityStats from '../forum-hub/components/CommunityStats';
+import { 
+  ChefHat, Heart, GraduationCap, Activity, 
+  Phone, MapPin, Clock, AlertCircle, Search,
+  Sparkles, Stethoscope, Building2, PhoneCall
+} from 'lucide-react';
+import { supabase } from '../../lib/supabase';
 import Footer from '../../components/Footer';
 
-const ForumHub = () => {
+/**
+ * Page Daily Tip - Conseils & Contacts
+ * Tips pratiques + Contacts d'urgence pour les chiens
+ */
+const DailyTip = () => {
+  const [selectedTipCategory, setSelectedTipCategory] = useState('all');
+  const [tips, setTips] = useState([]);
+  const [loadingTips, setLoadingTips] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [filteredForums, setFilteredForums] = useState([]);
-  const [currentProfile, setCurrentProfile] = useState(null);
 
-  const dogProfiles = [
-  {
-    id: 1,
-    name: "Max",
-    breed: "Malinois",
-    image: "https://images.unsplash.com/photo-1713917032646-4703f3feffde",
-    imageAlt: "Malinois dog with alert expression and pointed ears sitting outdoors in natural lighting"
-  },
-  {
-    id: 2,
-    name: "Luna",
-    breed: "Shih-Tzu",
-    image: "https://images.unsplash.com/photo-1579466420284-ad894bf675c8",
-    imageAlt: "Small white and brown Shih-Tzu dog with long flowing coat and adorable face"
-  }];
+  // Catégories de tips
+  const tipCategories = [
+    { id: 'all', name: 'Tous', icon: Sparkles, color: 'blue' },
+    { id: 'recipes', name: 'Recettes', icon: ChefHat, color: 'orange' },
+    { id: 'care', name: 'Soins', icon: Heart, color: 'red' },
+    { id: 'education', name: 'Éducation', icon: GraduationCap, color: 'purple' },
+    { id: 'wellness', name: 'Bien-être', icon: Activity, color: 'green' }
+  ];
 
-
-  const communityStats = {
-    totalMembers: "12.5k",
-    totalPosts: "8.2k",
-    totalLikes: "45k",
-    activeToday: "1.2k"
-  };
-
-  const forums = [
-  {
-    id: 1,
-    name: "Malinois",
-    description: "Berger belge malinois - Éducation et comportement",
-    image: "https://images.unsplash.com/photo-1713917032646-4703f3feffde",
-    imageAlt: "Belgian Malinois dog with alert expression standing in outdoor field with golden sunlight",
-    memberCount: "3.2k",
-    postCount: "2.1k",
-    isActive: true,
-    trendingTopics: ["Dressage", "Agilité"],
-    latestPost: {
-      title: "Conseils pour l\'entraînement d\'obéissance avancé",
-      author: "Marie Dubois",
-      authorAvatar: "https://img.rocket.new/generatedImages/rocket_gen_img_1ad9e1013-1763294640440.png",
-      authorAvatarAlt: "Professional woman with shoulder-length brown hair wearing casual blue sweater smiling warmly",
-      timeAgo: "Il y a 15 min"
+  // Contacts d'urgence (exemples - tu pourras les mettre en base de données)
+  const emergencyContacts = [
+    {
+      id: 1,
+      type: 'urgence',
+      name: 'Clinique Vétérinaire 24/7',
+      phone: '01 40 00 00 00',
+      address: 'Paris 15ème',
+      hours: 'Ouvert 24h/24, 7j/7',
+      icon: Stethoscope,
+      color: 'red'
+    },
+    {
+      id: 2,
+      type: 'veterinaire',
+      name: 'Vétérinaire de garde',
+      phone: '01 41 11 11 11',
+      address: 'Paris 16ème',
+      hours: 'Lun-Sam: 9h-19h',
+      icon: Building2,
+      color: 'blue'
+    },
+    {
+      id: 3,
+      type: 'urgence',
+      name: 'SOS Vétérinaires Paris',
+      phone: '01 47 55 47 00',
+      address: 'Paris 8ème',
+      hours: '24h/24, urgences uniquement',
+      icon: PhoneCall,
+      color: 'red'
+    },
+    {
+      id: 4,
+      type: 'poison',
+      name: 'Centre Anti-Poison Animal',
+      phone: '04 78 87 10 40',
+      address: 'Lyon',
+      hours: '24h/24, 7j/7',
+      icon: AlertCircle,
+      color: 'orange'
     }
-  },
-  {
-    id: 2,
-    name: "Shih-Tzu",
-    description: "Petits compagnons - Soins et toilettage",
-    image: "https://images.unsplash.com/photo-1599228127629-0a6d721fce06",
-    imageAlt: "Adorable Shih-Tzu dog with long silky white and brown coat sitting on grooming table",
-    memberCount: "2.8k",
-    postCount: "1.9k",
-    isActive: true,
-    trendingTopics: ["Toilettage", "Santé"],
-    latestPost: {
-      title: "Meilleures techniques de brossage pour éviter les nœuds",
-      author: "Sophie Martin",
-      authorAvatar: "https://images.unsplash.com/photo-1578006711491-890dec58badb",
-      authorAvatarAlt: "Young woman with blonde hair in ponytail wearing pink top with friendly smile",
-      timeAgo: "Il y a 32 min"
-    }
-  },
-  {
-    id: 3,
-    name: "American Bully",
-    description: "Bully américain - Force et caractère",
-    image: "https://images.unsplash.com/photo-1704044985311-b363b415cb0d",
-    imageAlt: "Muscular American Bully dog with broad chest and confident stance in urban setting",
-    memberCount: "2.1k",
-    postCount: "1.4k",
-    isActive: false,
-    trendingTopics: ["Nutrition", "Musculation"],
-    latestPost: {
-      title: "Programme d\'exercice pour maintenir la masse musculaire",
-      author: "Thomas Leroy",
-      authorAvatar: "https://img.rocket.new/generatedImages/rocket_gen_img_1b44763a5-1763295696725.png",
-      authorAvatarAlt: "Athletic man with short dark hair wearing black athletic shirt with determined expression",
-      timeAgo: "Il y a 1 heure"
-    }
-  },
-  {
-    id: 4,
-    name: "Races Mixtes",
-    description: "Chiens croisés - Diversité et unicité",
-    image: "https://images.unsplash.com/photo-1683051147071-657d46aa1e3c",
-    imageAlt: "Happy mixed breed dog with brown and white coat running joyfully through green grass field",
-    memberCount: "4.4k",
-    postCount: "3.8k",
-    isActive: true,
-    trendingTopics: ["Adoption", "Comportement"],
-    latestPost: {
-      title: "Mon chien croisé a des comportements surprenants",
-      author: "Julie Bernard",
-      authorAvatar: "https://images.unsplash.com/photo-1612439289738-15a4cba74d9f",
-      authorAvatarAlt: "Middle-aged woman with curly red hair wearing green cardigan with warm smile",
-      timeAgo: "Il y a 45 min"
-    }
-  }];
-
-
-  const featuredDiscussions = [
-  {
-    id: 1,
-    title: "Comment gérer l\'anxiété de séparation chez les chiots ?",
-    preview: "Mon chiot de 4 mois pleure beaucoup quand je pars travailler. J\'ai essayé plusieurs techniques mais rien ne semble fonctionner. Des conseils ?",
-    author: "Claire Rousseau",
-    authorAvatar: "https://img.rocket.new/generatedImages/rocket_gen_img_1a32a3733-1763295164509.png",
-    authorAvatarAlt: "Young woman with long dark hair wearing white blouse with concerned expression",
-    timeAgo: "Il y a 2 heures",
-    likes: 47,
-    replies: 23,
-    category: "Comportement",
-    isExpert: false
-  },
-  {
-    id: 2,
-    title: "Alimentation BARF : Guide complet pour débutants",
-    preview: "Après 6 mois de BARF avec mon Malinois, je partage mon expérience complète : avantages, défis, recettes et conseils pratiques pour bien commencer.",
-    author: "Dr. Antoine Moreau",
-    authorAvatar: "https://img.rocket.new/generatedImages/rocket_gen_img_1e95cb24a-1763296883553.png",
-    authorAvatarAlt: "Professional veterinarian with gray hair wearing white medical coat with stethoscope",
-    timeAgo: "Il y a 3 heures",
-    likes: 156,
-    replies: 89,
-    category: "Nutrition",
-    isExpert: true
-  },
-  {
-    id: 3,
-    title: "Vaccination : Nouveau protocole 2025 expliqué",
-    preview: "Les nouvelles recommandations vétérinaires pour la vaccination des chiens en 2025. Quels changements et pourquoi ?",
-    author: "Dr. Isabelle Petit",
-    authorAvatar: "https://img.rocket.new/generatedImages/rocket_gen_img_1be4365a3-1763296831000.png",
-    authorAvatarAlt: "Female veterinarian with short blonde hair wearing blue scrubs with professional smile",
-    timeAgo: "Il y a 5 heures",
-    likes: 203,
-    replies: 67,
-    category: "Santé",
-    isExpert: true
-  },
-  {
-    id: 4,
-    title: "Toilettage maison : Mes astuces pour un pelage parfait",
-    preview: "Je toilette mon Shih-Tzu moi-même depuis 2 ans. Voici tous mes secrets pour un résultat professionnel à la maison sans stress.",
-    author: "Nathalie Girard",
-    authorAvatar: "https://img.rocket.new/generatedImages/rocket_gen_img_154a96764-1763300123486.png",
-    authorAvatarAlt: "Woman with medium brown hair wearing casual pink sweater with friendly smile",
-    timeAgo: "Il y a 6 heures",
-    likes: 92,
-    replies: 41,
-    category: "Toilettage",
-    isExpert: false
-  }];
-
+  ];
 
   useEffect(() => {
-    const savedProfile = localStorage.getItem('currentDogProfile');
-    if (savedProfile) {
-      setCurrentProfile(JSON.parse(savedProfile));
-    } else if (dogProfiles?.length > 0) {
-      setCurrentProfile(dogProfiles?.[0]);
-      localStorage.setItem('currentDogProfile', JSON.stringify(dogProfiles?.[0]));
-    }
-  }, []);
+    fetchTips();
+  }, [selectedTipCategory, searchQuery]);
 
-  useEffect(() => {
-    if (searchQuery?.trim() === '') {
-      setFilteredForums(forums);
-    } else {
-      const filtered = forums?.filter((forum) =>
-      forum?.name?.toLowerCase()?.includes(searchQuery?.toLowerCase()) ||
-      forum?.description?.toLowerCase()?.includes(searchQuery?.toLowerCase()) ||
-      forum?.trendingTopics?.some((topic) =>
-      topic?.toLowerCase()?.includes(searchQuery?.toLowerCase())
-      )
-      );
-      setFilteredForums(filtered);
-    }
-  }, [searchQuery]);
+  const fetchTips = async () => {
+    try {
+      setLoadingTips(true);
+      
+      let query = supabase
+        .from('daily_tips')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(6);
+      
+      if (selectedTipCategory !== 'all') {
+        query = query.eq('category', selectedTipCategory);
+      }
+      
+      if (searchQuery) {
+        query = query.or(`title.ilike.%${searchQuery}%,content.ilike.%${searchQuery}%`);
+      }
+      
+      const { data, error } = await query;
 
-  const handleProfileChange = (profile) => {
-    setCurrentProfile(profile);
-    localStorage.setItem('currentDogProfile', JSON.stringify(profile));
+      if (error) throw error;
+
+      setTips(data || []);
+    } catch (error) {
+      console.error('Erreur chargement tips:', error);
+      // Fallback avec des tips exemples si la table n'existe pas encore
+      setTips([
+        {
+          id: 1,
+          category: 'recipes',
+          title: 'Biscuits maison au poulet',
+          content: 'Recette simple et saine pour préparer des friandises maison pour votre chien. Ingrédients : farine, poulet, œuf.'
+        },
+        {
+          id: 2,
+          category: 'care',
+          title: 'Brosser les dents de son chien',
+          content: 'Le brossage régulier des dents prévient le tartre et les maladies dentaires. Utilisez un dentifrice adapté.'
+        },
+        {
+          id: 3,
+          category: 'education',
+          title: 'Apprendre le rappel',
+          content: 'Le rappel est essentiel pour la sécurité. Commencez dans un endroit calme avec des récompenses.'
+        }
+      ]);
+    } finally {
+      setLoadingTips(false);
+    }
   };
 
-  const handleSearch = (query) => {
-    setSearchQuery(query);
+  const getCategoryInfo = (categoryId) => {
+    return tipCategories.find(c => c.id === categoryId);
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="sticky top-0 z-50 bg-card border-b border-border shadow-soft">
-        <div className="max-w-screen-xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-heading font-semibold text-foreground">
-                Communauté
-              </h1>
-            </div>
-            <ProfileSwitcher
-              profiles={dogProfiles}
-              currentProfile={currentProfile}
-              onProfileChange={handleProfileChange} />
-
-          </div>
+    <div className="min-h-screen bg-background flex flex-col">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-primary to-secondary text-white py-16">
+        <div className="max-w-6xl mx-auto px-6">
+          <h1 className="text-4xl font-bold mb-4">Conseils & Contacts</h1>
+          <p className="text-lg text-white/90">
+            Tous nos conseils pratiques + contacts d'urgence pour votre chien 🐕
+          </p>
         </div>
       </div>
-      <TabNavigation />
-      <main className="main-content">
-        <div className="max-w-screen-xl mx-auto px-4 py-6 space-y-8">
-          <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+
+      {/* Contenu principal */}
+      <main className="flex-1 max-w-6xl mx-auto px-6 py-12 w-full">
+        
+        {/* ========================================
+            SECTION 1 : CONSEILS PRATIQUES (TIPS)
+        ======================================== */}
+        <section className="mb-16">
+          <div className="flex items-center gap-3 mb-6">
+            <Sparkles className="text-yellow-500" size={32} />
+            <h2 className="text-3xl font-bold text-foreground">
+              Conseils Pratiques
+            </h2>
+          </div>
+
+          {/* Barre de recherche */}
+          <div className="mb-6">
+            <div className="relative">
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={20} />
+              <input
+                type="text"
+                placeholder="Rechercher un conseil..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-12 pr-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+              />
+            </div>
+          </div>
+
+          {/* Catégories de tips */}
+          <div className="flex flex-wrap gap-3 mb-8">
+            {tipCategories.map((category) => {
+              const Icon = category.icon;
+              return (
+                <button
+                  key={category.id}
+                  onClick={() => setSelectedTipCategory(category.id)}
+                  className={`px-4 py-2 rounded-lg font-medium transition-all flex items-center gap-2 ${
+                    selectedTipCategory === category.id
+                      ? 'bg-primary text-white shadow-lg'
+                      : 'bg-card border border-border text-foreground hover:shadow-md'
+                  }`}
+                >
+                  <Icon size={18} />
+                  {category.name}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Liste des tips */}
+          {loadingTips ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
+            </div>
+          ) : tips.length === 0 ? (
+            <div className="text-center py-12 bg-card rounded-xl border border-border">
+              <Sparkles size={48} className="text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground">
+                Aucun conseil disponible pour le moment.
+              </p>
+            </div>
+          ) : (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {tips.map((tip) => {
+                const categoryInfo = getCategoryInfo(tip.category);
+                const Icon = categoryInfo?.icon || Sparkles;
+                
+                return (
+                  <div
+                    key={tip.id}
+                    className="bg-card border border-border rounded-xl p-6 hover:shadow-lg transition-all cursor-pointer"
+                  >
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className={`w-10 h-10 bg-${categoryInfo?.color}-100 rounded-lg flex items-center justify-center`}>
+                        <Icon className={`text-${categoryInfo?.color}-600`} size={20} />
+                      </div>
+                      <span className={`px-2 py-1 bg-${categoryInfo?.color}-100 text-${categoryInfo?.color}-700 rounded text-xs font-medium`}>
+                        {categoryInfo?.name}
+                      </span>
+                    </div>
+
+                    <h3 className="text-lg font-bold text-foreground mb-2 line-clamp-2">
+                      {tip.title}
+                    </h3>
+
+                    <p className="text-sm text-muted-foreground line-clamp-3">
+                      {tip.content}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </section>
+
+        {/* Séparateur */}
+        <div className="border-t border-border mb-16" />
+
+        {/* ========================================
+            SECTION 2 : CONTACTS D'URGENCE
+        ======================================== */}
+        <section>
+          <div className="flex items-center gap-3 mb-6">
+            <PhoneCall className="text-red-500" size={32} />
+            <h2 className="text-3xl font-bold text-foreground">
+              Contacts d'Urgence
+            </h2>
+          </div>
+
+          <div className="bg-red-50 border-l-4 border-red-500 rounded-r-lg p-4 mb-8">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="text-red-500 flex-shrink-0 mt-0.5" size={24} />
               <div>
-                <h2 className="text-xl font-heading font-semibold text-foreground mb-1">
-                  Rejoignez votre communauté
-                </h2>
-                <p className="text-muted-foreground font-caption">
-                  Partagez, apprenez et connectez-vous avec d'autres propriétaires
+                <p className="font-semibold text-red-900 mb-1">
+                  En cas d'urgence vitale
+                </p>
+                <p className="text-sm text-red-700">
+                  Contactez immédiatement votre vétérinaire ou une clinique d'urgence 24h/24.
+                  Ne perdez pas de temps sur Internet.
                 </p>
               </div>
-              <QuickActions />
             </div>
-            <SearchBar onSearch={handleSearch} />
           </div>
 
-          <CommunityStats stats={communityStats} />
+          {/* Liste des contacts */}
+          <div className="grid md:grid-cols-2 gap-6">
+            {emergencyContacts.map((contact) => {
+              const Icon = contact.icon;
+              
+              return (
+                <div
+                  key={contact.id}
+                  className={`bg-card border-2 rounded-xl p-6 hover:shadow-lg transition-all ${
+                    contact.type === 'urgence' 
+                      ? 'border-red-200 bg-red-50/50' 
+                      : 'border-border'
+                  }`}
+                >
+                  {/* En-tête */}
+                  <div className="flex items-start justify-between mb-4">
+                    <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
+                      contact.type === 'urgence'
+                        ? 'bg-red-500 text-white'
+                        : `bg-${contact.color}-100 text-${contact.color}-600`
+                    }`}>
+                      <Icon size={24} />
+                    </div>
+                    
+                    {contact.type === 'urgence' && (
+                      <span className="px-2 py-1 bg-red-500 text-white rounded-full text-xs font-bold animate-pulse">
+                        URGENCE
+                      </span>
+                    )}
+                  </div>
 
-          <div>
-            <h3 className="text-lg font-heading font-semibold text-foreground mb-4">
-              Forums par race
+                  {/* Informations */}
+                  <h3 className="text-lg font-bold text-foreground mb-4">
+                    {contact.name}
+                  </h3>
+
+                  <div className="space-y-3">
+                    {/* Téléphone */}
+                    <a
+                      href={`tel:${contact.phone.replace(/\s/g, '')}`}
+                      className="flex items-center gap-3 p-3 bg-background rounded-lg hover:bg-primary/5 transition-all group"
+                    >
+                      <Phone className="text-primary group-hover:scale-110 transition-transform" size={20} />
+                      <span className="font-semibold text-primary">
+                        {contact.phone}
+                      </span>
+                    </a>
+
+                    {/* Adresse */}
+                    <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                      <MapPin size={18} />
+                      <span>{contact.address}</span>
+                    </div>
+
+                    {/* Horaires */}
+                    <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                      <Clock size={18} />
+                      <span>{contact.hours}</span>
+                    </div>
+                  </div>
+
+                  {/* Bouton appel direct */}
+                  <a
+                    href={`tel:${contact.phone.replace(/\s/g, '')}`}
+                    className={`mt-4 w-full py-3 rounded-lg font-semibold text-center block transition-all ${
+                      contact.type === 'urgence'
+                        ? 'bg-red-500 text-white hover:bg-red-600'
+                        : 'bg-primary text-white hover:bg-primary/90'
+                    }`}
+                  >
+                    <Phone size={18} className="inline mr-2" />
+                    Appeler maintenant
+                  </a>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Information supplémentaire */}
+          <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
+            <h3 className="font-semibold text-foreground mb-2 flex items-center gap-2">
+              <AlertCircle className="text-blue-500" size={20} />
+              Bon à savoir
             </h3>
-            {filteredForums?.length > 0 ?
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-                {filteredForums?.map((forum) =>
-              <ForumCard key={forum?.id} forum={forum} />
-              )}
-              </div> :
-
-            <div className="bg-card rounded-lg p-8 text-center border border-border">
-                <p className="text-muted-foreground font-caption">
-                  Aucun forum trouvé pour "{searchQuery}"
-                </p>
-              </div>
-            }
+            <ul className="text-sm text-muted-foreground space-y-2">
+              <li>• Gardez toujours le numéro de votre vétérinaire à portée de main</li>
+              <li>• En cas de doute, contactez un professionnel plutôt que d'attendre</li>
+              <li>• Les urgences vétérinaires sont souvent payantes et plus chères la nuit</li>
+              <li>• Pensez à souscrire une assurance santé pour votre animal</li>
+            </ul>
           </div>
-
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-heading font-semibold text-foreground">
-                Discussions populaires
-              </h3>
-              <button className="text-sm text-primary font-medium hover:underline">
-                Voir tout
-              </button>
-            </div>
-            <div className="space-y-4">
-              {featuredDiscussions?.map((discussion) =>
-              <FeaturedDiscussion key={discussion?.id} discussion={discussion} />
-              )}
-            </div>
-          </div>
-
-          <div className="bg-gradient-to-r from-primary/10 to-secondary/10 rounded-lg p-6 border border-border">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-              <div className="text-center md:text-left">
-                <h3 className="text-xl font-heading font-semibold text-foreground mb-2">
-                  Partagez votre expérience
-                </h3>
-                <p className="text-muted-foreground font-caption">
-                  Aidez d'autres propriétaires en partageant vos connaissances et conseils
-                </p>
-              </div>
-              <button
-                onClick={() => window.location.href = '/forum-discussion'}
-                className="px-6 py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-smooth whitespace-nowrap">
-
-                Créer une discussion
-              </button>
-            </div>
-          </div>
-        </div>
+        </section>
       </main>
-      
+
       {/* Footer */}
       <Footer />
-    </div>);
-
+    </div>
+  );
 };
 
-export default ForumHub;
+export default DailyTip;
