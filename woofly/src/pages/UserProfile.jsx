@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import Icon from '../components/AppIcon';
+import Footer from '../components/Footer';  // ✅ AJOUTÉ
 
 const UserProfile = () => {
   const navigate = useNavigate();
@@ -378,6 +379,9 @@ const UserProfile = () => {
           </div>
         </form>
       </div>
+      
+      {/* Footer */}
+      <Footer />
     </div>
   );
 };
