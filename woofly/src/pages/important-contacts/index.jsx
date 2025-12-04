@@ -7,6 +7,7 @@ import EmergencyBanner from './components/EmergencyBanner';
 import SearchBar from './components/SearchBar';
 import MapModal from './components/MapModal';
 import Icon from '../../components/AppIcon';
+import Footer from '../../components/Footer';  // ✅ AJOUTÉ
 
 
 const ImportantContacts = () => {
@@ -284,6 +285,9 @@ const ImportantContacts = () => {
         onClose={() => setSelectedMapContact(null)} />
 
       }
+      
+      {/* Footer */}
+      <Footer />
     </div>);
 
 };
