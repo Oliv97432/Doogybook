@@ -6,6 +6,7 @@ import SearchBar from './components/SearchBar';
 import FeaturedDiscussion from './components/FeaturedDiscussion';
 import QuickActions from './components/QuickActions';
 import CommunityStats from './components/CommunityStats';
+import Footer from '../../components/Footer';  // ✅ AJOUTÉ
 
 const ForumHub = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -293,6 +294,9 @@ const ForumHub = () => {
           </div>
         </div>
       </main>
+      
+      {/* Footer */}
+      <Footer />
     </div>);
 
 };
