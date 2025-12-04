@@ -766,14 +766,7 @@ const DogProfile = () => {
         onSave={handleSaveProfile}
         profile={currentProfile}
       />
-
-      <PhotoGalleryModal
-        isOpen={modals.gallery}
-        onClose={() => closeModal('gallery')}
-        photos={photoGallery}
-        onAddPhoto={() => alert('Fonctionnalité d\'ajout de photo en cours de développement')}
-      />
-      
+     
    <PhotoGalleryModal
         isOpen={modals.gallery}
         onClose={() => closeModal('gallery')}
