@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import TabNavigation from '../../components/TabNavigation';
 import ProfileSwitcher from '../../components/ProfileSwitcher';
-import ForumCard from './components/ForumCard';
-import SearchBar from './components/SearchBar';
-import FeaturedDiscussion from './components/FeaturedDiscussion';
-import QuickActions from './components/QuickActions';
-import CommunityStats from './components/CommunityStats';
-import Footer from '../../components/Footer';  // ✅ AJOUTÉ
+import ForumCard from '../forum-hub/components/ForumCard';
+import SearchBar from '../forum-hub/components/SearchBar';
+import FeaturedDiscussion from '../forum-hub/components/FeaturedDiscussion';
+import QuickActions from '../forum-hub/components/QuickActions';
+import CommunityStats from '../forum-hub/components/CommunityStats';
+import Footer from '../../components/Footer';
 
 const ForumHub = () => {
   const [searchQuery, setSearchQuery] = useState('');
