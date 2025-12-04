@@ -13,6 +13,7 @@ import BulkActionsBar from './components/BulkActionsBar';
 import SearchFilterBar from './components/SearchFilterBar';
 import EmptyState from './components/EmptyState';
 import AddDogModal from './components/AddDogModal';
+import Footer from '../../components/Footer';  // ✅ AJOUTÉ
 
 const MultiProfileManagement = () => {
   const navigate = useNavigate();
@@ -343,6 +344,9 @@ const MultiProfileManagement = () => {
         onClose={() => setIsAddModalOpen(false)}
         onSubmit={handleAddDog}
       />
+      
+      {/* Footer */}
+      <Footer />
     </div>
   );
 };
