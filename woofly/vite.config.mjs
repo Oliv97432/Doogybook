@@ -7,7 +7,7 @@ import tagger from "@dhiwise/component-tagger";
 export default defineConfig({
   build: {
     outDir: "dist",
-    chunkSizeWarningLimit: 2000,
+    chunkSizeWarningLimit: 1000,
   },
   plugins: [tsconfigPaths(), react(), tagger()],
   server: {
@@ -17,3 +17,4 @@ export default defineConfig({
     allowedHosts: ['.amazonaws.com', '.builtwithrocket.new']
   }
 });
+
