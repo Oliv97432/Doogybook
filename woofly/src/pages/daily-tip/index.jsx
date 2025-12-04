@@ -2,22 +2,31 @@ import React, { useState, useEffect } from 'react';
 import { 
   ChefHat, Heart, GraduationCap, Activity, 
   Phone, MapPin, Clock, AlertCircle, Search,
-  Sparkles, Stethoscope, Building2, PhoneCall
+  Sparkles, Stethoscope, PhoneCall, Plus, Edit
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
-import Footer from '../../components/Footer';
+import { useAuth } from '../../contexts/AuthContext';
 
 /**
  * Page Daily Tip - Conseils & Contacts
- * Tips pratiques + Contacts d'urgence pour les chiens
+ * Tips pratiques + Vétérinaire perso + Contacts SOS
  */
 const DailyTip = () => {
+  const { user } = useAuth();
   const [selectedTipCategory, setSelectedTipCategory] = useState('all');
   const [tips, setTips] = useState([]);
   const [loadingTips, setLoadingTips] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [userVet, setUserVet] = useState(null);
+  const [showVetForm, setShowVetForm] = useState(false);
+  const [vetForm, setVetForm] = useState({
+    name: '',
+    phone: '',
+    address: '',
+    hours: ''
+  });
 
-  // Catégories de tips (correspondent à la table tips)
+  // Catégories de tips
   const tipCategories = [
     { id: 'all', name: 'Tous', icon: Sparkles, color: 'blue' },
     { id: 'health', name: 'Santé', icon: Heart, color: 'red' },
@@ -27,89 +36,120 @@ const DailyTip = () => {
     { id: 'wellness', name: 'Bien-être', icon: Activity, color: 'green' }
   ];
 
-  // Contacts d'urgence
-  const emergencyContacts = [
+  // Contacts SOS généraux uniquement
+  const sosContacts = [
     {
       id: 1,
-      type: 'urgence',
-      name: 'Clinique Vétérinaire 24/7',
-      phone: '01 40 00 00 00',
-      address: 'Paris 15ème',
-      hours: 'Ouvert 24h/24, 7j/7',
-      icon: Stethoscope,
-      color: 'red'
+      name: 'SOS Animaux en Danger',
+      phone: '01 43 11 80 00',
+      description: 'Urgences vitales 24h/24',
+      icon: PhoneCall,
+      type: 'urgence'
     },
     {
       id: 2,
-      type: 'veterinaire',
-      name: 'Vétérinaire de garde',
-      phone: '01 41 11 11 11',
-      address: 'Paris 16ème',
-      hours: 'Lun-Sam: 9h-19h',
-      icon: Building2,
-      color: 'blue'
-    },
-    {
-      id: 3,
-      type: 'urgence',
-      name: 'SOS Vétérinaires Paris',
-      phone: '01 47 55 47 00',
-      address: 'Paris 8ème',
-      hours: '24h/24, urgences uniquement',
-      icon: PhoneCall,
-      color: 'red'
-    },
-    {
-      id: 4,
-      type: 'poison',
       name: 'Centre Anti-Poison Animal',
       phone: '04 78 87 10 40',
-      address: 'Lyon',
-      hours: '24h/24, 7j/7',
+      description: 'Intoxications 24h/24',
       icon: AlertCircle,
-      color: 'orange'
+      type: 'poison'
     }
   ];
 
   useEffect(() => {
     fetchTips();
-  }, [selectedTipCategory, searchQuery]);
+    if (user?.id) {
+      fetchUserVet();
+    }
+  }, [selectedTipCategory, searchQuery, user?.id]);
 
   const fetchTips = async () => {
     try {
       setLoadingTips(true);
       
-      // Utilise la table "tips" (correspond à ton SQL)
       let query = supabase
         .from('tips')
         .select('*')
         .order('created_at', { ascending: false })
         .limit(9);
       
-      // Filtre par catégorie si pas "all"
       if (selectedTipCategory !== 'all') {
         query = query.eq('category', selectedTipCategory);
       }
       
-      // Filtre par recherche
       if (searchQuery.trim()) {
         query = query.or(`title.ilike.%${searchQuery}%,content.ilike.%${searchQuery}%`);
       }
       
       const { data, error } = await query;
-
-      if (error) {
-        console.error('Erreur chargement tips:', error);
-        throw error;
-      }
-
+      if (error) throw error;
       setTips(data || []);
     } catch (error) {
       console.error('Erreur chargement tips:', error);
-      // Si la table n'existe pas encore, afficher un message
       setTips([]);
     } finally {
       setLoadingTips(false);
+    }
+  };
+
+  const fetchUserVet = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('user_veterinarians')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      if (data) {
+        setUserVet(data);
+        setVetForm({
+          name: data.name || '',
+          phone: data.phone || '',
+          address: data.address || '',
+          hours: data.hours || ''
+        });
+      }
+    } catch (error) {
+      console.error('Erreur chargement vétérinaire:', error);
+    }
+  };
+
+  const saveVet = async () => {
+    try {
+      if (userVet) {
+        // Update
+        const { error } = await supabase
+          .from('user_veterinarians')
+          .update({
+            name: vetForm.name,
+            phone: vetForm.phone,
+            address: vetForm.address,
+            hours: vetForm.hours
+          })
+          .eq('id', userVet.id);
+
+        if (error) throw error;
+      } else {
+        // Insert
+        const { error } = await supabase
+          .from('user_veterinarians')
+          .insert({
+            user_id: user.id,
+            name: vetForm.name,
+            phone: vetForm.phone,
+            address: vetForm.address,
+            hours: vetForm.hours
+          });
+
+        if (error) throw error;
+      }
+
+      await fetchUserVet();
+      setShowVetForm(false);
+      alert('Vétérinaire enregistré avec succès !');
+    } catch (error) {
+      console.error('Erreur sauvegarde vétérinaire:', error);
+      alert('Erreur lors de la sauvegarde');
     }
   };
 
@@ -118,47 +158,44 @@ const DailyTip = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="pb-24">
       {/* Header */}
-      <div className="bg-gradient-to-r from-primary to-secondary text-white py-16">
-        <div className="max-w-6xl mx-auto px-6">
-          <h1 className="text-4xl font-bold mb-4">Conseils & Contacts</h1>
-          <p className="text-lg text-white/90">
-            Tous nos conseils pratiques + contacts d'urgence pour votre chien 🐕
-          </p>
-        </div>
+      <div className="bg-gradient-to-r from-primary to-secondary text-white py-12 px-6 mb-6">
+        <h1 className="text-3xl font-bold mb-2">Conseils & Contacts</h1>
+        <p className="text-white/90">
+          Conseils pratiques + contacts d'urgence 🐕
+        </p>
       </div>
 
-      {/* Contenu principal */}
-      <main className="flex-1 max-w-6xl mx-auto px-6 py-12 w-full">
+      <div className="px-6 space-y-12">
         
         {/* ========================================
-            SECTION 1 : CONSEILS PRATIQUES (TIPS)
+            SECTION 1 : CONSEILS PRATIQUES
         ======================================== */}
-        <section className="mb-16">
+        <section>
           <div className="flex items-center gap-3 mb-6">
-            <Sparkles className="text-yellow-500" size={32} />
-            <h2 className="text-3xl font-bold text-foreground">
+            <Sparkles className="text-yellow-500" size={28} />
+            <h2 className="text-2xl font-bold text-foreground">
               Conseils Pratiques
             </h2>
           </div>
 
-          {/* Barre de recherche */}
-          <div className="mb-6">
+          {/* Recherche */}
+          <div className="mb-4">
             <div className="relative">
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={20} />
               <input
                 type="text"
-                placeholder="Rechercher un conseil..."
+                placeholder="Rechercher..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full pl-12 pr-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-primary"
               />
             </div>
           </div>
 
-          {/* Catégories de tips */}
-          <div className="flex flex-wrap gap-3 mb-8">
+          {/* Catégories */}
+          <div className="flex overflow-x-auto gap-3 mb-6 pb-2 -mx-6 px-6">
             {tipCategories.map((category) => {
               const Icon = category.icon;
               const isActive = selectedTipCategory === category.id;
@@ -167,10 +204,8 @@ const DailyTip = () => {
                 <button
                   key={category.id}
                   onClick={() => setSelectedTipCategory(category.id)}
-                  className={`px-4 py-2 rounded-lg font-medium transition-all flex items-center gap-2 ${
-                    isActive
-                      ? 'bg-primary text-white shadow-lg'
-                      : 'bg-card border border-border text-foreground hover:shadow-md'
+                  className={`flex-shrink-0 px-4 py-2 rounded-lg font-medium transition-all flex items-center gap-2 ${
+                    isActive ? 'bg-primary text-white shadow-lg' : 'bg-card border border-border'
                   }`}
                 >
                   <Icon size={18} />
@@ -180,36 +215,27 @@ const DailyTip = () => {
             })}
           </div>
 
-          {/* Liste des tips */}
+          {/* Liste tips */}
           {loadingTips ? (
-            <div className="flex items-center justify-center py-12">
+            <div className="flex justify-center py-12">
               <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
             </div>
           ) : tips.length === 0 ? (
             <div className="text-center py-12 bg-card rounded-xl border border-border">
               <Sparkles size={48} className="text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground mb-2">
-                {searchQuery 
-                  ? 'Aucun conseil trouvé pour cette recherche.'
-                  : 'Aucun conseil disponible pour le moment.'
-                }
-              </p>
-              <p className="text-sm text-muted-foreground">
-                Les conseils seront chargés depuis la table "tips" de Supabase.
+              <p className="text-muted-foreground font-medium">
+                {searchQuery ? 'Aucun conseil trouvé' : 'Aucun conseil disponible'}
               </p>
             </div>
           ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid gap-4">
               {tips.map((tip) => {
                 const categoryInfo = getCategoryInfo(tip.category);
                 const Icon = categoryInfo?.icon || Sparkles;
                 
                 return (
-                  <div
-                    key={tip.id}
-                    className="bg-card border border-border rounded-xl p-6 hover:shadow-lg transition-all cursor-pointer"
-                  >
-                    <div className="flex items-center gap-3 mb-4">
+                  <div key={tip.id} className="bg-card border border-border rounded-xl p-5">
+                    <div className="flex items-center gap-3 mb-3">
                       <div className={`w-10 h-10 rounded-lg flex items-center justify-center bg-${categoryInfo?.color}-100`}>
                         <Icon className={`text-${categoryInfo?.color}-600`} size={20} />
                       </div>
@@ -217,14 +243,8 @@ const DailyTip = () => {
                         {categoryInfo?.name}
                       </span>
                     </div>
-
-                    <h3 className="text-lg font-bold text-foreground mb-2 line-clamp-2">
-                      {tip.title}
-                    </h3>
-
-                    <p className="text-sm text-muted-foreground line-clamp-3">
-                      {tip.content}
-                    </p>
+                    <h3 className="text-lg font-bold text-foreground mb-2">{tip.title}</h3>
+                    <p className="text-sm text-muted-foreground">{tip.content}</p>
                   </div>
                 );
               })}
@@ -233,103 +253,185 @@ const DailyTip = () => {
         </section>
 
         {/* Séparateur */}
-        <div className="border-t border-border mb-16" />
+        <div className="border-t border-border" />
 
         {/* ========================================
-            SECTION 2 : CONTACTS D'URGENCE
+            SECTION 2 : MON VÉTÉRINAIRE
+        ======================================== */}
+        <section>
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <Stethoscope className="text-blue-500" size={28} />
+              <h2 className="text-2xl font-bold text-foreground">Mon Vétérinaire</h2>
+            </div>
+            {userVet && !showVetForm && (
+              <button
+                onClick={() => setShowVetForm(true)}
+                className="text-primary text-sm font-medium flex items-center gap-1"
+              >
+                <Edit size={16} />
+                Modifier
+              </button>
+            )}
+          </div>
+
+          {showVetForm ? (
+            // Formulaire
+            <div className="bg-card border border-border rounded-xl p-6">
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Nom du cabinet</label>
+                  <input
+                    type="text"
+                    value={vetForm.name}
+                    onChange={(e) => setVetForm({...vetForm, name: e.target.value})}
+                    placeholder="Clinique Vétérinaire..."
+                    className="w-full px-4 py-2 border rounded-lg"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Téléphone</label>
+                  <input
+                    type="tel"
+                    value={vetForm.phone}
+                    onChange={(e) => setVetForm({...vetForm, phone: e.target.value})}
+                    placeholder="01 23 45 67 89"
+                    className="w-full px-4 py-2 border rounded-lg"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Adresse</label>
+                  <input
+                    type="text"
+                    value={vetForm.address}
+                    onChange={(e) => setVetForm({...vetForm, address: e.target.value})}
+                    placeholder="123 rue..."
+                    className="w-full px-4 py-2 border rounded-lg"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Horaires</label>
+                  <input
+                    type="text"
+                    value={vetForm.hours}
+                    onChange={(e) => setVetForm({...vetForm, hours: e.target.value})}
+                    placeholder="Lun-Ven: 9h-19h"
+                    className="w-full px-4 py-2 border rounded-lg"
+                  />
+                </div>
+                <div className="flex gap-3">
+                  <button
+                    onClick={saveVet}
+                    className="flex-1 bg-primary text-white py-3 rounded-lg font-semibold"
+                  >
+                    Enregistrer
+                  </button>
+                  <button
+                    onClick={() => setShowVetForm(false)}
+                    className="px-6 py-3 border border-border rounded-lg"
+                  >
+                    Annuler
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : userVet ? (
+            // Affichage vétérinaire
+            <div className="bg-card border-2 border-blue-200 rounded-xl p-6">
+              <div className="flex items-start gap-4 mb-4">
+                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <Stethoscope className="text-blue-600" size={24} />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-bold text-foreground mb-1">{userVet.name}</h3>
+                  <div className="space-y-2">
+                    <a
+                      href={`tel:${userVet.phone?.replace(/\s/g, '')}`}
+                      className="flex items-center gap-2 text-primary font-semibold"
+                    >
+                      <Phone size={18} />
+                      {userVet.phone}
+                    </a>
+                    {userVet.address && (
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <MapPin size={16} />
+                        {userVet.address}
+                      </div>
+                    )}
+                    {userVet.hours && (
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Clock size={16} />
+                        {userVet.hours}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+              <a
+                href={`tel:${userVet.phone?.replace(/\s/g, '')}`}
+                className="w-full bg-blue-500 text-white py-3 rounded-lg font-semibold text-center block"
+              >
+                <Phone size={18} className="inline mr-2" />
+                Appeler mon vétérinaire
+              </a>
+            </div>
+          ) : (
+            // Ajouter vétérinaire
+            <button
+              onClick={() => setShowVetForm(true)}
+              className="w-full bg-card border-2 border-dashed border-border rounded-xl p-8 hover:border-primary transition-all"
+            >
+              <Plus size={32} className="text-muted-foreground mx-auto mb-3" />
+              <p className="font-medium text-foreground">Ajouter mon vétérinaire</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Gardez les coordonnées à portée de main
+              </p>
+            </button>
+          )}
+        </section>
+
+        {/* ========================================
+            SECTION 3 : SOS ANIMAUX EN DANGER
         ======================================== */}
         <section>
           <div className="flex items-center gap-3 mb-6">
-            <PhoneCall className="text-red-500" size={32} />
-            <h2 className="text-3xl font-bold text-foreground">
-              Contacts d'Urgence
-            </h2>
+            <PhoneCall className="text-red-500" size={28} />
+            <h2 className="text-2xl font-bold text-foreground">SOS Animaux en Danger</h2>
           </div>
 
-          <div className="bg-red-50 border-l-4 border-red-500 rounded-r-lg p-4 mb-8">
+          <div className="bg-red-50 border-l-4 border-red-500 rounded-r-lg p-4 mb-6">
             <div className="flex items-start gap-3">
               <AlertCircle className="text-red-500 flex-shrink-0 mt-0.5" size={24} />
-              <div>
-                <p className="font-semibold text-red-900 mb-1">
-                  En cas d'urgence vitale
-                </p>
-                <p className="text-sm text-red-700">
-                  Contactez immédiatement votre vétérinaire ou une clinique d'urgence 24h/24.
-                  Ne perdez pas de temps sur Internet.
-                </p>
-              </div>
+              <p className="text-sm text-red-900">
+                <strong>Urgence vitale :</strong> Contactez immédiatement un vétérinaire. Ne perdez pas de temps.
+              </p>
             </div>
           </div>
 
-          {/* Liste des contacts */}
-          <div className="grid md:grid-cols-2 gap-6">
-            {emergencyContacts.map((contact) => {
+          <div className="space-y-4">
+            {sosContacts.map((contact) => {
               const Icon = contact.icon;
-              
               return (
-                <div
-                  key={contact.id}
-                  className={`bg-card border-2 rounded-xl p-6 hover:shadow-lg transition-all ${
-                    contact.type === 'urgence' 
-                      ? 'border-red-200 bg-red-50/50' 
-                      : 'border-border'
-                  }`}
-                >
-                  {/* En-tête */}
-                  <div className="flex items-start justify-between mb-4">
-                    <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
-                      contact.type === 'urgence'
-                        ? 'bg-red-500 text-white'
-                        : 'bg-blue-100 text-blue-600'
-                    }`}>
+                <div key={contact.id} className="bg-card border-2 border-red-200 rounded-xl p-6">
+                  <div className="flex items-start gap-4 mb-4">
+                    <div className="w-12 h-12 bg-red-500 text-white rounded-lg flex items-center justify-center">
                       <Icon size={24} />
                     </div>
-                    
-                    {contact.type === 'urgence' && (
-                      <span className="px-2 py-1 bg-red-500 text-white rounded-full text-xs font-bold animate-pulse">
-                        URGENCE
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Informations */}
-                  <h3 className="text-lg font-bold text-foreground mb-4">
-                    {contact.name}
-                  </h3>
-
-                  <div className="space-y-3">
-                    {/* Téléphone */}
-                    <a
-                      href={`tel:${contact.phone.replace(/\s/g, '')}`}
-                      className="flex items-center gap-3 p-3 bg-background rounded-lg hover:bg-primary/5 transition-all group"
-                    >
-                      <Phone className="text-primary group-hover:scale-110 transition-transform" size={20} />
-                      <span className="font-semibold text-primary">
+                    <div className="flex-1">
+                      <h3 className="text-lg font-bold text-foreground mb-1">{contact.name}</h3>
+                      <p className="text-sm text-muted-foreground mb-3">{contact.description}</p>
+                      <a
+                        href={`tel:${contact.phone.replace(/\s/g, '')}`}
+                        className="flex items-center gap-2 text-primary font-semibold"
+                      >
+                        <Phone size={18} />
                         {contact.phone}
-                      </span>
-                    </a>
-
-                    {/* Adresse */}
-                    <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                      <MapPin size={18} />
-                      <span>{contact.address}</span>
-                    </div>
-
-                    {/* Horaires */}
-                    <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                      <Clock size={18} />
-                      <span>{contact.hours}</span>
+                      </a>
                     </div>
                   </div>
-
-                  {/* Bouton appel direct */}
                   <a
                     href={`tel:${contact.phone.replace(/\s/g, '')}`}
-                    className={`mt-4 w-full py-3 rounded-lg font-semibold text-center block transition-all ${
-                      contact.type === 'urgence'
-                        ? 'bg-red-500 text-white hover:bg-red-600'
-                        : 'bg-primary text-white hover:bg-primary/90'
-                    }`}
+                    className="w-full bg-red-500 text-white py-3 rounded-lg font-semibold text-center block"
                   >
                     <Phone size={18} className="inline mr-2" />
                     Appeler maintenant
@@ -338,25 +440,8 @@ const DailyTip = () => {
               );
             })}
           </div>
-
-          {/* Information supplémentaire */}
-          <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
-            <h3 className="font-semibold text-foreground mb-2 flex items-center gap-2">
-              <AlertCircle className="text-blue-500" size={20} />
-              Bon à savoir
-            </h3>
-            <ul className="text-sm text-muted-foreground space-y-2">
-              <li>• Gardez toujours le numéro de votre vétérinaire à portée de main</li>
-              <li>• En cas de doute, contactez un professionnel plutôt que d'attendre</li>
-              <li>• Les urgences vétérinaires sont souvent payantes et plus chères la nuit</li>
-              <li>• Pensez à souscrire une assurance santé pour votre animal</li>
-            </ul>
-          </div>
         </section>
-      </main>
-
-      {/* Footer */}
-      <Footer />
+      </div>
     </div>
   );
 };
