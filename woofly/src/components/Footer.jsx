@@ -1,6 +1,5 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import Icon from './AppIcon';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -18,26 +17,6 @@ const Footer = () => {
             <p className="text-sm text-muted-foreground mb-4">
               L'application complète pour gérer la santé et le bien-être de votre chien.
             </p>
-            <div className="flex gap-3">
-              <a
-                href="https://www.facebook.com/sharer/sharer.php?u=https://app.wooflyapp.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-9 h-9 flex items-center justify-center bg-muted rounded-full hover:bg-primary/10 transition-smooth"
-                aria-label="Facebook"
-              >
-                <Icon name="Facebook" size={18} className="text-foreground" />
-              </a>
-              <a
-                href="https://twitter.com/intent/tweet?text=Découvrez Woofly&url=https://app.wooflyapp.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-9 h-9 flex items-center justify-center bg-muted rounded-full hover:bg-primary/10 transition-smooth"
-                aria-label="Twitter"
-              >
-                <Icon name="Twitter" size={18} className="text-foreground" />
-              </a>
-            </div>
           </div>
 
           {/* Application */}
