@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import TabNavigation from '../../components/TabNavigation';
-import ProfileSwitcher from '../../components/ProfileSwitcher';
+import UserMenu from '../../components/UserMenu';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
 import ProfileHeader from './components/ProfileHeader';
@@ -448,6 +448,10 @@ const DogProfile = () => {
     alert('Fonctionnalité d\'export PDF en cours de développement. Le fichier PDF sera généré avec toutes les informations de santé de ' + currentProfile?.name + '.');
   };
 
+  const handleProfileChange = (profile) => {
+    setCurrentProfile(profile);
+  };
+
   const tabs = [
     { id: 'vaccinations', label: 'Vaccinations', icon: 'Syringe' },
     { id: 'vermifuge', label: 'Vermifuge', icon: 'Pill' },
@@ -506,10 +510,10 @@ const DogProfile = () => {
       <main className="main-content flex-1">
         <div className="max-w-7xl mx-auto px-4 py-6 lg:py-8">
           <div className="flex items-center justify-between mb-6">
-            <ProfileSwitcher
-              profiles={dogProfiles}
-              currentProfile={currentProfile}
-              onProfileChange={setCurrentProfile}
+            <UserMenu
+              dogProfiles={dogProfiles}
+              currentDog={currentProfile}
+              onDogChange={handleProfileChange}
             />
             <Button
               variant="outline"
