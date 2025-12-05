@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import TabNavigation from '../../components/TabNavigation';
-import ProfileSwitcher from '../../components/ProfileSwitcher';
+import UserMenu from '../../components/UserMenu';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
 import { Checkbox } from '../../components/ui/Checkbox';
@@ -13,7 +13,7 @@ import BulkActionsBar from './components/BulkActionsBar';
 import SearchFilterBar from './components/SearchFilterBar';
 import EmptyState from './components/EmptyState';
 import AddDogModal from './components/AddDogModal';
-import Footer from '../../components/Footer';  // ✅ AJOUTÉ
+import Footer from '../../components/Footer';
 
 const MultiProfileManagement = () => {
   const navigate = useNavigate();
@@ -124,6 +124,10 @@ const MultiProfileManagement = () => {
     navigate('/dog-profile');
   };
 
+  const handleProfileChange = (profile) => {
+    setActiveProfileId(profile?.id);
+  };
+
   const handleAddDog = async (formData) => {
     try {
       // Calculer la date de naissance
@@ -154,8 +158,8 @@ const MultiProfileManagement = () => {
           breed: formData?.breed,
           birth_date: birthDate,
           weight: formData?.weight ? parseFloat(formData.weight) : null,
-          gender: formData?.gender, // ✅ AJOUTÉ
-          is_sterilized: formData?.isSterilized, // ✅ AJOUTÉ
+          gender: formData?.gender,
+          is_sterilized: formData?.isSterilized,
           photo_url: formData?.image || null,
           is_active: true
         }])
@@ -242,10 +246,10 @@ const MultiProfileManagement = () => {
 
             <div className="flex items-center gap-3">
               {dogProfiles?.length > 0 && (
-                <ProfileSwitcher
-                  profiles={dogProfiles}
-                  currentProfile={activeProfile}
-                  onProfileChange={(profile) => setActiveProfileId(profile?.id)}
+                <UserMenu
+                  dogProfiles={dogProfiles}
+                  currentDog={activeProfile}
+                  onDogChange={handleProfileChange}
                 />
               )}
 
