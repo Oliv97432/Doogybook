@@ -2,12 +2,13 @@ import React, { useState } from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 
-const PhotoGalleryModal = ({ isOpen, onClose, photos, onAddPhoto }) => {
+const PhotoGalleryModal = ({ isOpen, onClose, photos, onAddPhoto, currentProfilePhotoUrl, onSetProfilePhoto }) => {
   const [isUploading, setIsUploading] = useState(false);
+  const [selectedPhoto, setSelectedPhoto] = useState(null);
 
   if (!isOpen) return null;
 
-  // ✅ CORRIGÉ : Gestion correcte de l'input file
+  // Gestion de l'input file
   const handleFileSelect = async (e) => {
     const file = e.target.files?.[0];
     
@@ -26,7 +27,6 @@ const PhotoGalleryModal = ({ isOpen, onClose, photos, onAddPhoto }) => {
     
     try {
       await onAddPhoto(file);
-      // Reset input après succès
       e.target.value = '';
     } catch (err) {
       console.error('Erreur upload:', err);
@@ -36,8 +36,20 @@ const PhotoGalleryModal = ({ isOpen, onClose, photos, onAddPhoto }) => {
   };
 
   const handleAddPhotoClick = () => {
-    // Déclencher l'input file
     document.getElementById('photo-upload-input').click();
+  };
+
+  // ✅ NOUVEAU : Définir une photo comme photo de profil
+  const handleSetAsProfilePhoto = async (photoUrl) => {
+    if (onSetProfilePhoto) {
+      await onSetProfilePhoto(photoUrl);
+      alert('✅ Photo de profil mise à jour !');
+    }
+  };
+
+  // ✅ NOUVEAU : Vérifier si c'est la photo de profil actuelle
+  const isProfilePhoto = (photoUrl) => {
+    return photoUrl === currentProfilePhotoUrl;
   };
 
   return (
@@ -106,26 +118,64 @@ const PhotoGalleryModal = ({ isOpen, onClose, photos, onAddPhoto }) => {
             </div>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {photos.map((photo) => (
-                <div
-                  key={photo.id}
-                  className="group relative aspect-square rounded-lg overflow-hidden bg-muted cursor-pointer hover:shadow-lg transition-smooth"
-                >
-                  <img
-                    src={photo.photo_url}
-                    alt={photo.caption || 'Photo du chien'}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-smooth">
-                    <div className="absolute bottom-0 left-0 right-0 p-3">
-                      <p className="text-white text-sm">
-                        {new Date(photo.created_at).toLocaleDateString('fr-FR')}
-                      </p>
+              {photos.map((photo) => {
+                const isCurrentProfilePhoto = isProfilePhoto(photo.photo_url);
+                
+                return (
+                  <div
+                    key={photo.id}
+                    className="group relative aspect-square rounded-lg overflow-hidden bg-muted cursor-pointer hover:shadow-lg transition-smooth"
+                  >
+                    {/* Image */}
+                    <img
+                      src={photo.photo_url}
+                      alt={photo.caption || 'Photo du chien'}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                      onClick={() => setSelectedPhoto(photo)}
+                    />
+                    
+                    {/* ✅ Badge "Photo de profil" */}
+                    {isCurrentProfilePhoto && (
+                      <div className="absolute top-2 right-2 bg-primary text-primary-foreground px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 shadow-lg">
+                        <Icon name="Star" size={12} />
+                        Profil
+                      </div>
+                    )}
+                    
+                    {/* Overlay avec actions */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-smooth">
+                      <div className="absolute bottom-0 left-0 right-0 p-3 space-y-2">
+                        {/* Date */}
+                        <p className="text-white text-xs">
+                          {new Date(photo.created_at).toLocaleDateString('fr-FR')}
+                        </p>
+                        
+                        {/* ✅ Bouton "Définir comme photo de profil" */}
+                        {!isCurrentProfilePhoto && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleSetAsProfilePhoto(photo.photo_url);
+                            }}
+                            className="w-full bg-white/90 hover:bg-white text-foreground px-3 py-2 rounded-lg text-xs font-medium flex items-center justify-center gap-2 transition-smooth"
+                          >
+                            <Icon name="User" size={14} />
+                            Définir comme photo de profil
+                          </button>
+                        )}
+                        
+                        {isCurrentProfilePhoto && (
+                          <div className="w-full bg-primary/90 text-primary-foreground px-3 py-2 rounded-lg text-xs font-medium flex items-center justify-center gap-2">
+                            <Icon name="Check" size={14} />
+                            Photo de profil actuelle
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
@@ -138,6 +188,28 @@ const PhotoGalleryModal = ({ isOpen, onClose, photos, onAddPhoto }) => {
           </div>
         </div>
       </div>
+
+      {/* ✅ Modal preview photo (optionnel) */}
+      {selectedPhoto && (
+        <div 
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/90 p-4"
+          onClick={() => setSelectedPhoto(null)}
+        >
+          <div className="max-w-4xl max-h-[90vh] relative">
+            <button
+              onClick={() => setSelectedPhoto(null)}
+              className="absolute -top-12 right-0 text-white hover:text-gray-300"
+            >
+              <Icon name="X" size={32} />
+            </button>
+            <img
+              src={selectedPhoto.photo_url}
+              alt={selectedPhoto.caption || 'Photo du chien'}
+              className="max-w-full max-h-[90vh] object-contain rounded-lg"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
