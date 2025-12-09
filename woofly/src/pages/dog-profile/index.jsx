@@ -463,9 +463,18 @@ const DogProfile = () => {
     }
   };
 
-  // ✅ NOUVEAU : Upload photo fonctionnel
+  // ✅ CORRIGÉ : Upload photo fonctionnel avec gestion d'erreurs
   const handleAddPhoto = async (file) => {
-    if (!file) return;
+    // Vérifications de sécurité
+    if (!file) {
+      alert('⚠️ Aucun fichier sélectionné');
+      return;
+    }
+
+    if (!file.name || typeof file.name !== 'string') {
+      alert('⚠️ Fichier invalide');
+      return;
+    }
 
     // Vérifier taille (5MB max)
     if (file.size > 5 * 1024 * 1024) {
@@ -473,19 +482,30 @@ const DogProfile = () => {
       return;
     }
 
+    // Vérifier type
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (!validTypes.includes(file.type)) {
+      alert('⚠️ Format non supporté. Utilisez JPG, PNG ou WEBP');
+      return;
+    }
+
     try {
       // 1. Upload vers Storage
-      const fileExt = file.name.split('.').pop();
+      const fileExt = file.name.split('.').pop().toLowerCase();
       const fileName = `${user.id}/${currentProfile.id}/${Date.now()}.${fileExt}`;
       
       const { error: uploadError } = await supabase.storage
         .from('dog-photos')
-        .upload(fileName, file);
+        .upload(fileName, file, {
+          contentType: file.type,
+          cacheControl: '3600',
+          upsert: false
+        });
 
       if (uploadError) {
-        // Si le bucket n'existe pas, on essaie de le créer
+        // Si le bucket n'existe pas
         if (uploadError.message.includes('Bucket not found')) {
-          alert('⚠️ Le bucket de stockage n\'existe pas encore.\n\nCréez un bucket "dog-photos" dans Supabase Storage (Settings > Storage)');
+          alert('⚠️ Le bucket de stockage n\'existe pas.\n\n📋 Instructions:\n1. Va dans Supabase > Storage\n2. Crée un bucket "dog-photos"\n3. Coche "Public bucket"\n4. Réessaye');
           return;
         }
         throw uploadError;
@@ -507,7 +527,20 @@ const DogProfile = () => {
         .select()
         .single();
 
-      if (dbError) throw dbError;
+      if (dbError) {
+        // Si la table n'existe pas
+        if (dbError.message.includes('relation "dog_photos" does not exist')) {
+          alert('⚠️ La table dog_photos n\'existe pas.\n\n📋 Exécute le SQL:\n' + 
+                'CREATE TABLE dog_photos (\n' +
+                '  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),\n' +
+                '  dog_id UUID REFERENCES dogs(id) ON DELETE CASCADE,\n' +
+                '  photo_url TEXT NOT NULL,\n' +
+                '  created_at TIMESTAMP DEFAULT NOW()\n' +
+                ');');
+          return;
+        }
+        throw dbError;
+      }
 
       // 4. Mettre à jour la galerie
       setPhotoGallery([newPhoto, ...photoGallery]);
@@ -515,8 +548,13 @@ const DogProfile = () => {
       alert('✅ Photo ajoutée avec succès !');
     } catch (err) {
       console.error('Erreur upload photo:', err);
-      alert('❌ Erreur lors de l\'upload de la photo: ' + err.message);
+      alert('❌ Erreur lors de l\'upload: ' + err.message);
     }
+  };
+
+  // ✅ NOUVEAU : Export PDF avec nom du chien
+  const handleExportPDF = () => {
+    alert(`📄 Export PDF en développement\n\nLe fichier "${currentProfile.name}_fiche_sante.pdf" sera généré avec:\n\n✅ Vaccinations\n✅ Traitements\n✅ Courbe de poids\n✅ Notes médicales\n✅ Informations du chien`);
   };
 
   const handleProfileChange = (profile) => {
@@ -577,18 +615,29 @@ const DogProfile = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* ✅ CORRIGÉ: Header avec UserMenu à droite */}
+      {/* Header avec UserMenu + Export PDF */}
       <div className="sticky top-0 z-50 bg-card border-b border-border shadow-soft">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-heading font-semibold text-foreground">
               Profil de {currentProfile.name}
             </h1>
-            <UserMenu
-              dogProfiles={dogProfiles}
-              currentDog={currentProfile}
-              onDogChange={handleProfileChange}
-            />
+            <div className="flex items-center gap-3">
+              <Button
+                variant="outline"
+                iconName="Download"
+                iconPosition="left"
+                onClick={handleExportPDF}
+                className="hidden sm:flex"
+              >
+                Exporter fiche
+              </Button>
+              <UserMenu
+                dogProfiles={dogProfiles}
+                currentDog={currentProfile}
+                onDogChange={handleProfileChange}
+              />
+            </div>
           </div>
         </div>
       </div>
