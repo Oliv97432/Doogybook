@@ -12,11 +12,12 @@ import ForumHub from './pages/forum-hub';
 import MultiProfileManagement from './pages/multi-profile-management';
 import Register from './pages/register';
 import UserProfile from './pages/UserProfile';
-import CGU from './pages/CGU';                                    // ✅ AJOUTE
-import MentionsLegales from './pages/MentionsLegales';            // ✅ AJOUTE
-import PolitiqueConfidentialite from './pages/PolitiqueConfidentialite';  // ✅ AJOUTE
-import About from './pages/About';                                // ✅ AJOUTE
-import Contact from './pages/Contact';                            // ✅ AJOUTE
+import Settings from './pages/settings';                          // ✅ AJOUTÉ
+import CGU from './pages/CGU';
+import MentionsLegales from './pages/MentionsLegales';
+import PolitiqueConfidentialite from './pages/PolitiqueConfidentialite';
+import About from './pages/About';
+import Contact from './pages/Contact';
 
 const Routes = () => {
   return (
@@ -35,8 +36,9 @@ const Routes = () => {
         <Route path="/multi-profile-management" element={<MultiProfileManagement />} />
         <Route path="/register" element={<Register />} />
         <Route path="/user-profile" element={<UserProfile />} />
+        <Route path="/settings" element={<Settings />} />           {/* ✅ AJOUTÉ */}
         
-        {/* Pages légales */}  {/* ✅ AJOUTE CE BLOC */}
+        {/* Pages légales */}
         <Route path="/cgu" element={<CGU />} />
         <Route path="/mentions-legales" element={<MentionsLegales />} />
         <Route path="/politique-confidentialite" element={<PolitiqueConfidentialite />} />
