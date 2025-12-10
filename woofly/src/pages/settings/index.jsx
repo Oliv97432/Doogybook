@@ -1,17 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  User, Bell, Palette, Globe, Trash2, ChevronLeft, 
-  Camera, Mail, Phone, MapPin, Save, AlertCircle
+  User, Crown, Trash2, ChevronLeft, Mail, Phone, 
+  MapPin, Save, AlertCircle, Lock, X
 } from 'lucide-react';
-import { supabase } from '../lib/supabase';
-import { useAuth } from '../contexts/AuthContext';
-import TabNavigation from '../components/TabNavigation';
-import Footer from '../components/Footer';
+import { supabase } from '../../lib/supabase';
+import { useAuth } from '../../contexts/AuthContext';
+import TabNavigation from '../../components/TabNavigation';
+import Footer from '../../components/Footer';
 
-/**
- * Page Settings - Paramètres de l'application
- */
 const Settings = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
@@ -23,21 +20,37 @@ const Settings = () => {
     phone: '',
     location: ''
   });
+  
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
-  
-  // États pour les préférences
-  const [notifications, setNotifications] = useState({
-    email: true,
-    push: true,
-    reminders: true
-  });
-  const [theme, setTheme] = useState('light');
-  const [language, setLanguage] = useState('fr');
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteConfirmEmail, setDeleteConfirmEmail] = useState('');
 
   // Charger le profil utilisateur
   useEffect(() => {
-    if (user) {
+    loadProfile();
+  }, [user]);
+
+  const loadProfile = async () => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      if (error && error.code !== 'PGRST116') throw error;
+
+      setProfile({
+        full_name: data?.full_name || user.user_metadata?.full_name || '',
+        email: user.email || '',
+        phone: data?.phone || user.user_metadata?.phone || '',
+        location: data?.location || user.user_metadata?.location || ''
+      });
+    } catch (err) {
+      console.error('Erreur chargement profil:', err);
       setProfile({
         full_name: user.user_metadata?.full_name || '',
         email: user.email || '',
@@ -45,7 +58,7 @@ const Settings = () => {
         location: user.user_metadata?.location || ''
       });
     }
-  }, [user]);
+  };
 
   // Sauvegarder le profil
   const handleSaveProfile = async () => {
@@ -53,7 +66,8 @@ const Settings = () => {
     setSaveSuccess(false);
     
     try {
-      const { error } = await supabase.auth.updateUser({
+      // Mettre à jour user_metadata
+      const { error: authError } = await supabase.auth.updateUser({
         data: {
           full_name: profile.full_name,
           phone: profile.phone,
@@ -61,7 +75,22 @@ const Settings = () => {
         }
       });
       
-      if (error) throw error;
+      if (authError) throw authError;
+
+      // Mettre à jour user_profiles
+      const { error: profileError } = await supabase
+        .from('user_profiles')
+        .upsert({
+          user_id: user.id,
+          full_name: profile.full_name,
+          phone: profile.phone,
+          location: profile.location,
+          updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'user_id'
+        });
+      
+      if (profileError) throw profileError;
       
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
@@ -75,94 +104,64 @@ const Settings = () => {
 
   // Supprimer le compte
   const handleDeleteAccount = async () => {
-    const confirmed = window.confirm(
-      '⚠️ ATTENTION : Cette action est irréversible.\n\n' +
-      'Toutes vos données seront définitivement supprimées :\n' +
-      '- Vos chiens\n' +
-      '- Vos rappels\n' +
-      '- Vos notes\n' +
-      '- Votre historique\n\n' +
-      'Êtes-vous absolument sûr de vouloir supprimer votre compte ?'
-    );
-    
-    if (!confirmed) return;
-    
-    const doubleConfirm = window.confirm(
-      '🚨 DERNIÈRE CONFIRMATION\n\n' +
-      'Tapez votre email pour confirmer la suppression.\n\n' +
-      'Cette action ne peut PAS être annulée.'
-    );
-    
-    if (!doubleConfirm) return;
-    
+    if (deleteConfirmEmail !== user?.email) {
+      alert('⚠️ L\'email ne correspond pas');
+      return;
+    }
+
+    if (!window.confirm('⚠️ DERNIÈRE CONFIRMATION\n\nToutes vos données seront supprimées définitivement.\n\nContinuer ?')) {
+      return;
+    }
+
     try {
-      // TODO: Implémenter la suppression via Edge Function
-      alert('🚧 Fonctionnalité en cours de développement.\n\nContactez le support pour supprimer votre compte.');
-    } catch (error) {
-      console.error('Erreur suppression:', error);
-      alert('❌ Erreur lors de la suppression');
+      const { error: dogsError } = await supabase
+        .from('dogs')
+        .delete()
+        .eq('user_id', user.id);
+
+      if (dogsError) throw dogsError;
+
+      const { error: profileError } = await supabase
+        .from('user_profiles')
+        .delete()
+        .eq('user_id', user.id);
+
+      if (profileError) throw profileError;
+
+      await signOut();
+      navigate('/login');
+      
+      alert('✅ Votre compte a été supprimé avec succès');
+    } catch (err) {
+      console.error('Erreur suppression compte:', err);
+      alert('❌ Erreur lors de la suppression du compte: ' + err.message);
     }
   };
 
-  const sections = [
-    {
-      id: 'profile',
-      title: 'Mon Profil',
-      icon: User,
-      description: 'Gérer vos informations personnelles'
-    },
-    {
-      id: 'notifications',
-      title: 'Notifications',
-      icon: Bell,
-      description: 'Gérer les alertes et rappels'
-    },
-    {
-      id: 'appearance',
-      title: 'Apparence',
-      icon: Palette,
-      description: 'Thème et affichage'
-    },
-    {
-      id: 'language',
-      title: 'Langue',
-      icon: Globe,
-      description: 'Choisir la langue de l\'application'
-    },
-    {
-      id: 'danger',
-      title: 'Zone dangereuse',
-      icon: Trash2,
-      description: 'Supprimer votre compte'
-    }
-  ];
-
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Header */}
-      <div className="sticky top-0 z-50 bg-card border-b border-border shadow-soft">
-        <div className="max-w-screen-xl mx-auto px-4 py-4">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => navigate(-1)}
-              className="p-2 hover:bg-muted rounded-lg transition-smooth"
-            >
-              <ChevronLeft size={24} className="text-foreground" />
-            </button>
-            <h1 className="text-2xl font-heading font-semibold text-foreground">
-              Paramètres
-            </h1>
-          </div>
-        </div>
-      </div>
-
-      {/* TabNavigation */}
       <TabNavigation />
 
-      {/* Main content */}
       <main className="main-content flex-1">
-        <div className="max-w-3xl mx-auto px-4 py-6 space-y-6">
+        <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
           
+          {/* Header */}
+          <div className="mb-6">
+            <button
+              onClick={() => navigate(-1)}
+              className="flex items-center gap-2 text-muted-foreground hover:text-foreground mb-4 transition-smooth"
+            >
+              <ChevronLeft size={20} />
+              <span>Retour</span>
+            </button>
+            <h1 className="text-3xl font-heading font-bold text-foreground">
+              Paramètres
+            </h1>
+            <p className="text-muted-foreground mt-2">
+              Gérez votre compte et vos préférences
+            </p>
+          </div>
+
           {/* Success message */}
           {saveSuccess && (
             <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded-r-lg">
@@ -173,15 +172,34 @@ const Settings = () => {
             </div>
           )}
 
-          {/* Section Mon Profil */}
-          <section className="bg-card rounded-2xl border border-border p-6">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                <User className="text-blue-600" size={20} />
+          {/* Carte utilisateur */}
+          <div className="bg-card rounded-2xl border border-border p-6 shadow-soft">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-2xl font-bold">
+                {profile.full_name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || 'U'}
               </div>
               <div>
-                <h2 className="text-xl font-heading font-semibold text-foreground">Mon Profil</h2>
-                <p className="text-sm text-muted-foreground">Gérer vos informations personnelles</p>
+                <h2 className="text-lg font-heading font-semibold text-foreground">
+                  {profile.full_name || 'Utilisateur'}
+                </h2>
+                <p className="text-sm text-muted-foreground">{profile.email}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Section Modifier profil */}
+          <section className="bg-card rounded-2xl border border-border p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
+                <User className="text-blue-600" size={24} />
+              </div>
+              <div>
+                <h3 className="text-lg font-heading font-semibold text-foreground">
+                  Modifier mon profil
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  Nom, email, téléphone, localisation
+                </p>
               </div>
             </div>
 
@@ -274,190 +292,131 @@ const Settings = () => {
             </div>
           </section>
 
-          {/* Section Notifications */}
-          <section className="bg-card rounded-2xl border border-border p-6">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                <Bell className="text-purple-600" size={20} />
-              </div>
-              <div>
-                <h2 className="text-xl font-heading font-semibold text-foreground">Notifications</h2>
-                <p className="text-sm text-muted-foreground">Gérer les alertes et rappels</p>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              {/* Notifications email */}
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium text-foreground">Notifications par email</p>
-                  <p className="text-sm text-muted-foreground">Recevoir les rappels par email</p>
+          {/* Passer à Premium (grisé) */}
+          <section className="bg-card rounded-2xl border border-border p-6 opacity-50 cursor-not-allowed">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-100 to-yellow-100 flex items-center justify-center">
+                  <Crown className="text-amber-500" size={24} />
                 </div>
-                <button
-                  onClick={() => setNotifications({ ...notifications, email: !notifications.email })}
-                  className={`relative w-12 h-6 rounded-full transition-smooth ${
-                    notifications.email ? 'bg-primary' : 'bg-muted'
-                  }`}
-                >
-                  <div
-                    className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${
-                      notifications.email ? 'translate-x-6' : 'translate-x-0'
-                    }`}
-                  />
-                </button>
-              </div>
-
-              {/* Push notifications */}
-              <div className="flex items-center justify-between">
                 <div>
-                  <p className="font-medium text-foreground">Notifications push</p>
-                  <p className="text-sm text-muted-foreground">Recevoir les alertes sur votre appareil</p>
+                  <h3 className="text-lg font-heading font-semibold text-foreground flex items-center gap-2">
+                    Passer à Premium
+                    <span className="text-xs bg-gradient-to-r from-amber-500 to-yellow-500 text-white px-2 py-1 rounded font-medium">
+                      Bientôt
+                    </span>
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    Sans pub + fonctionnalités avancées
+                  </p>
                 </div>
-                <button
-                  onClick={() => setNotifications({ ...notifications, push: !notifications.push })}
-                  className={`relative w-12 h-6 rounded-full transition-smooth ${
-                    notifications.push ? 'bg-primary' : 'bg-muted'
-                  }`}
-                >
-                  <div
-                    className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${
-                      notifications.push ? 'translate-x-6' : 'translate-x-0'
-                    }`}
-                  />
-                </button>
               </div>
-
-              {/* Rappels */}
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium text-foreground">Rappels automatiques</p>
-                  <p className="text-sm text-muted-foreground">Vaccins, vermifuges, toilettage</p>
-                </div>
-                <button
-                  onClick={() => setNotifications({ ...notifications, reminders: !notifications.reminders })}
-                  className={`relative w-12 h-6 rounded-full transition-smooth ${
-                    notifications.reminders ? 'bg-primary' : 'bg-muted'
-                  }`}
-                >
-                  <div
-                    className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${
-                      notifications.reminders ? 'translate-x-6' : 'translate-x-0'
-                    }`}
-                  />
-                </button>
-              </div>
+              <Lock size={24} className="text-muted-foreground" />
             </div>
           </section>
 
-          {/* Section Apparence */}
-          <section className="bg-card rounded-2xl border border-border p-6">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
-                <Palette className="text-indigo-600" size={20} />
-              </div>
-              <div>
-                <h2 className="text-xl font-heading font-semibold text-foreground">Apparence</h2>
-                <p className="text-sm text-muted-foreground">Thème et affichage</p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-3 gap-3">
-              {['light', 'dark', 'auto'].map((themeOption) => (
-                <button
-                  key={themeOption}
-                  onClick={() => setTheme(themeOption)}
-                  className={`p-4 rounded-lg border-2 transition-smooth ${
-                    theme === themeOption
-                      ? 'border-primary bg-primary/5'
-                      : 'border-border hover:border-primary/50'
-                  }`}
-                >
-                  <div className="text-center">
-                    <div className="text-2xl mb-2">
-                      {themeOption === 'light' && '☀️'}
-                      {themeOption === 'dark' && '🌙'}
-                      {themeOption === 'auto' && '⚙️'}
-                    </div>
-                    <p className="text-sm font-medium text-foreground capitalize">
-                      {themeOption === 'light' && 'Clair'}
-                      {themeOption === 'dark' && 'Sombre'}
-                      {themeOption === 'auto' && 'Auto'}
-                    </p>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </section>
-
-          {/* Section Langue */}
-          <section className="bg-card rounded-2xl border border-border p-6">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                <Globe className="text-green-600" size={20} />
-              </div>
-              <div>
-                <h2 className="text-xl font-heading font-semibold text-foreground">Langue</h2>
-                <p className="text-sm text-muted-foreground">Choisir la langue de l'application</p>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              {[
-                { code: 'fr', label: 'Français', flag: '🇫🇷' },
-                { code: 'en', label: 'English', flag: '🇬🇧' },
-                { code: 'es', label: 'Español', flag: '🇪🇸' }
-              ].map((lang) => (
-                <button
-                  key={lang.code}
-                  onClick={() => setLanguage(lang.code)}
-                  className={`w-full flex items-center gap-3 p-3 rounded-lg border transition-smooth ${
-                    language === lang.code
-                      ? 'border-primary bg-primary/5'
-                      : 'border-border hover:border-primary/50'
-                  }`}
-                >
-                  <span className="text-2xl">{lang.flag}</span>
-                  <span className="font-medium text-foreground">{lang.label}</span>
-                  {language === lang.code && (
-                    <div className="ml-auto text-primary">✓</div>
-                  )}
-                </button>
-              ))}
-            </div>
-          </section>
-
-          {/* Section Zone dangereuse */}
-          <section className="bg-red-50 border-2 border-red-200 rounded-2xl p-6">
+          {/* Supprimer compte */}
+          <section className="bg-card rounded-2xl border border-red-200 p-6">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 bg-red-500 rounded-lg flex items-center justify-center">
                 <AlertCircle className="text-white" size={20} />
               </div>
               <div>
-                <h2 className="text-xl font-heading font-semibold text-red-900">Zone dangereuse</h2>
-                <p className="text-sm text-red-700">Actions irréversibles</p>
+                <h3 className="text-lg font-heading font-semibold text-red-900">
+                  Supprimer mon compte
+                </h3>
+                <p className="text-sm text-red-700">
+                  Action irréversible - Toutes vos données seront perdues
+                </p>
               </div>
             </div>
 
-            <div className="bg-white rounded-lg p-4 border border-red-200">
-              <h3 className="font-semibold text-red-900 mb-2">Supprimer mon compte</h3>
-              <p className="text-sm text-red-700 mb-4">
-                Cette action supprimera définitivement votre compte et toutes vos données. 
-                Cette action ne peut pas être annulée.
-              </p>
-              <button
-                onClick={handleDeleteAccount}
-                className="w-full bg-red-600 text-white py-3 rounded-lg font-medium hover:bg-red-700 transition-smooth flex items-center justify-center gap-2"
-              >
-                <Trash2 size={18} />
-                Supprimer mon compte
-              </button>
-            </div>
+            <button
+              onClick={() => setShowDeleteModal(true)}
+              className="w-full bg-red-600 text-white py-3 rounded-lg font-medium hover:bg-red-700 transition-smooth flex items-center justify-center gap-2"
+            >
+              <Trash2 size={18} />
+              Supprimer mon compte
+            </button>
           </section>
+
+          {/* Info version */}
+          <div className="text-center text-sm text-muted-foreground">
+            <p>Woofly v1.0.0</p>
+            <p className="mt-1">© 2024 Woofly. Tous droits réservés.</p>
+          </div>
 
         </div>
       </main>
 
-      {/* Footer */}
+      {/* Modal suppression compte */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+          <div className="bg-card rounded-2xl shadow-xl max-w-md w-full p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-heading font-bold text-foreground">
+                Supprimer mon compte
+              </h3>
+              <button
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setDeleteConfirmEmail('');
+                }}
+                className="p-2 hover:bg-muted rounded-full"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+              <h4 className="font-semibold text-red-900 mb-2 flex items-center gap-2">
+                <AlertCircle size={16} className="text-red-900" />
+                Données qui seront supprimées :
+              </h4>
+              <ul className="text-sm text-red-800 space-y-1">
+                <li>• Tous vos chiens et leurs profils</li>
+                <li>• Toutes les photos</li>
+                <li>• Toutes les vaccinations et traitements</li>
+                <li>• Toutes les notes médicales</li>
+                <li>• Votre compte utilisateur</li>
+              </ul>
+            </div>
+
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-foreground mb-2">
+                Confirmez votre email pour continuer :
+              </label>
+              <input
+                type="email"
+                value={deleteConfirmEmail}
+                onChange={(e) => setDeleteConfirmEmail(e.target.value)}
+                placeholder={user?.email}
+                className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              />
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setDeleteConfirmEmail('');
+                }}
+                className="flex-1 px-4 py-3 border border-border rounded-lg hover:bg-muted transition-smooth"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={handleDeleteAccount}
+                disabled={deleteConfirmEmail !== user?.email}
+                className="flex-1 px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 transition-smooth"
+              >
+                Supprimer définitivement
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <Footer />
     </div>
   );
