@@ -53,7 +53,7 @@ const PhotoGalleryModal = ({ isOpen, onClose, photos, onAddPhoto, currentProfile
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+    <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/50">
       <div className="bg-card rounded-2xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
         <div className="bg-card border-b border-border p-6 flex items-center justify-between">
