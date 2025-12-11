@@ -17,14 +17,13 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [profileLoading, setProfileLoading] = useState(false);
 
-  // Isolated async operations - never called from auth callbacks
   const profileOperations = {
     async load(userId) {
       if (!userId) return;
       setProfileLoading(true);
       try {
         const { data, error } = await supabase
-          ?.from('users')  // ✅ REVENU À users (comme avant)
+          ?.from('users')
           ?.select('*')
           ?.eq('id', userId)
           ?.single();
@@ -41,15 +40,13 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Auth state handlers - PROTECTED from async modification
   const authStateHandlers = {
-    // This handler MUST remain synchronous - Supabase requirement
     onChange: (event, session) => {
       setUser(session?.user ?? null);
       setLoading(false);
       
       if (session?.user) {
-        profileOperations?.load(session?.user?.id); // Fire-and-forget
+        profileOperations?.load(session?.user?.id);
       } else {
         profileOperations?.clear();
       }
@@ -57,12 +54,10 @@ export const AuthProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    // Initial session check
     supabase?.auth?.getSession()?.then(({ data: { session } }) => {
       authStateHandlers?.onChange(null, session);
     });
 
-    // CRITICAL: This must remain synchronous
     const { data: { subscription } } = supabase?.auth?.onAuthStateChange(
       authStateHandlers?.onChange
     );
@@ -70,7 +65,6 @@ export const AuthProvider = ({ children }) => {
     return () => subscription?.unsubscribe();
   }, []);
 
-  // Auth methods
   const signIn = async (email, password) => {
     try {
       const { data, error } = await supabase?.auth?.signInWithPassword({ 
@@ -113,7 +107,7 @@ export const AuthProvider = ({ children }) => {
     
     try {
       const { data, error } = await supabase
-        ?.from('users')  // ✅ REVENU À users (comme avant)
+        ?.from('users')
         ?.update(updates)
         ?.eq('id', user?.id)
         ?.select()
@@ -141,4 +135,6 @@ export const AuthProvider = ({ children }) => {
   return (
     <AuthContext.Provider value={value}>
       {children}
-    </AuthConte
+    </AuthContext.Provider>
+  );
+};
