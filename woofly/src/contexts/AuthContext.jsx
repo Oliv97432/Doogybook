@@ -24,7 +24,7 @@ export const AuthProvider = ({ children }) => {
       setProfileLoading(true);
       try {
         const { data, error } = await supabase
-          ?.from('users')
+          ?.from('user_profiles')  // ✅ CORRIGÉ : user_profiles au lieu de users
           ?.select('*')
           ?.eq('id', userId)
           ?.single();
@@ -114,7 +114,7 @@ export const AuthProvider = ({ children }) => {
     
     try {
       const { data, error } = await supabase
-        ?.from('users')
+        ?.from('user_profiles')  // ✅ CORRIGÉ : user_profiles au lieu de users
         ?.update(updates)
         ?.eq('id', user?.id)
         ?.select()
