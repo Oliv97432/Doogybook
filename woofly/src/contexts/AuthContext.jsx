@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 
 const AuthContext = createContext({});
@@ -6,130 +6,148 @@ const AuthContext = createContext({});
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within AuthProvider');
+    throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
 };
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [userProfile, setUserProfile] = useState(null);
+  const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [profileLoading, setProfileLoading] = useState(false);
-
-  const profileOperations = {
-    async load(userId) {
-      if (!userId) return;
-      setProfileLoading(true);
-      try {
-        const { data, error } = await supabase
-          ?.from('users')
-          ?.select('*')
-          ?.eq('id', userId)
-          ?.single();
-        if (!error) setUserProfile(data);
-      } catch (error) {
-        console.error('Profile load error:', error);
-      } finally {
-        setProfileLoading(false);
-      }
-    },
-    clear() {
-      setUserProfile(null);
-      setProfileLoading(false);
-    }
-  };
-
-  const authStateHandlers = {
-    onChange: (event, session) => {
-      setUser(session?.user ?? null);
-      setLoading(false);
-      
-      if (session?.user) {
-        profileOperations?.load(session?.user?.id);
-      } else {
-        profileOperations?.clear();
-      }
-    }
-  };
 
   useEffect(() => {
-    supabase?.auth?.getSession()?.then(({ data: { session } }) => {
-      authStateHandlers?.onChange(null, session);
-    });
+    // Get initial session
+    const initializeAuth = async () => {
+      try {
+        const { data: { session: initialSession }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('Error getting session:', error);
+        }
+        
+        setSession(initialSession);
+        setUser(initialSession?.user ?? null);
+      } catch (error) {
+        console.error('Error initializing auth:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    const { data: { subscription } } = supabase?.auth?.onAuthStateChange(
-      authStateHandlers?.onChange
+    initializeAuth();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, currentSession) => {
+        console.log('Auth state changed:', event);
+        setSession(currentSession);
+        setUser(currentSession?.user ?? null);
+        setLoading(false);
+      }
     );
 
-    return () => subscription?.unsubscribe();
+    return () => {
+      subscription?.unsubscribe();
+    };
   }, []);
+
+  const signUp = async (email, password, metadata = {}) => {
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: metadata
+        }
+      });
+
+      if (error) throw error;
+      return { data, error: null };
+    } catch (error) {
+      console.error('Error signing up:', error);
+      return { data: null, error };
+    }
+  };
 
   const signIn = async (email, password) => {
     try {
-      const { data, error } = await supabase?.auth?.signInWithPassword({ 
-        email, 
-        password 
-      });
-      return { data, error };
-    } catch (error) {
-      return { error: { message: 'Network error. Please try again.' } };
-    }
-  };
-
-  const signUp = async (email, password) => {
-    try {
-      const { data, error } = await supabase?.auth?.signUp({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password
       });
-      return { data, error };
+
+      if (error) throw error;
+      return { data, error: null };
     } catch (error) {
-      return { error: { message: 'Network error. Please try again.' } };
+      console.error('Error signing in:', error);
+      return { data: null, error };
     }
   };
 
   const signOut = async () => {
     try {
-      const { error } = await supabase?.auth?.signOut();
-      if (!error) {
-        setUser(null);
-        profileOperations?.clear();
-      }
-      return { error };
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      return { error: null };
     } catch (error) {
-      return { error: { message: 'Network error. Please try again.' } };
+      console.error('Error signing out:', error);
+      return { error };
+    }
+  };
+
+  const resetPassword = async (email) => {
+    try {
+      const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+
+      if (error) throw error;
+      return { data, error: null };
+    } catch (error) {
+      console.error('Error resetting password:', error);
+      return { data: null, error };
+    }
+  };
+
+  const updatePassword = async (newPassword) => {
+    try {
+      const { data, error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+
+      if (error) throw error;
+      return { data, error: null };
+    } catch (error) {
+      console.error('Error updating password:', error);
+      return { data: null, error };
     }
   };
 
   const updateProfile = async (updates) => {
-    if (!user) return { error: { message: 'No user logged in' } };
-    
     try {
-      const { data, error } = await supabase
-        ?.from('users')
-        ?.update(updates)
-        ?.eq('id', user?.id)
-        ?.select()
-        ?.single();
-      
-      if (!error) setUserProfile(data);
-      return { data, error };
+      const { data, error } = await supabase.auth.updateUser({
+        data: updates
+      });
+
+      if (error) throw error;
+      return { data, error: null };
     } catch (error) {
-      return { error: { message: 'Network error. Please try again.' } };
+      console.error('Error updating profile:', error);
+      return { data: null, error };
     }
   };
 
   const value = {
     user,
-    userProfile,
+    session,
     loading,
-    profileLoading,
-    signIn,
     signUp,
+    signIn,
     signOut,
-    updateProfile,
-    isAuthenticated: !!user
+    resetPassword,
+    updatePassword,
+    updateProfile
   };
 
   return (
@@ -138,3 +156,5 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
+
+export { AuthContext };
