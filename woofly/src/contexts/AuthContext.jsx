@@ -24,7 +24,7 @@ export const AuthProvider = ({ children }) => {
       setProfileLoading(true);
       try {
         const { data, error } = await supabase
-          ?.from('user_profiles')  // ✅ CORRIGÉ : user_profiles au lieu de users
+          ?.from('users')  // ✅ REVENU À users (comme avant)
           ?.select('*')
           ?.eq('id', userId)
           ?.single();
@@ -83,7 +83,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // ✅ CORRIGÉ : signUp ne prend plus que email et password
   const signUp = async (email, password) => {
     try {
       const { data, error } = await supabase?.auth?.signUp({
@@ -114,7 +113,7 @@ export const AuthProvider = ({ children }) => {
     
     try {
       const { data, error } = await supabase
-        ?.from('user_profiles')  // ✅ CORRIGÉ : user_profiles au lieu de users
+        ?.from('users')  // ✅ REVENU À users (comme avant)
         ?.update(updates)
         ?.eq('id', user?.id)
         ?.select()
@@ -142,6 +141,4 @@ export const AuthProvider = ({ children }) => {
   return (
     <AuthContext.Provider value={value}>
       {children}
-    </AuthContext.Provider>
-  );
-};
+    </AuthConte
