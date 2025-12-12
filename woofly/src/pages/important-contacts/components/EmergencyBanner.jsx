@@ -224,15 +224,15 @@ const EmergencyBanner = ({ onEmergencyCall }) => {
               <div className="w-12 h-12 bg-red-500 rounded-full flex items-center justify-center">
                 <Icon name="Phone" size={24} color="white" />
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                iconName="Edit"
+              <button
                 onClick={() => {
                   setTempSOS(emergencyNumbers.sos_animals);
                   setShowSOSModal(true);
                 }}
-              />
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <Icon name="Edit" size={16} className="text-gray-600" />
+              </button>
             </div>
             <h3 className="font-bold text-gray-900 mb-1">SOS Animaux en Danger</h3>
             <p className="text-sm text-gray-600 mb-3">Urgences vitales 24h/24</p>
@@ -258,15 +258,15 @@ const EmergencyBanner = ({ onEmergencyCall }) => {
               <div className="w-12 h-12 bg-red-500 rounded-full flex items-center justify-center">
                 <Icon name="AlertCircle" size={24} color="white" />
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                iconName="Edit"
+              <button
                 onClick={() => {
                   setTempPoison(emergencyNumbers.poison_center);
                   setShowPoisonModal(true);
                 }}
-              />
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <Icon name="Edit" size={16} className="text-gray-600" />
+              </button>
             </div>
             <h3 className="font-bold text-gray-900 mb-1">Centre Anti-Poison Animal</h3>
             <p className="text-sm text-gray-600 mb-3">Intoxications 24h/24</p>
