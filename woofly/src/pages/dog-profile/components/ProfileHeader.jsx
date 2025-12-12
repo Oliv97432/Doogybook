@@ -303,51 +303,24 @@ export default function ProfileHeader({ profile, onEdit }) {
         </div>
       </div>
 
-      {/* Card 4 : Courbe de poids */}
-      <div className="bg-white rounded-3xl shadow-sm p-6">
-        <h3 className="font-bold text-lg text-gray-900 flex items-center gap-2 mb-4">
-          <TrendingUp className="w-5 h-5 text-orange-500" />
-          Courbe de poids
-        </h3>
-
-        {healthStats.weightData.length > 0 ? (
-          <div className="space-y-4">
-            {/* Poids actuel */}
-            <div className="p-4 bg-orange-50 rounded-xl text-center">
-              <p className="text-sm text-gray-600 mb-1">Dernier poids</p>
-              <p className="text-3xl font-bold text-gray-900">
-                {healthStats.weightData[healthStats.weightData.length - 1]?.weight} kg
-              </p>
-              <p className="text-xs text-gray-500 mt-1">
-                {formatDate(healthStats.weightData[healthStats.weightData.length - 1]?.measurement_date)}
-              </p>
-            </div>
-
-            {/* Historique simple */}
-            {healthStats.weightData.length > 1 && (
-              <div className="space-y-2">
-                <p className="text-sm font-semibold text-gray-700">Historique</p>
-                <div className="space-y-1">
-                  {healthStats.weightData.slice(-3).reverse().map((record, index) => (
-                    <div key={index} className="flex items-center justify-between text-sm">
-                      <span className="text-gray-600">{formatDate(record.measurement_date)}</span>
-                      <span className="font-semibold text-gray-900">{record.weight} kg</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+      {/* Card 4 : Emplacement AdSense */}
+      <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-3xl shadow-sm p-6 border-2 border-dashed border-blue-200">
+        <div className="flex flex-col items-center justify-center h-full min-h-[200px]">
+          <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+            <span className="text-3xl">📢</span>
           </div>
-        ) : (
-          <div className="text-center py-8">
-            <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-              <TrendingUp className="w-6 h-6 text-gray-400" />
-            </div>
-            <p className="text-sm text-gray-500">
-              Aucune pesée enregistrée
+          <h3 className="font-bold text-lg text-gray-900 mb-2">
+            Espace publicitaire
+          </h3>
+          <p className="text-sm text-gray-600 text-center mb-4">
+            Ici sera affichée une publicité AdSense
+          </p>
+          <div className="bg-white/50 backdrop-blur-sm rounded-xl px-4 py-2 border border-blue-200">
+            <p className="text-xs font-mono text-gray-500">
+              300x250 • AdSense
             </p>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
