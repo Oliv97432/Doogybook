@@ -12,20 +12,18 @@ const EmergencyBanner = ({ onEmergencyCall }) => {
     phone: ''
   });
   const [emergencyNumbers, setEmergencyNumbers] = useState({
-    sos_animals: '01 43 11 80 00', // Numéro par défaut (Paris)
-    poison_center: '04 78 87 10 40'  // Numéro par défaut (Lyon)
+    sos_animals: '01 43 11 80 00',
+    poison_center: '04 78 87 10 40'
   });
   const [showVetModal, setShowVetModal] = useState(false);
   const [showSOSModal, setShowSOSModal] = useState(false);
   const [showPoisonModal, setShowPoisonModal] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Formulaires temporaires
   const [tempVet, setTempVet] = useState({ name: '', address: '', phone: '' });
   const [tempSOS, setTempSOS] = useState('');
   const [tempPoison, setTempPoison] = useState('');
 
-  // Charger les données depuis Supabase
   useEffect(() => {
     if (user?.id) {
       loadEmergencyContacts();
@@ -35,15 +33,13 @@ const EmergencyBanner = ({ onEmergencyCall }) => {
   const loadEmergencyContacts = async () => {
     try {
       setLoading(true);
-
-      // Charger les contacts d'urgence de l'utilisateur
       const { data, error } = await supabase
         .from('user_emergency_contacts')
         .select('*')
         .eq('user_id', user.id)
         .single();
 
-      if (error && error.code !== 'PGRST116') { // Ignorer l'erreur "pas de résultat"
+      if (error && error.code !== 'PGRST116') {
         console.error('Error loading emergency contacts:', error);
       }
 
@@ -224,14 +220,15 @@ const EmergencyBanner = ({ onEmergencyCall }) => {
               <div className="w-12 h-12 bg-red-500 rounded-full flex items-center justify-center">
                 <Icon name="Phone" size={24} color="white" />
               </div>
+              {/* BOUTON MODIFIER EN TEXTE PUR - PAS D'ICÔNE */}
               <button
                 onClick={() => {
                   setTempSOS(emergencyNumbers.sos_animals);
                   setShowSOSModal(true);
                 }}
-                className="text-sm text-blue-600 hover:text-blue-800 font-semibold"
+                className="px-3 py-1 text-sm font-semibold text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors"
               >
-                ✏️ Modifier
+                Modifier
               </button>
             </div>
             <h3 className="font-bold text-gray-900 mb-1">SOS Animaux en Danger</h3>
@@ -258,14 +255,15 @@ const EmergencyBanner = ({ onEmergencyCall }) => {
               <div className="w-12 h-12 bg-red-500 rounded-full flex items-center justify-center">
                 <Icon name="AlertCircle" size={24} color="white" />
               </div>
+              {/* BOUTON MODIFIER EN TEXTE PUR - PAS D'ICÔNE */}
               <button
                 onClick={() => {
                   setTempPoison(emergencyNumbers.poison_center);
                   setShowPoisonModal(true);
                 }}
-                className="text-sm text-blue-600 hover:text-blue-800 font-semibold"
+                className="px-3 py-1 text-sm font-semibold text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors"
               >
-                ✏️ Modifier
+                Modifier
               </button>
             </div>
             <h3 className="font-bold text-gray-900 mb-1">Centre Anti-Poison Animal</h3>
