@@ -45,6 +45,15 @@ const DailyTip = () => {
     hours: ''
   });
 
+  // États contacts d'urgence
+  const [emergencyContacts, setEmergencyContacts] = useState([]);
+  const [showEmergencyForm, setShowEmergencyForm] = useState(false);
+  const [emergencyForm, setEmergencyForm] = useState({
+    name: '',
+    phone: '',
+    description: ''
+  });
+
   // Profils de chiens (chargés depuis Supabase)
   const [dogProfiles, setDogProfiles] = useState([]);
 
@@ -141,6 +150,7 @@ const DailyTip = () => {
     if (user?.id) {
       fetchUserVet();
       fetchStreakData();
+      fetchEmergencyContacts();
     }
   }, [user?.id]);
 
@@ -314,6 +324,65 @@ const DailyTip = () => {
       }
     } catch (error) {
       console.error('Erreur vét:', error);
+    }
+  };
+
+  const fetchEmergencyContacts = async () => {
+    try {
+      const { data } = await supabase
+        .from('user_emergency_numbers')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: true });
+
+      if (data) {
+        setEmergencyContacts(data);
+      }
+    } catch (error) {
+      console.error('Erreur contacts urgence:', error);
+    }
+  };
+
+  const saveEmergencyContact = async () => {
+    if (!emergencyForm.name || !emergencyForm.phone) {
+      alert('❌ Nom et téléphone requis');
+      return;
+    }
+
+    try {
+      await supabase
+        .from('user_emergency_numbers')
+        .insert({
+          user_id: user.id,
+          name: emergencyForm.name,
+          phone: emergencyForm.phone,
+          description: emergencyForm.description
+        });
+
+      await fetchEmergencyContacts();
+      setShowEmergencyForm(false);
+      setEmergencyForm({ name: '', phone: '', description: '' });
+      alert('✅ Contact d\'urgence ajouté !');
+    } catch (error) {
+      console.error('Erreur:', error);
+      alert('❌ Erreur lors de la sauvegarde');
+    }
+  };
+
+  const deleteEmergencyContact = async (id) => {
+    if (!confirm('Supprimer ce contact ?')) return;
+
+    try {
+      await supabase
+        .from('user_emergency_numbers')
+        .delete()
+        .eq('id', id);
+
+      await fetchEmergencyContacts();
+      alert('✅ Contact supprimé !');
+    } catch (error) {
+      console.error('Erreur:', error);
+      alert('❌ Erreur lors de la suppression');
     }
   };
 
@@ -559,23 +628,23 @@ const DailyTip = () => {
               <div className="bg-card border border-border rounded-lg p-6">
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-foreground mb-2">Nom du cabinet</label>
+                    <label className="block text-sm font-medium text-foreground mb-2">Nom du cabinet *</label>
                     <input
                       type="text"
                       value={vetForm.name}
                       onChange={(e) => setVetForm({...vetForm, name: e.target.value})}
-                      placeholder="Clinique Vétérinaire..."
-                      className="w-full px-4 py-2 border border-border rounded-lg bg-card"
+                      placeholder="Dr. Martin"
+                      className="w-full px-4 py-3 border border-border rounded-xl bg-card focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-foreground mb-2">Téléphone</label>
+                    <label className="block text-sm font-medium text-foreground mb-2">Téléphone *</label>
                     <input
                       type="tel"
                       value={vetForm.phone}
                       onChange={(e) => setVetForm({...vetForm, phone: e.target.value})}
-                      placeholder="01 23 45 67 89"
-                      className="w-full px-4 py-2 border border-border rounded-lg bg-card"
+                      placeholder="01 42 56 78 90"
+                      className="w-full px-4 py-3 border border-border rounded-xl bg-card focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
                   <div>
@@ -584,8 +653,8 @@ const DailyTip = () => {
                       type="text"
                       value={vetForm.address}
                       onChange={(e) => setVetForm({...vetForm, address: e.target.value})}
-                      placeholder="123 rue..."
-                      className="w-full px-4 py-2 border border-border rounded-lg bg-card"
+                      placeholder="15 Rue de la Santé, 75014 Paris"
+                      className="w-full px-4 py-3 border border-border rounded-xl bg-card focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
                   <div>
@@ -595,19 +664,20 @@ const DailyTip = () => {
                       value={vetForm.hours}
                       onChange={(e) => setVetForm({...vetForm, hours: e.target.value})}
                       placeholder="Lun-Ven: 9h-19h"
-                      className="w-full px-4 py-2 border border-border rounded-lg bg-card"
+                      className="w-full px-4 py-3 border border-border rounded-xl bg-card focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
                   <div className="flex gap-3">
                     <button
                       onClick={saveVet}
-                      className="flex-1 bg-primary text-primary-foreground py-3 rounded-lg font-medium hover:bg-primary/90 transition-smooth"
+                      disabled={!vetForm.name || !vetForm.phone}
+                      className="flex-1 bg-blue-500 text-white py-3 rounded-xl font-semibold hover:bg-blue-600 transition-smooth disabled:bg-gray-300 disabled:cursor-not-allowed"
                     >
                       Enregistrer
                     </button>
                     <button
                       onClick={() => setShowVetForm(false)}
-                      className="px-6 py-3 border border-border rounded-lg hover:bg-muted transition-smooth"
+                      className="px-6 py-3 border-2 border-border rounded-xl hover:bg-muted transition-smooth font-medium"
                     >
                       Annuler
                     </button>
@@ -615,52 +685,183 @@ const DailyTip = () => {
                 </div>
               </div>
             ) : userVet ? (
-              <div className="bg-card border-2 border-blue-200 rounded-lg p-6">
-                <div className="flex items-start gap-4 mb-4">
-                  <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Stethoscope className="text-blue-600" size={24} />
+              <div className="bg-white rounded-3xl shadow-sm border border-gray-200 p-6">
+                {/* Affichage des infos du vétérinaire */}
+                <div className="space-y-3 mb-4">
+                  <div className="flex items-center gap-3">
+                    <Stethoscope size={20} className="text-blue-500" />
+                    <span className="font-semibold text-gray-900">{userVet.name}</span>
                   </div>
-                  <div className="flex-1">
-                    <h3 className="font-heading font-semibold text-foreground mb-3">{userVet.name}</h3>
-                    <div className="space-y-2">
-                      <a href={`tel:${userVet.phone}`} className="flex items-center gap-2 text-primary font-semibold hover:underline">
-                        <Phone size={18} />
-                        {userVet.phone}
-                      </a>
-                      {userVet.address && (
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <MapPin size={16} />
-                          {userVet.address}
-                        </div>
-                      )}
-                      {userVet.hours && (
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <Clock size={16} />
-                          {userVet.hours}
-                        </div>
-                      )}
+                  {userVet.phone && (
+                    <div className="flex items-center gap-3">
+                      <Phone size={20} className="text-green-500" />
+                      <span className="text-gray-900 font-semibold">{userVet.phone}</span>
                     </div>
-                  </div>
+                  )}
+                  {userVet.address && (
+                    <div className="flex items-center gap-3">
+                      <MapPin size={20} className="text-gray-400" />
+                      <span className="text-gray-700">{userVet.address}</span>
+                    </div>
+                  )}
+                  {userVet.hours && (
+                    <div className="flex items-center gap-3">
+                      <Clock size={20} className="text-gray-400" />
+                      <span className="text-gray-700">{userVet.hours}</span>
+                    </div>
+                  )}
                 </div>
+                
+                {/* Bouton appeler */}
                 <a
                   href={`tel:${userVet.phone}`}
-                  className="w-full bg-blue-500 text-white py-3 rounded-lg font-medium text-center block hover:bg-blue-600 transition-smooth"
+                  className="w-full bg-blue-500 text-white py-3 rounded-xl font-medium text-center block hover:bg-blue-600 transition-smooth flex items-center justify-center gap-2"
                 >
-                  <Phone size={18} className="inline mr-2" />
+                  <Phone size={18} />
                   Appeler mon vétérinaire
                 </a>
               </div>
             ) : (
               <button
                 onClick={() => setShowVetForm(true)}
-                className="w-full bg-card border-2 border-dashed border-border rounded-lg p-8 hover:border-primary transition-smooth"
+                className="w-full bg-white border-2 border-dashed border-gray-300 rounded-3xl p-8 hover:border-blue-500 transition-smooth"
               >
-                <Plus size={32} className="text-muted-foreground mx-auto mb-3" />
-                <p className="font-medium text-foreground">Ajouter mon vétérinaire</p>
-                <p className="text-sm text-muted-foreground font-caption mt-1">
+                <Plus size={32} className="text-gray-400 mx-auto mb-3" />
+                <p className="font-semibold text-gray-900">Ajouter mon vétérinaire</p>
+                <p className="text-sm text-gray-600 font-caption mt-1">
                   Gardez les coordonnées à portée de main
                 </p>
               </button>
+            )}
+          </section>
+
+          {/* ========== MES CONTACTS D'URGENCE ========== */}
+          <section className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-heading font-semibold text-foreground mb-1">
+                  Mes Contacts d'Urgence
+                </h2>
+                <p className="text-muted-foreground font-caption">
+                  Ajoutez vos numéros d'urgence personnalisés
+                </p>
+              </div>
+              {!showEmergencyForm && (
+                <button
+                  onClick={() => setShowEmergencyForm(true)}
+                  className="text-red-500 text-sm font-medium hover:underline flex items-center gap-1"
+                >
+                  <Plus size={16} />
+                  Ajouter
+                </button>
+              )}
+            </div>
+
+            {/* Formulaire ajout */}
+            {showEmergencyForm && (
+              <div className="bg-white border border-gray-200 rounded-3xl p-6">
+                <h3 className="font-semibold text-gray-900 mb-4">Nouveau contact d'urgence</h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Nom *</label>
+                    <input
+                      type="text"
+                      value={emergencyForm.name}
+                      onChange={(e) => setEmergencyForm({...emergencyForm, name: e.target.value})}
+                      placeholder="SOS Vétérinaire"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Téléphone *</label>
+                    <input
+                      type="tel"
+                      value={emergencyForm.phone}
+                      onChange={(e) => setEmergencyForm({...emergencyForm, phone: e.target.value})}
+                      placeholder="01 43 11 80 00"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Description (optionnel)</label>
+                    <input
+                      type="text"
+                      value={emergencyForm.description}
+                      onChange={(e) => setEmergencyForm({...emergencyForm, description: e.target.value})}
+                      placeholder="Urgences 24h/24"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500"
+                    />
+                  </div>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={saveEmergencyContact}
+                      disabled={!emergencyForm.name || !emergencyForm.phone}
+                      className="flex-1 bg-red-500 text-white py-3 rounded-xl font-semibold hover:bg-red-600 transition-smooth disabled:bg-gray-300 disabled:cursor-not-allowed"
+                    >
+                      Enregistrer
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowEmergencyForm(false);
+                        setEmergencyForm({ name: '', phone: '', description: '' });
+                      }}
+                      className="px-6 py-3 border-2 border-gray-200 rounded-xl hover:bg-gray-50 transition-smooth font-medium"
+                    >
+                      Annuler
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Liste des contacts */}
+            {emergencyContacts.length > 0 ? (
+              <div className="space-y-3">
+                {emergencyContacts.map((contact) => (
+                  <div key={contact.id} className="bg-white border-2 border-red-200 rounded-3xl p-6">
+                    <div className="flex items-start gap-4 mb-4">
+                      <div className="w-12 h-12 bg-red-500 text-white rounded-xl flex items-center justify-center flex-shrink-0">
+                        <AlertCircle size={24} />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-start justify-between mb-2">
+                          <div>
+                            <h3 className="font-semibold text-gray-900">{contact.name}</h3>
+                            {contact.description && (
+                              <p className="text-sm text-gray-600 mt-1">{contact.description}</p>
+                            )}
+                          </div>
+                          <button
+                            onClick={() => deleteEmergencyContact(contact.id)}
+                            className="text-red-500 hover:text-red-700 text-sm font-medium"
+                          >
+                            Supprimer
+                          </button>
+                        </div>
+                        <a href={`tel:${contact.phone}`} className="flex items-center gap-2 text-red-600 font-semibold hover:underline">
+                          <Phone size={18} />
+                          {contact.phone}
+                        </a>
+                      </div>
+                    </div>
+                    <a
+                      href={`tel:${contact.phone.replace(/\s/g, '')}`}
+                      className="w-full bg-red-500 text-white py-3 rounded-xl font-medium text-center block hover:bg-red-600 transition-smooth flex items-center justify-center gap-2"
+                    >
+                      <Phone size={18} />
+                      Appeler maintenant
+                    </a>
+                  </div>
+                ))}
+              </div>
+            ) : !showEmergencyForm && (
+              <div className="bg-white border-2 border-dashed border-gray-300 rounded-3xl p-8 text-center">
+                <AlertCircle size={32} className="text-gray-400 mx-auto mb-3" />
+                <p className="font-semibold text-gray-900 mb-1">Aucun contact d'urgence</p>
+                <p className="text-sm text-gray-600">
+                  Cliquez sur "Ajouter" pour enregistrer vos numéros d'urgence
+                </p>
+              </div>
             )}
           </section>
 
