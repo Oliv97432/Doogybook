@@ -32,6 +32,7 @@ const ForumHub = () => {
     {
       id: 1,
       name: "Malinois",
+      slug: "malinois",
       description: "Berger belge malinois - Éducation et comportement",
       image: "https://images.unsplash.com/photo-1713917032646-4703f3feffde",
       imageAlt: "Belgian Malinois dog with alert expression standing in outdoor field with golden sunlight",
@@ -50,6 +51,7 @@ const ForumHub = () => {
     {
       id: 2,
       name: "Shih-Tzu",
+      slug: "shih-tzu",
       description: "Petits compagnons - Soins et toilettage",
       image: "https://images.unsplash.com/photo-1599228127629-0a6d721fce06",
       imageAlt: "Adorable Shih-Tzu dog with long silky white and brown coat sitting on grooming table",
@@ -68,6 +70,7 @@ const ForumHub = () => {
     {
       id: 3,
       name: "American Bully",
+      slug: "american-bully",
       description: "Bully américain - Force et caractère",
       image: "https://images.unsplash.com/photo-1704044985311-b363b415cb0d",
       imageAlt: "Muscular American Bully dog with broad chest and confident stance in urban setting",
@@ -86,6 +89,7 @@ const ForumHub = () => {
     {
       id: 4,
       name: "Races Mixtes",
+      slug: "races-mixtes",
       description: "Chiens croisés - Diversité et unicité",
       image: "https://images.unsplash.com/photo-1683051147071-657d46aa1e3c",
       imageAlt: "Happy mixed breed dog with brown and white coat running joyfully through green grass field",
@@ -232,9 +236,8 @@ const ForumHub = () => {
     alert('🚧 Fonctionnalité "Créer une discussion" en cours de développement.\n\nProchainement disponible !');
   };
 
-  const handleForumClick = (forumId, forumName) => {
-    // TODO: Créer la page /forum/:id
-    alert(`🚧 Page du forum "${forumName}" en cours de développement.\n\nProchainement disponible !`);
+  const handleForumClick = (forumSlug) => {
+    navigate(`/forum/${forumSlug}`);
   };
 
   const handleDiscussionClick = (discussionId, discussionTitle) => {
@@ -299,7 +302,7 @@ const ForumHub = () => {
                   /* ✅ CORRIGÉ : ForumCard cliquable */
                   <div 
                     key={forum?.id}
-                    onClick={() => handleForumClick(forum.id, forum.name)}
+                    onClick={() => handleForumClick(forum.slug)}
                     className="cursor-pointer"
                   >
                     <ForumCard forum={forum} />
