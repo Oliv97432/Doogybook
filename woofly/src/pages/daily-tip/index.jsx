@@ -121,7 +121,7 @@ const DailyTip = () => {
       
       try {
         const { data, error } = await supabase
-          .from('dog_profiles')
+          .from('dogs')
           .select('*')
           .eq('user_id', user.id)
           .order('created_at', { ascending: true });
