@@ -184,34 +184,43 @@ const UserMenu = ({ dogProfiles = [], currentDog, onDogChange }) => {
                   />
                 </button>
 
-                {/* Sous-menu chiens */}
-                {showDogsSubmenu && dogProfiles.length > 0 && (
+                {/* Sous-menu chiens - CORRIGÉ: S'affiche toujours */}
+                {showDogsSubmenu && (
                   <div className="ml-12 mt-1 space-y-1">
-                    {dogProfiles.map((dog) => (
-                      <button
-                        key={dog.id}
-                        onClick={() => handleDogSelect(dog)}
-                        className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg transition-smooth text-sm ${
-                          currentDog?.id === dog.id
-                            ? 'bg-primary/10 text-primary font-medium'
-                            : 'hover:bg-muted text-foreground'
-                        }`}
-                      >
-                        <img
-                          src={dog.image}
-                          alt={dog.name}
-                          className="w-6 h-6 rounded-full object-cover"
-                        />
-                        <span className="flex-1 text-left">{dog.name}</span>
-                        {currentDog?.id === dog.id && (
-                          <Icon name="Check" size={14} className="text-primary" />
-                        )}
-                      </button>
-                    ))}
+                    {dogProfiles.length > 0 ? (
+                      <>
+                        {dogProfiles.map((dog) => (
+                          <button
+                            key={dog.id}
+                            onClick={() => handleDogSelect(dog)}
+                            className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg transition-smooth text-sm ${
+                              currentDog?.id === dog.id
+                                ? 'bg-primary/10 text-primary font-medium'
+                                : 'hover:bg-muted text-foreground'
+                            }`}
+                          >
+                            <img
+                              src={dog.image}
+                              alt={dog.name}
+                              className="w-6 h-6 rounded-full object-cover"
+                            />
+                            <span className="flex-1 text-left">{dog.name}</span>
+                            {currentDog?.id === dog.id && (
+                              <Icon name="Check" size={14} className="text-primary" />
+                            )}
+                          </button>
+                        ))}
+                      </>
+                    ) : (
+                      <div className="px-3 py-2 text-xs text-muted-foreground">
+                        Aucun chien enregistré
+                      </div>
+                    )}
                     <button
                       onClick={() => {
                         navigate('/multi-profile-management');
                         setIsOpen(false);
+                        setShowDogsSubmenu(false);
                       }}
                       className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-muted transition-smooth text-sm text-muted-foreground"
                     >
