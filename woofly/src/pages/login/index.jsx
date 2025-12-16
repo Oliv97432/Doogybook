@@ -23,23 +23,28 @@ const Login = () => {
             <div className="hidden lg:block">
               <WelcomeSection />
             </div>
-
+            
             <div className="w-full">
               <AuthenticationShell
                 title="Connexion"
                 subtitle="Accédez à votre espace personnel"
               >
                 <div className="lg:hidden mb-6">
-                  <div className="text-center space-y-2">
+                  <div className="text-center space-y-4">
+                    <img 
+                      src="/logo.png" 
+                      alt="Doogybook" 
+                      className="w-32 h-32 mx-auto"
+                    />
                     <h2 className="text-2xl font-heading font-semibold text-foreground">
                       Bienvenue sur Doogybook
                     </h2>
                     <p className="text-muted-foreground font-caption">
-                      Prenez soin de votre meilleur ami
+                      Le réseau social des chiens
                     </p>
                   </div>
                 </div>
-
+                
                 <LoginForm />
                 
                 <TrustSignals />
@@ -48,9 +53,10 @@ const Login = () => {
           </div>
         </div>
       </div>
+      
       <div className="fixed bottom-0 left-0 right-0 bg-card/80 backdrop-blur-sm border-t border-border py-3 px-4">
         <p className="text-center text-xs text-muted-foreground font-caption">
-          © {new Date()?.getFullYear()} Doogybook. Tous droits réservés. | Fait avec ❤️ pour nos amis à quatre pattes
+          © {new Date().getFullYear()} Doogybook. Tous droits réservés. | Fait avec ❤️ pour nos amis à quatre pattes
         </p>
       </div>
     </div>
