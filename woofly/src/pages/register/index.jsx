@@ -8,8 +8,8 @@ const Register = () => {
   return (
     <>
       <Helmet>
-        <title>Inscription - Woofly</title>
-        <meta name="description" content="Créez votre compte Woofly et commencez à gérer la santé de votre chien. Rejoignez une communauté de propriétaires passionnés." />
+        <title>Inscription - Doogybook</title>
+        <meta name="description" content="Créez votre compte Doogybook et commencez à gérer la santé de votre chien. Rejoignez une communauté de propriétaires passionnés." />
       </Helmet>
 
       <div className="min-h-screen bg-background">
@@ -23,7 +23,7 @@ const Register = () => {
               <div className="w-full max-w-md">
                 <AuthenticationShell
                   title="Créer un compte"
-                  subtitle="Rejoignez la communauté Woofly"
+                  subtitle="Rejoignez la communauté Doogybook"
                 >
                   <RegistrationForm />
                 </AuthenticationShell>

@@ -18,10 +18,10 @@ const Footer = () => {
           gap: '32px',
           marginBottom: '32px'
         }}>
-          {/* Woofly */}
+          {/* Doogybook */}
           <div>
             <h3 style={{ fontWeight: 'bold', marginBottom: '16px' }}>
-              Woofly
+              Doogybook
             </h3>
             <p style={{ fontSize: '14px', color: '#6b7280' }}>
               L'application complète pour gérer la santé et le bien-être de votre chien.
@@ -97,7 +97,7 @@ const Footer = () => {
           textAlign: 'center'
         }}>
           <p style={{ fontSize: '14px', color: '#6b7280', margin: 0 }}>
-            © {currentYear} Woofly. Développé par{' '}
+            © {currentYear} Doogybook. Développé par{' '}
             <a href="mailto:inbyoliver@gmail.com" style={{ color: '#3b82f6', textDecoration: 'none' }}>
               Olivier Avril
             </a>

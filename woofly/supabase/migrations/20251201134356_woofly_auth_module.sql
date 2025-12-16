@@ -1,4 +1,4 @@
--- Location: supabase/migrations/20251201134356_woofly_auth_module.sql
+-- Location: supabase/migrations/20251201134356_Doogybook_auth_module.sql
 -- Schema Analysis: Database is empty (FRESH_PROJECT)
 -- Integration Type: NEW AUTH MODULE
 -- Dependencies: None (first migration)
@@ -176,8 +176,8 @@ BEGIN
         '00000000-0000-0000-0000-000000000000',
         'authenticated',
         'authenticated',
-        'marie.dupont@woofly.fr',
-        crypt('Woofly2025!', gen_salt('bf', 10)),
+        'marie.dupont@Doogybook.fr',
+        crypt('Doogybook2025!', gen_salt('bf', 10)),
         now(),
         now(),
         now(),
@@ -209,7 +209,7 @@ END $$;
 -- ============================================================================
 -- 9. COMMENTS
 -- ============================================================================
-COMMENT ON TABLE public.user_profiles IS 'User profile information for Woofly dog owner community';
+COMMENT ON TABLE public.user_profiles IS 'User profile information for Doogybook dog owner community';
 COMMENT ON COLUMN public.user_profiles.role IS 'User role: owner, veterinarian, breeder, or trainer';
 COMMENT ON COLUMN public.user_profiles.is_active IS 'Account status - inactive accounts cannot login';
 COMMENT ON FUNCTION public.handle_new_user() IS 'Automatically creates user_profiles record when auth.users record is inserted';

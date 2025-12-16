@@ -36,8 +36,8 @@ const MentionsLegales = () => {
             </a>
           </p>
           <p><strong>Site web :</strong>{' '}
-            <a href="https://app.wooflyapp.com" className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">
-              https://app.wooflyapp.com
+            <a href="https://app.Doogybookapp.com" className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">
+              https://app.Doogybookapp.com
             </a>
           </p>
 
@@ -83,7 +83,7 @@ const MentionsLegales = () => {
 
           <h2>6. Responsabilité</h2>
           <p>
-            Les informations fournies sur Woofly le sont à titre indicatif et ne remplacent en aucun cas un avis médical vétérinaire professionnel.
+            Les informations fournies sur Doogybook le sont à titre indicatif et ne remplacent en aucun cas un avis médical vétérinaire professionnel.
           </p>
           <p>
             L'éditeur ne saurait être tenu responsable des dommages directs ou indirects résultant de l'utilisation du site ou de l'impossibilité d'y accéder.
@@ -96,7 +96,7 @@ const MentionsLegales = () => {
 
           <h2>8. Cookies</h2>
           <p>
-            Woofly utilise des cookies strictement nécessaires au fonctionnement du site (authentification). Aucun cookie de tracking ou publicitaire n'est utilisé actuellement.
+            Doogybook utilise des cookies strictement nécessaires au fonctionnement du site (authentification). Aucun cookie de tracking ou publicitaire n'est utilisé actuellement.
           </p>
 
           <h2>9. Droit applicable</h2>

@@ -13,7 +13,7 @@ const AuthenticationShell = ({ children, title, subtitle }) => {
         
         <div className="text-center mb-8">
           <h1 className="text-3xl font-heading font-semibold text-foreground mb-2">
-            Woofly
+            Doogybook
           </h1>
           {title && (
             <h2 className="text-xl font-heading font-medium text-foreground mb-2">
@@ -33,7 +33,7 @@ const AuthenticationShell = ({ children, title, subtitle }) => {
 
         <div className="mt-8 pt-6 border-t border-border text-center">
           <p className="text-sm text-muted-foreground font-caption">
-            © 2025 Woofly. Tous droits réservés.
+            © 2025 Doogybook. Tous droits réservés.
           </p>
         </div>
       </div>

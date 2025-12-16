@@ -209,8 +209,8 @@ const Contact = () => {
             </div>
             <div className="flex items-center gap-3 text-sm">
               <Icon name="Globe" size={18} className="text-muted-foreground" />
-              <a href="https://app.wooflyapp.com" className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">
-                app.wooflyapp.com
+              <a href="https://app.Doogybookapp.com" className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">
+                app.Doogybookapp.com
               </a>
             </div>
           </div>

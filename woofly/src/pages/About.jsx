@@ -15,7 +15,7 @@ const About = () => {
           >
             <Icon name="ArrowLeft" size={24} />
           </button>
-          <h1 className="text-2xl font-heading font-bold">À propos de Woofly</h1>
+          <h1 className="text-2xl font-heading font-bold">À propos de Doogybook</h1>
         </div>
 
         <div className="space-y-6">
@@ -25,12 +25,12 @@ const About = () => {
                 🐾
               </div>
               <div>
-                <h2 className="text-2xl font-bold">Woofly</h2>
+                <h2 className="text-2xl font-bold">Doogybook</h2>
                 <p className="text-muted-foreground">Votre compagnon numérique</p>
               </div>
             </div>
             <p className="mb-4">
-              <strong>Woofly</strong> est une application web gratuite conçue pour aider les propriétaires de chiens à gérer facilement la santé et le bien-être de leurs compagnons.
+              <strong>Doogybook</strong> est une application web gratuite conçue pour aider les propriétaires de chiens à gérer facilement la santé et le bien-être de leurs compagnons.
             </p>
             <p>
               Centralise toutes les informations importantes : vaccinations, traitements, poids, notes de santé et bien plus encore.
@@ -67,7 +67,7 @@ const About = () => {
               Simplifier la vie des propriétaires de chiens en centralisant toutes les informations importantes.
             </p>
             <p>
-              Woofly est et restera <strong>100% gratuit</strong>.
+              Doogybook est et restera <strong>100% gratuit</strong>.
             </p>
           </div>
 

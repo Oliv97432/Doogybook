@@ -1,4 +1,4 @@
-# 🚀 Guide de déploiement Woofly sur Vercel
+# 🚀 Guide de déploiement Doogybook sur Vercel
 
 ## ❌ Problème rencontré
 ```
@@ -80,7 +80,7 @@ Après le déploiement, tu verras :
 ✓ Collecting page data
 ✓ Generating static pages
 ✓ Uploading build outputs
-✓ Deployment ready at: https://woofly-xxx.vercel.app
+✓ Deployment ready at: https://Doogybook-xxx.vercel.app
 ```
 
 ---
@@ -104,7 +104,7 @@ Vercel Dashboard → Deployments → [Latest] → Build Logs
 ## 🎨 Bonus : Domaine personnalisé
 
 1. Vercel Dashboard → **Settings** → **Domains**
-2. Ajoute `woofly.fr`
+2. Ajoute `Doogybook.fr`
 3. Configure les DNS chez ton registrar :
 
 ```

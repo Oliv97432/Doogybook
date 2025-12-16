@@ -200,7 +200,7 @@ const DiscussionDetail = () => {
   // Partager
   const handleShare = async () => {
     const url = window.location.href;
-    const title = post?.title || 'Discussion Woofly';
+    const title = post?.title || 'Discussion Doogybook';
     
     if (navigator.share) {
       try {

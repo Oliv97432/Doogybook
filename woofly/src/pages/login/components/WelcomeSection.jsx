@@ -24,7 +24,7 @@ const WelcomeSection = () => {
       </div>
       <div className="space-y-2">
         <h1 className="text-4xl font-heading font-semibold text-foreground">
-          Bienvenue sur Woofly
+          Bienvenue sur Doogybook
         </h1>
         <p className="text-lg text-muted-foreground font-caption max-w-md mx-auto">
           Votre compagnon pour prendre soin de votre meilleur ami à quatre pattes

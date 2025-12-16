@@ -166,7 +166,7 @@ const PolitiqueConfidentialite = () => {
 
           <h2>11. Cookies</h2>
           <p>
-            Woofly utilise uniquement des cookies strictement nécessaires au fonctionnement de l'application (authentification, session).
+            Doogybook utilise uniquement des cookies strictement nécessaires au fonctionnement de l'application (authentification, session).
           </p>
           <p>
             Aucun cookie de tracking, publicitaire ou analytique n'est utilisé actuellement.

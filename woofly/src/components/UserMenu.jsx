@@ -52,9 +52,9 @@ const UserMenu = ({ dogProfiles = [], currentDog, onDogChange }) => {
     // Utiliser l'API Web Share si disponible (mobile)
     if (navigator.share) {
       navigator.share({
-        title: 'Woofly - Gestion de votre chien',
-        text: 'Découvrez Woofly, l\'application complète pour gérer la santé et le bien-être de votre chien !',
-        url: 'https://app.wooflyapp.com'
+        title: 'Doogybook - Gestion de votre chien',
+        text: 'Découvrez Doogybook, l\'application complète pour gérer la santé et le bien-être de votre chien !',
+        url: 'https://app.Doogybookapp.com'
       }).catch((error) => {
         console.log('Erreur partage:', error);
       });
@@ -80,7 +80,7 @@ const UserMenu = ({ dogProfiles = [], currentDog, onDogChange }) => {
   };
 
   const copyToClipboard = () => {
-    navigator.clipboard.writeText('https://app.wooflyapp.com');
+    navigator.clipboard.writeText('https://app.Doogybookapp.com');
     alert('✅ Lien copié dans le presse-papier !');
     setShowShareModal(false);
   };
@@ -292,7 +292,7 @@ const UserMenu = ({ dogProfiles = [], currentDog, onDogChange }) => {
           <div className="bg-card rounded-2xl shadow-elevated max-w-md w-full p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-heading font-semibold text-foreground">
-                Partager Woofly
+                Partager Doogybook
               </h3>
               <button
                 onClick={() => setShowShareModal(false)}
@@ -303,13 +303,13 @@ const UserMenu = ({ dogProfiles = [], currentDog, onDogChange }) => {
             </div>
 
             <p className="text-sm text-muted-foreground mb-4">
-              Partagez Woofly avec d'autres propriétaires de chiens !
+              Partagez Doogybook avec d'autres propriétaires de chiens !
             </p>
 
             <div className="flex items-center gap-2 p-3 bg-muted rounded-xl mb-4">
               <input
                 type="text"
-                value="https://app.wooflyapp.com"
+                value="https://app.Doogybookapp.com"
                 readOnly
                 className="flex-1 bg-transparent text-sm text-foreground outline-none"
               />
@@ -323,7 +323,7 @@ const UserMenu = ({ dogProfiles = [], currentDog, onDogChange }) => {
 
             <div className="flex gap-2">
               <a
-                href={`https://www.facebook.com/sharer/sharer.php?u=https://app.wooflyapp.com`}
+                href={`https://www.facebook.com/sharer/sharer.php?u=https://app.Doogybookapp.com`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-[#1877F2] text-white rounded-xl hover:bg-[#1877F2]/90 transition-smooth"
@@ -331,7 +331,7 @@ const UserMenu = ({ dogProfiles = [], currentDog, onDogChange }) => {
                 <span className="text-sm font-medium">Facebook</span>
               </a>
               <a
-                href={`https://twitter.com/intent/tweet?text=Découvrez Woofly, l'application pour gérer votre chien !&url=https://app.wooflyapp.com`}
+                href={`https://twitter.com/intent/tweet?text=Découvrez Doogybook, l'application pour gérer votre chien !&url=https://app.Doogybookapp.com`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-[#1DA1F2] text-white rounded-xl hover:bg-[#1DA1F2]/90 transition-smooth"

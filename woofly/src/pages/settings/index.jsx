@@ -342,8 +342,8 @@ const Settings = () => {
 
           {/* Info version */}
           <div className="text-center text-sm text-muted-foreground">
-            <p>Woofly v1.0.0</p>
-            <p className="mt-1">© 2024 Woofly. Tous droits réservés.</p>
+            <p>Doogybook v1.0.0</p>
+            <p className="mt-1">© 2024 Doogybook. Tous droits réservés.</p>
           </div>
 
         </div>

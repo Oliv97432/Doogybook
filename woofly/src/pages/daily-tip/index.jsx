@@ -287,12 +287,12 @@ const DailyTip = () => {
   };
 
   const handleShare = async () => {
-    const text = `🐕 ${todayTip.title}\n\nDécouvrez ce conseil sur Woofly !`;
+    const text = `🐕 ${todayTip.title}\n\nDécouvrez ce conseil sur Doogybook !`;
     
     if (navigator.share) {
       try {
         await navigator.share({
-          title: 'Conseil Woofly',
+          title: 'Conseil Doogybook',
           text: text,
           url: window.location.href
         });

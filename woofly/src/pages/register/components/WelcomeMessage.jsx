@@ -32,7 +32,7 @@ const WelcomeMessage = () => {
           <Icon name="Dog" size={32} color="var(--color-primary)" />
         </div>
         <h2 className="text-2xl lg:text-3xl font-heading font-semibold text-foreground mb-3">
-          Bienvenue sur Woofly
+          Bienvenue sur Doogybook
         </h2>
         <p className="text-muted-foreground font-caption text-base lg:text-lg">
           La plateforme complète pour prendre soin de votre chien et rejoindre une communauté passionnée

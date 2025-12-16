@@ -29,7 +29,7 @@ const CGU = () => {
 
           <h2>1. Présentation du service</h2>
           <p>
-            Woofly est une application web gratuite permettant aux propriétaires de chiens de gérer la santé et le bien-être de leurs animaux de compagnie.
+            Doogybook est une application web gratuite permettant aux propriétaires de chiens de gérer la santé et le bien-être de leurs animaux de compagnie.
           </p>
           <p>
             L'application est éditée par Olivier Avril et hébergée sur Vercel avec une base de données Supabase.
@@ -37,16 +37,16 @@ const CGU = () => {
 
           <h2>2. Acceptation des CGU</h2>
           <p>
-            L'utilisation de Woofly implique l'acceptation pleine et entière des présentes Conditions Générales d'Utilisation (CGU). En créant un compte, vous confirmez avoir lu, compris et accepté ces CGU.
+            L'utilisation de Doogybook implique l'acceptation pleine et entière des présentes Conditions Générales d'Utilisation (CGU). En créant un compte, vous confirmez avoir lu, compris et accepté ces CGU.
           </p>
 
           <h2>3. Compte utilisateur</h2>
-          <p><strong>Création de compte :</strong> Pour utiliser Woofly, vous devez créer un compte en fournissant une adresse e-mail valide et un mot de passe.</p>
+          <p><strong>Création de compte :</strong> Pour utiliser Doogybook, vous devez créer un compte en fournissant une adresse e-mail valide et un mot de passe.</p>
           <p><strong>Sécurité :</strong> Vous êtes responsable de la confidentialité de vos identifiants de connexion.</p>
           <p><strong>Véracité des informations :</strong> Vous vous engagez à fournir des informations exactes.</p>
 
           <h2>4. Services proposés</h2>
-          <p>Woofly propose les fonctionnalités suivantes :</p>
+          <p>Doogybook propose les fonctionnalités suivantes :</p>
           <ul>
             <li>Gestion des profils de chiens</li>
             <li>Suivi des vaccinations et traitements</li>
@@ -59,7 +59,7 @@ const CGU = () => {
 
           <h2>5. Gratuité du service</h2>
           <p>
-            Woofly est un service <strong>entièrement gratuit</strong>. Aucun frais n'est demandé pour l'utilisation des fonctionnalités.
+            Doogybook est un service <strong>entièrement gratuit</strong>. Aucun frais n'est demandé pour l'utilisation des fonctionnalités.
           </p>
 
           <h2>6. Contenu utilisateur</h2>
@@ -72,7 +72,7 @@ const CGU = () => {
           </p>
 
           <h2>8. Limitation de responsabilité</h2>
-          <p><strong>Information à titre indicatif :</strong> Les conseils fournis par Woofly ne remplacent pas l'avis d'un vétérinaire professionnel.</p>
+          <p><strong>Information à titre indicatif :</strong> Les conseils fournis par Doogybook ne remplacent pas l'avis d'un vétérinaire professionnel.</p>
           <p><strong>Disponibilité :</strong> Nous ne garantissons pas une disponibilité absolue du service.</p>
 
           <h2>9. Résiliation du compte</h2>

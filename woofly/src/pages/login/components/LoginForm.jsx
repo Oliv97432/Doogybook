@@ -92,8 +92,8 @@ const LoginForm = () => {
           <div className="flex-1">
             <p className="text-sm font-medium text-foreground mb-1">Identifiants de démonstration</p>
             <div className="text-sm text-muted-foreground space-y-1">
-              <p>Email: marie.dupont@woofly.fr</p>
-              <p>Mot de passe: Woofly2025!</p>
+              <p>Email: marie.dupont@Doogybook.fr</p>
+              <p>Mot de passe: Doogybook2025!</p>
             </div>
           </div>
         </div>
@@ -158,7 +158,7 @@ const LoginForm = () => {
         </div>
         <div className="relative flex justify-center text-sm">
           <span className="px-4 bg-card text-muted-foreground font-caption">
-            Nouveau sur Woofly ?
+            Nouveau sur Doogybook ?
           </span>
         </div>
       </div>
