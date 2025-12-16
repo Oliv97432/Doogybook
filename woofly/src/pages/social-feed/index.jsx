@@ -6,6 +6,8 @@ import { Heart, MessageCircle, TrendingUp, Plus, Flag, Eye, Share2 } from 'lucid
 import TabNavigation from '../../components/TabNavigation';
 import UserMenu from '../../components/UserMenu';
 import Footer from '../../components/Footer';
+import CreatePostModal from '../../components/CreatePostModal';
+import CreatePostModal from '../../components/CreatePostModal';
 
 const SocialFeed = () => {
   const { user } = useAuth();
@@ -483,138 +485,6 @@ const PostCard = ({ post, onClick, currentUserId, onUpdate }) => {
         <button className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-smooth ml-auto">
           <Share2 size={20} />
         </button>
-      </div>
-    </div>
-  );
-};
-
-// Composant CreatePostModal
-const CreatePostModal = ({ onClose, onSuccess }) => {
-  const { user } = useAuth();
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
-  const [selectedTags, setSelectedTags] = useState([]);
-  const [submitting, setSubmitting] = useState(false);
-  
-  const AVAILABLE_TAGS = ['santé', 'chiot', 'alimentation', 'comportement', 'balade', 'astuce'];
-  
-  const toggleTag = (tag) => {
-    if (selectedTags.includes(tag)) {
-      setSelectedTags(selectedTags.filter(t => t !== tag));
-    } else {
-      if (selectedTags.length < 2) {
-        setSelectedTags([...selectedTags, tag]);
-      } else {
-        alert('Maximum 2 tags par post');
-      }
-    }
-  };
-  
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!content.trim()) {
-      alert('❌ Le contenu est requis');
-      return;
-    }
-    
-    setSubmitting(true);
-    try {
-      const { error } = await supabase
-        .from('forum_posts')
-        .insert({
-          user_id: user.id,
-          title: title.trim() || null,
-          content: content.trim(),
-          tags: selectedTags.length > 0 ? selectedTags : null,
-          forum_id: null // Pas de forum dans le feed social
-        });
-      
-      if (error) throw error;
-      
-      alert('✅ Post publié avec succès !');
-      onSuccess();
-    } catch (error) {
-      console.error('Erreur:', error);
-      alert('❌ Erreur lors de la publication');
-    } finally {
-      setSubmitting(false);
-    }
-  };
-  
-  return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
-      <div className="bg-card rounded-3xl shadow-elevated max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-heading font-bold">Créer un post</h2>
-          <button
-            onClick={onClose}
-            className="text-muted-foreground hover:text-foreground text-2xl"
-          >
-            ✕
-          </button>
-        </div>
-        
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-2">Titre (optionnel)</label>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Donnez un titre à votre post..."
-              className="w-full px-4 py-3 border border-border rounded-xl focus:ring-2 focus:ring-primary"
-            />
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium mb-2">Contenu *</label>
-            <textarea
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder="Quoi de neuf avec ton chien ?..."
-              rows={6}
-              className="w-full px-4 py-3 border border-border rounded-xl focus:ring-2 focus:ring-primary resize-none"
-              required
-            />
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium mb-2">Tags (max 2)</label>
-            <div className="flex flex-wrap gap-2">
-              {AVAILABLE_TAGS.map((tag) => (
-                <button
-                  key={tag}
-                  type="button"
-                  onClick={() => toggleTag(tag)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-smooth ${
-                    selectedTags.includes(tag)
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted hover:bg-muted/80'
-                  }`}
-                >
-                  #{tag}
-                </button>
-              ))}
-            </div>
-          </div>
-          
-          <div className="flex gap-3">
-            <button
-              type="submit"
-              disabled={submitting || !content.trim()}
-              className="flex-1 bg-primary text-primary-foreground py-3 rounded-xl font-semibold hover:bg-primary/90 transition-smooth disabled:bg-gray-300 disabled:cursor-not-allowed"
-            >
-              {submitting ? 'Publication...' : 'Publier'}
-            </button>
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-6 py-3 border-2 border-border rounded-xl font-medium hover:bg-muted transition-smooth"
-            >
-              Annuler
-            </button>
-          </div>
-        </form>
       </div>
     </div>
   );
