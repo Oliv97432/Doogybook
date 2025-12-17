@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
-import { Heart, MessageCircle, TrendingUp, Plus, Eye, Share2 } from 'lucide-react';
+import { Heart, MessageCircle, TrendingUp, Plus, Eye, Share2, Send, ChevronDown, ChevronUp } from 'lucide-react';
 import TabNavigation from '../../components/TabNavigation';
 import UserMenu from '../../components/UserMenu';
 import Footer from '../../components/Footer';
@@ -118,10 +118,6 @@ const SocialFeed = () => {
     localStorage.setItem('currentDogProfile', JSON.stringify(profile));
   };
   
-  const handlePostClick = (postId) => {
-    navigate(`/post/${postId}`);
-  };
-  
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -171,10 +167,12 @@ const SocialFeed = () => {
               
               <div className="grid grid-cols-1 gap-4">
                 {topPosts.map((post) => (
-                  <TopPostCard 
+                  <PostCard 
                     key={post.id} 
                     post={post} 
-                    onClick={() => handlePostClick(post.id)}
+                    currentUserId={user?.id}
+                    onUpdate={fetchPosts}
+                    isTopPost={true}
                   />
                 ))}
               </div>
@@ -215,9 +213,9 @@ const SocialFeed = () => {
                 <PostCard 
                   key={post.id} 
                   post={post} 
-                  onClick={() => handlePostClick(post.id)}
                   currentUserId={user?.id}
                   onUpdate={fetchPosts}
+                  isTopPost={false}
                 />
               ))}
             </div>
@@ -255,71 +253,27 @@ const SocialFeed = () => {
   );
 };
 
-// Composant TopPostCard
-const TopPostCard = ({ post, onClick }) => {
-  const authorName = 'Utilisateur anonyme';
-  
-  return (
-    <div
-      onClick={onClick}
-      className="bg-gradient-to-br from-orange-50 to-yellow-50 border-2 border-orange-200 rounded-3xl p-6 hover:shadow-lg transition-smooth cursor-pointer"
-    >
-      <div className="flex items-start gap-4">
-        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-orange-500 to-yellow-600 flex items-center justify-center text-white font-bold flex-shrink-0">
-          {authorName.charAt(0).toUpperCase()}
-        </div>
-        
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="font-semibold text-foreground">{authorName}</span>
-            <TrendingUp size={16} className="text-orange-500" />
-          </div>
-          
-          <h3 className="text-lg font-bold text-foreground mb-2">{post.title}</h3>
-          <p className="text-muted-foreground line-clamp-2 mb-3">{post.content}</p>
-          
-          {/* Tags */}
-          {post.tags && post.tags.length > 0 && (
-            <div className="flex gap-2 mb-3">
-              {post.tags.map((tag, idx) => (
-                <span key={idx} className="px-2 py-1 bg-orange-100 text-orange-700 text-xs font-medium rounded-full">
-                  #{tag}
-                </span>
-              ))}
-            </div>
-          )}
-          
-          {/* Stats */}
-          <div className="flex items-center gap-4 text-sm">
-            <div className="flex items-center gap-1 text-orange-600 font-semibold">
-              <Heart size={16} fill="currentColor" />
-              <span>{post.like_count || 0}</span>
-            </div>
-            <div className="flex items-center gap-1 text-muted-foreground">
-              <MessageCircle size={16} />
-              <span>{post.comment_count || 0}</span>
-            </div>
-            <div className="flex items-center gap-1 text-muted-foreground">
-              <Eye size={16} />
-              <span>{post.view_count || 0}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// Composant PostCard
-const PostCard = ({ post, onClick, currentUserId, onUpdate }) => {
+// Composant PostCard avec commentaires inline
+const PostCard = ({ post, currentUserId, onUpdate, isTopPost }) => {
   const [hasLiked, setHasLiked] = useState(false);
   const [localLikeCount, setLocalLikeCount] = useState(post.like_count || 0);
+  const [showComments, setShowComments] = useState(false);
+  const [comments, setComments] = useState([]);
+  const [newComment, setNewComment] = useState('');
+  const [loadingComments, setLoadingComments] = useState(false);
+  const [submittingComment, setSubmittingComment] = useState(false);
   
   const authorName = 'Utilisateur anonyme';
   
   useEffect(() => {
     checkIfLiked();
   }, [post.id, currentUserId]);
+  
+  useEffect(() => {
+    if (showComments) {
+      fetchComments();
+    }
+  }, [showComments]);
   
   const checkIfLiked = async () => {
     if (!currentUserId) return;
@@ -335,6 +289,24 @@ const PostCard = ({ post, onClick, currentUserId, onUpdate }) => {
       setHasLiked(!!data);
     } catch (error) {
       console.error('Erreur vérification like:', error);
+    }
+  };
+  
+  const fetchComments = async () => {
+    setLoadingComments(true);
+    try {
+      const { data, error } = await supabase
+        .from('forum_comments')
+        .select('*')
+        .eq('post_id', post.id)
+        .order('created_at', { ascending: true });
+      
+      if (error) throw error;
+      setComments(data || []);
+    } catch (error) {
+      console.error('Erreur chargement commentaires:', error);
+    } finally {
+      setLoadingComments(false);
     }
   };
   
@@ -368,6 +340,44 @@ const PostCard = ({ post, onClick, currentUserId, onUpdate }) => {
     }
   };
   
+  const handleCommentSubmit = async (e) => {
+    e.preventDefault();
+    if (!newComment.trim() || !currentUserId) return;
+    
+    setSubmittingComment(true);
+    try {
+      const { error } = await supabase
+        .from('forum_comments')
+        .insert({
+          post_id: post.id,
+          user_id: currentUserId,
+          content: newComment.trim()
+        });
+      
+      if (error) throw error;
+      
+      setNewComment('');
+      fetchComments();
+      
+      // Incrémenter le compteur de commentaires
+      await supabase
+        .from('forum_posts')
+        .update({ comment_count: (post.comment_count || 0) + 1 })
+        .eq('id', post.id);
+      
+      onUpdate();
+    } catch (error) {
+      console.error('Erreur ajout commentaire:', error);
+      alert('Erreur lors de l\'ajout du commentaire');
+    } finally {
+      setSubmittingComment(false);
+    }
+  };
+  
+  const toggleComments = () => {
+    setShowComments(!showComments);
+  };
+  
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     const now = new Date();
@@ -383,18 +393,28 @@ const PostCard = ({ post, onClick, currentUserId, onUpdate }) => {
     return date.toLocaleDateString('fr-FR');
   };
   
+  const cardClasses = isTopPost 
+    ? "bg-gradient-to-br from-orange-50 to-yellow-50 border-2 border-orange-200 rounded-3xl p-6 transition-smooth"
+    : "bg-card border border-border rounded-3xl p-6 transition-smooth";
+  
   return (
-    <div className="bg-card border border-border rounded-3xl p-6 hover:shadow-md transition-smooth">
+    <div className={cardClasses}>
+      {/* Header du post */}
       <div className="flex items-start gap-4 mb-4">
-        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold flex-shrink-0">
+        <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0 ${
+          isTopPost 
+            ? 'bg-gradient-to-br from-orange-500 to-yellow-600'
+            : 'bg-gradient-to-br from-blue-500 to-purple-600'
+        }`}>
           {authorName.charAt(0).toUpperCase()}
         </div>
         
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between">
-            <div>
+            <div className="flex items-center gap-2">
               <span className="font-semibold text-foreground">{authorName}</span>
-              <span className="text-muted-foreground text-sm ml-2">
+              {isTopPost && <TrendingUp size={16} className="text-orange-500" />}
+              <span className="text-muted-foreground text-sm">
                 {formatDate(post.created_at)}
               </span>
             </div>
@@ -402,7 +422,8 @@ const PostCard = ({ post, onClick, currentUserId, onUpdate }) => {
         </div>
       </div>
       
-      <div onClick={onClick} className="cursor-pointer">
+      {/* Contenu du post */}
+      <div>
         {post.title && (
           <h3 className="text-lg font-bold text-foreground mb-2">{post.title}</h3>
         )}
@@ -413,7 +434,14 @@ const PostCard = ({ post, onClick, currentUserId, onUpdate }) => {
         {post.tags && post.tags.length > 0 && (
           <div className="flex gap-2 mb-4">
             {post.tags.map((tag, idx) => (
-              <span key={idx} className="px-3 py-1 bg-primary/10 text-primary text-xs font-medium rounded-full">
+              <span 
+                key={idx} 
+                className={`px-3 py-1 text-xs font-medium rounded-full ${
+                  isTopPost
+                    ? 'bg-orange-100 text-orange-700'
+                    : 'bg-primary/10 text-primary'
+                }`}
+              >
                 #{tag}
               </span>
             ))}
@@ -436,17 +464,78 @@ const PostCard = ({ post, onClick, currentUserId, onUpdate }) => {
         </button>
         
         <button
-          onClick={onClick}
+          onClick={toggleComments}
           className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-smooth"
         >
           <MessageCircle size={20} />
           <span>{post.comment_count || 0}</span>
+          {showComments ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
         </button>
         
         <button className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-smooth ml-auto">
           <Share2 size={20} />
         </button>
       </div>
+      
+      {/* Section Commentaires */}
+      {showComments && (
+        <div className="mt-6 pt-6 border-t border-border space-y-4">
+          {/* Formulaire nouveau commentaire */}
+          <form onSubmit={handleCommentSubmit} className="flex gap-3">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold flex-shrink-0">
+              {currentUserId ? 'M' : '?'}
+            </div>
+            <div className="flex-1">
+              <textarea
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                placeholder="Écrivez un commentaire..."
+                className="w-full px-4 py-2 border border-border rounded-xl focus:ring-2 focus:ring-primary resize-none"
+                rows={2}
+                disabled={submittingComment}
+              />
+              <button
+                type="submit"
+                disabled={!newComment.trim() || submittingComment}
+                className="mt-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-smooth disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                <Send size={16} />
+                {submittingComment ? 'Envoi...' : 'Commenter'}
+              </button>
+            </div>
+          </form>
+          
+          {/* Liste des commentaires */}
+          {loadingComments ? (
+            <div className="flex justify-center py-6">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+          ) : comments.length > 0 ? (
+            <div className="space-y-4">
+              {comments.map((comment) => (
+                <div key={comment.id} className="flex gap-3">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-400 to-gray-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                    U
+                  </div>
+                  <div className="flex-1">
+                    <div className="bg-muted rounded-2xl px-4 py-3">
+                      <div className="font-semibold text-sm mb-1">Utilisateur</div>
+                      <p className="text-sm text-foreground">{comment.content}</p>
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-1 ml-2">
+                      {formatDate(comment.created_at)}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-muted-foreground text-center py-6">
+              Aucun commentaire pour le moment. Soyez le premier à commenter !
+            </p>
+          )}
+        </div>
+      )}
     </div>
   );
 };
