@@ -626,6 +626,7 @@ const PostCard = ({ post, currentUserId, currentUserAvatar, currentUserName, onU
   const [submittingComment, setSubmittingComment] = useState(false);
   const [postImages, setPostImages] = useState([]);
   const [loadingImages, setLoadingImages] = useState(true);
+  const [showShareToast, setShowShareToast] = useState(false);
   
   const authorName = post.author?.full_name || 
                      post.author?.email?.split('@')[0] || 
@@ -783,6 +784,37 @@ const PostCard = ({ post, currentUserId, currentUserAvatar, currentUserName, onU
     setShowComments(!showComments);
   };
   
+  const handleShare = async () => {
+    const postUrl = `${window.location.origin}/post/${post.id}`;
+    
+    // Essayer l'API Web Share (mobile)
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: post.title || 'Post sur Doogybook',
+          text: post.content,
+          url: postUrl
+        });
+        return;
+      } catch (err) {
+        // Ignoré si l'utilisateur annule
+        if (err.name !== 'AbortError') {
+          console.log('Erreur partage:', err);
+        }
+      }
+    }
+    
+    // Fallback: copier dans le presse-papier
+    try {
+      await navigator.clipboard.writeText(postUrl);
+      setShowShareToast(true);
+      setTimeout(() => setShowShareToast(false), 3000);
+    } catch (err) {
+      console.error('Erreur copie:', err);
+      alert('Lien copié : ' + postUrl);
+    }
+  };
+  
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     const now = new Date();
@@ -913,13 +945,26 @@ const PostCard = ({ post, currentUserId, currentUserAvatar, currentUserName, onU
             </span>
           </button>
           
-          <button className="flex flex-col items-center gap-1 transition-smooth">
+          <button 
+            onClick={handleShare}
+            className="flex flex-col items-center gap-1 transition-smooth"
+          >
             <div className="p-2 rounded-full hover:bg-muted">
               <Share2 size={22} className="text-muted-foreground" />
             </div>
           </button>
         </div>
       </div>
+      
+      {/* Toast confirmation partage */}
+      {showShareToast && (
+        <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg flex items-center gap-2 animate-in fade-in slide-in-from-bottom-2">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          </svg>
+          Lien copié dans le presse-papier !
+        </div>
+      )}
       
       {showComments && (
         <div className="mt-4 pt-4 border-t border-border space-y-3">
