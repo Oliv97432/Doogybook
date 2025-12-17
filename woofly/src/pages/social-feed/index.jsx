@@ -63,19 +63,26 @@ const SocialFeed = () => {
       if (!user?.id) return;
       
       try {
-        // Récupérer les infos depuis auth.users
-        const { data: userData, error } = await supabase.auth.getUser();
+        // Récupérer depuis user_profiles
+        const { data: profile, error } = await supabase
+          .from('user_profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
         
-        if (error) throw error;
+        if (error) {
+          console.error('Erreur chargement profil:', error);
+          // Fallback sur métadonnées auth
+          setUserName(user.email?.split('@')[0] || 'Utilisateur');
+          return;
+        }
         
-        if (userData?.user) {
-          const metadata = userData.user.user_metadata || {};
-          
+        if (profile) {
           // Nom
-          setUserName(metadata.full_name || user.email?.split('@')[0] || 'Utilisateur');
+          setUserName(profile.full_name || user.email?.split('@')[0] || 'Utilisateur');
           
           // Avatar
-          const avatarPath = metadata.avatar_url;
+          const avatarPath = profile.avatar_url;
           if (avatarPath) {
             if (avatarPath.startsWith('http')) {
               setUserAvatar(avatarPath);
@@ -127,8 +134,8 @@ const SocialFeed = () => {
       const postsWithAuthors = await Promise.all(
         filtered.map(async (post) => {
           const { data: authorData } = await supabase
-            .from('users')
-            .select('id, email, raw_user_meta_data')
+            .from('user_profiles')
+            .select('*')
             .eq('id', post.user_id)
             .single();
           
@@ -168,26 +175,21 @@ const SocialFeed = () => {
       // Récupérer les infos des auteurs séparément
       const postsWithAuthors = await Promise.all(
         (postsData || []).map(async (post) => {
-          // Essayer d'abord avec la table users
-          let authorData = null;
-          
           try {
             const { data } = await supabase
-              .from('users')
-              .select('id, email, raw_user_meta_data')
+              .from('user_profiles')
+              .select('*')
               .eq('id', post.user_id)
               .single();
             
-            authorData = data;
+            return {
+              ...post,
+              author: data
+            };
           } catch (err) {
-            // Si pas de table users, utiliser les métadonnées auth
-            console.log('Pas de table users, fallback sur auth');
+            console.log('Erreur récupération auteur:', err);
+            return post;
           }
-          
-          return {
-            ...post,
-            author: authorData
-          };
         })
       );
       
@@ -355,7 +357,7 @@ const SocialFeed = () => {
 const getUserAvatar = (author) => {
   if (!author) return null;
   
-  const avatarPath = author.raw_user_meta_data?.avatar_url;
+  const avatarPath = author.avatar_url;
   
   if (!avatarPath) return null;
   
@@ -411,7 +413,7 @@ const PostCard = ({ post, currentUserId, currentUserAvatar, currentUserName, onU
   const [loadingImages, setLoadingImages] = useState(true);
   
   // Extraire les infos de l'auteur
-  const authorName = post.author?.raw_user_meta_data?.full_name || 
+  const authorName = post.author?.full_name || 
                      post.author?.email?.split('@')[0] || 
                      'Utilisateur';
   const authorAvatar = getUserAvatar(post.author);
@@ -478,8 +480,8 @@ const PostCard = ({ post, currentUserId, currentUserAvatar, currentUserName, onU
         (commentsData || []).map(async (comment) => {
           try {
             const { data: authorData } = await supabase
-              .from('users')
-              .select('id, email, raw_user_meta_data')
+              .from('user_profiles')
+              .select('*')
               .eq('id', comment.user_id)
               .single();
             
@@ -737,7 +739,7 @@ const PostCard = ({ post, currentUserId, currentUserAvatar, currentUserName, onU
           ) : comments.length > 0 ? (
             <div className="space-y-4">
               {comments.map((comment) => {
-                const commentAuthorName = comment.author?.raw_user_meta_data?.full_name || 
+                const commentAuthorName = comment.author?.full_name || 
                                          comment.author?.email?.split('@')[0] || 
                                          'Utilisateur';
                 const commentAuthorAvatar = getUserAvatar(comment.author);
