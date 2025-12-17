@@ -331,11 +331,14 @@ const PostCard = ({ post, currentUserId, currentUserAvatar, onUpdate, isTopPost 
   const [newComment, setNewComment] = useState('');
   const [loadingComments, setLoadingComments] = useState(false);
   const [submittingComment, setSubmittingComment] = useState(false);
+  const [postImages, setPostImages] = useState([]);
+  const [loadingImages, setLoadingImages] = useState(true);
   
   const authorName = 'Utilisateur anonyme';
   
   useEffect(() => {
     checkIfLiked();
+    fetchPostImages();
   }, [post.id, currentUserId]);
   
   useEffect(() => {
@@ -343,6 +346,24 @@ const PostCard = ({ post, currentUserId, currentUserAvatar, onUpdate, isTopPost 
       fetchComments();
     }
   }, [showComments]);
+  
+  const fetchPostImages = async () => {
+    setLoadingImages(true);
+    try {
+      const { data, error } = await supabase
+        .from('forum_post_images')
+        .select('*')
+        .eq('post_id', post.id)
+        .order('display_order', { ascending: true });
+      
+      if (error) throw error;
+      setPostImages(data || []);
+    } catch (error) {
+      console.error('Erreur chargement images:', error);
+    } finally {
+      setLoadingImages(false);
+    }
+  };
   
   const checkIfLiked = async () => {
     if (!currentUserId) return;
@@ -497,6 +518,20 @@ const PostCard = ({ post, currentUserId, currentUserAvatar, onUpdate, isTopPost 
         )}
         
         <p className="text-foreground whitespace-pre-wrap mb-3">{post.content}</p>
+        
+        {/* Images du post */}
+        {!loadingImages && postImages.length > 0 && (
+          <div className={`mb-3 ${postImages.length === 1 ? 'grid grid-cols-1' : 'grid grid-cols-2 gap-2'}`}>
+            {postImages.map((img) => (
+              <img
+                key={img.id}
+                src={img.image_url}
+                alt={img.caption || 'Image du post'}
+                className="w-full h-64 object-cover rounded-2xl"
+              />
+            ))}
+          </div>
+        )}
         
         {/* Tags */}
         {post.tags && post.tags.length > 0 && (
