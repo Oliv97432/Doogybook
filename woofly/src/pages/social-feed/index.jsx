@@ -56,7 +56,7 @@ const SocialFeed = () => {
     fetchDogProfiles();
   }, [user?.id]);
   
-  // Charger l'avatar de l'utilisateur
+  // Charger l'avatar de l'utilisateur connecté
   useEffect(() => {
     const fetchUserAvatar = async () => {
       if (!user?.id) return;
@@ -97,14 +97,36 @@ const SocialFeed = () => {
     try {
       const { data, error } = await supabase
         .from('forum_posts')
-        .select('*')
+        .select(`
+          *,
+          author:auth.users!forum_posts_user_id_fkey (
+            id,
+            email,
+            raw_user_meta_data
+          )
+        `)
         .is('forum_id', null)
         .eq('is_hidden', false)
         .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
         .order('like_count', { ascending: false })
         .limit(5);
       
-      if (error) throw error;
+      if (error) {
+        console.error('Erreur query top posts:', error);
+        // Fallback sans JOIN si erreur
+        const { data: fallbackData } = await supabase
+          .from('forum_posts')
+          .select('*')
+          .is('forum_id', null)
+          .eq('is_hidden', false)
+          .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
+          .order('like_count', { ascending: false })
+          .limit(5);
+        
+        const filtered = fallbackData?.filter(post => post.like_count >= 3) || [];
+        setTopPosts(filtered);
+        return;
+      }
       
       const filtered = data.filter(post => post.like_count >= 3);
       setTopPosts(filtered);
@@ -118,7 +140,14 @@ const SocialFeed = () => {
     try {
       let query = supabase
         .from('forum_posts')
-        .select('*')
+        .select(`
+          *,
+          author:auth.users!forum_posts_user_id_fkey (
+            id,
+            email,
+            raw_user_meta_data
+          )
+        `)
         .is('forum_id', null)
         .eq('is_hidden', false)
         .order('created_at', { ascending: false })
@@ -130,7 +159,26 @@ const SocialFeed = () => {
       
       const { data, error } = await query;
       
-      if (error) throw error;
+      if (error) {
+        console.error('Erreur query posts:', error);
+        // Fallback sans JOIN si erreur
+        let fallbackQuery = supabase
+          .from('forum_posts')
+          .select('*')
+          .is('forum_id', null)
+          .eq('is_hidden', false)
+          .order('created_at', { ascending: false })
+          .limit(50);
+        
+        if (selectedTag !== 'all') {
+          fallbackQuery = fallbackQuery.contains('tags', [selectedTag]);
+        }
+        
+        const { data: fallbackData } = await fallbackQuery;
+        setPosts(fallbackData || []);
+        return;
+      }
+      
       setPosts(data || []);
     } catch (error) {
       console.error('Erreur chargement posts:', error);
@@ -289,6 +337,25 @@ const SocialFeed = () => {
   );
 };
 
+// Fonction helper pour obtenir l'avatar
+const getUserAvatar = (author) => {
+  if (!author) return null;
+  
+  const avatarPath = author.raw_user_meta_data?.avatar_url;
+  
+  if (!avatarPath) return null;
+  
+  if (avatarPath.startsWith('http')) {
+    return avatarPath;
+  }
+  
+  const { data } = supabase.storage
+    .from('user-avatars')
+    .getPublicUrl(avatarPath);
+  
+  return data.publicUrl;
+};
+
 // Composant Avatar
 const Avatar = ({ src, name, size = 'md', className = '' }) => {
   const [imageError, setImageError] = useState(false);
@@ -329,7 +396,12 @@ const PostCard = ({ post, currentUserId, currentUserAvatar, onUpdate, isTopPost 
   const [postImages, setPostImages] = useState([]);
   const [loadingImages, setLoadingImages] = useState(true);
   
-  const authorName = 'Utilisateur anonyme';
+  // Extraire les infos de l'auteur
+  const authorData = post.author?.[0] || post.author || null;
+  const authorName = authorData?.raw_user_meta_data?.full_name || 
+                     authorData?.email?.split('@')[0] || 
+                     'Utilisateur';
+  const authorAvatar = getUserAvatar(authorData);
   
   useEffect(() => {
     checkIfLiked();
@@ -349,7 +421,7 @@ const PostCard = ({ post, currentUserId, currentUserAvatar, onUpdate, isTopPost 
         .from('forum_post_images')
         .select('*')
         .eq('post_id', post.id)
-        .order('display_order', { ascending: true });
+        .order('display_order', { ascending: true});
       
       if (error) throw error;
       setPostImages(data || []);
@@ -382,11 +454,30 @@ const PostCard = ({ post, currentUserId, currentUserAvatar, onUpdate, isTopPost 
     try {
       const { data, error } = await supabase
         .from('forum_comments')
-        .select('*')
+        .select(`
+          *,
+          author:auth.users!forum_comments_user_id_fkey (
+            id,
+            email,
+            raw_user_meta_data
+          )
+        `)
         .eq('post_id', post.id)
         .order('created_at', { ascending: true });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Erreur query commentaires:', error);
+        // Fallback sans JOIN
+        const { data: fallbackData } = await supabase
+          .from('forum_comments')
+          .select('*')
+          .eq('post_id', post.id)
+          .order('created_at', { ascending: true });
+        
+        setComments(fallbackData || []);
+        return;
+      }
+      
       setComments(data || []);
     } catch (error) {
       console.error('Erreur chargement commentaires:', error);
@@ -486,7 +577,7 @@ const PostCard = ({ post, currentUserId, currentUserAvatar, onUpdate, isTopPost 
       {/* Header du post */}
       <div className="flex items-start gap-4 mb-4">
         <Avatar 
-          src={null} 
+          src={authorAvatar} 
           name={authorName} 
           size="lg" 
           className={isTopPost ? 'bg-gradient-to-br from-orange-500 to-yellow-600' : ''}
@@ -516,7 +607,7 @@ const PostCard = ({ post, currentUserId, currentUserAvatar, onUpdate, isTopPost 
         
         {/* Vidéo du post (si c'est un short) */}
         {post.is_short && post.video_url && (
-          <div className="mb-3 flex justify-center">
+          <div className="mb-3 flex justify-center relative">
             <video
               src={post.video_url}
               controls
@@ -628,20 +719,28 @@ const PostCard = ({ post, currentUserId, currentUserAvatar, onUpdate, isTopPost 
             </div>
           ) : comments.length > 0 ? (
             <div className="space-y-4">
-              {comments.map((comment) => (
-                <div key={comment.id} className="flex gap-3">
-                  <Avatar src={null} name="U" size="sm" className="bg-gradient-to-br from-gray-400 to-gray-600" />
-                  <div className="flex-1">
-                    <div className="bg-muted rounded-2xl px-4 py-3">
-                      <div className="font-semibold text-sm mb-1">Utilisateur</div>
-                      <p className="text-sm text-foreground">{comment.content}</p>
-                    </div>
-                    <div className="text-xs text-muted-foreground mt-1 ml-2">
-                      {formatDate(comment.created_at)}
+              {comments.map((comment) => {
+                const commentAuthor = comment.author?.[0] || comment.author || null;
+                const commentAuthorName = commentAuthor?.raw_user_meta_data?.full_name || 
+                                         commentAuthor?.email?.split('@')[0] || 
+                                         'Utilisateur';
+                const commentAuthorAvatar = getUserAvatar(commentAuthor);
+                
+                return (
+                  <div key={comment.id} className="flex gap-3">
+                    <Avatar src={commentAuthorAvatar} name={commentAuthorName} size="sm" />
+                    <div className="flex-1">
+                      <div className="bg-muted rounded-2xl px-4 py-3">
+                        <div className="font-semibold text-sm mb-1">{commentAuthorName}</div>
+                        <p className="text-sm text-foreground">{comment.content}</p>
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-1 ml-2">
+                        {formatDate(comment.created_at)}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <p className="text-muted-foreground text-center py-6">
