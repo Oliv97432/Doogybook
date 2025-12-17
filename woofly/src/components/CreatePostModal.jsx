@@ -130,7 +130,7 @@ const CreatePostModal = ({ onClose, onSuccess }) => {
       const fileName = `${user.id}/posts/${postId}_${i + 1}.${fileExt}`;
       
       const { data, error } = await supabase.storage
-        .from('SOCIAL-FEED-MEDIA')
+        .from('social-feed-media')  // ✅ CORRIGÉ (minuscules)
         .upload(fileName, photo.file, {
           cacheControl: '3600',
           upsert: false
@@ -140,7 +140,7 @@ const CreatePostModal = ({ onClose, onSuccess }) => {
       
       // Obtenir l'URL publique
       const { data: { publicUrl } } = supabase.storage
-        .from('SOCIAL-FEED-MEDIA')
+        .from('social-feed-media')  // ✅ CORRIGÉ (minuscules)
         .getPublicUrl(fileName);
       
       uploadedUrls.push(publicUrl);
@@ -154,7 +154,7 @@ const CreatePostModal = ({ onClose, onSuccess }) => {
     const fileName = `${user.id}/shorts/${postId}.${fileExt}`;
     
     const { data, error } = await supabase.storage
-      .from('SOCIAL-FEED-MEDIA')
+      .from('social-feed-media')  // ✅ CORRIGÉ (minuscules)
       .upload(fileName, videoFile, {
         cacheControl: '3600',
         upsert: false
@@ -164,7 +164,7 @@ const CreatePostModal = ({ onClose, onSuccess }) => {
     
     // Obtenir l'URL publique
     const { data: { publicUrl } } = supabase.storage
-      .from('SOCIAL-FEED-MEDIA')
+      .from('social-feed-media')  // ✅ CORRIGÉ (minuscules)
       .getPublicUrl(fileName);
     
     return publicUrl;
