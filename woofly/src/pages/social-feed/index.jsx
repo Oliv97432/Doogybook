@@ -81,6 +81,7 @@ const SocialFeed = () => {
             caption
           )
         `)
+        .is('forum_id', null)  // ✅ FILTRE AJOUTÉ
         .eq('is_hidden', false)
         .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
         .order('like_count', { ascending: false })
@@ -113,6 +114,7 @@ const SocialFeed = () => {
             caption
           )
         `)
+        .is('forum_id', null)  // ✅ FILTRE AJOUTÉ
         .eq('is_hidden', false)
         .order('created_at', { ascending: false })
         .limit(50);
