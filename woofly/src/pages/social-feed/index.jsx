@@ -210,9 +210,9 @@ const SocialFeed = () => {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="sticky top-0 z-50 bg-card border-b border-border shadow-soft">
-        <div className="max-w-screen-xl mx-auto px-4 py-4">
+        <div className="max-w-screen-xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-heading font-semibold text-foreground">
+            <h1 className="text-xl font-heading font-semibold text-foreground">
               Communauté
             </h1>
             <UserMenu
@@ -227,41 +227,41 @@ const SocialFeed = () => {
       <TabNavigation />
       
       <main className="main-content">
-        <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
+        <div className="max-w-2xl mx-auto px-4 py-4 space-y-3">
           
           {/* Bouton Créer un post */}
-          <div className="bg-card border border-border rounded-3xl p-4">
+          <div className="bg-card border border-border rounded-2xl p-3">
             <button
               onClick={() => setShowCreatePost(true)}
-              className="w-full flex items-center gap-3 px-4 py-3 bg-muted hover:bg-muted/80 rounded-2xl transition-smooth text-left"
+              className="w-full flex items-center gap-3 px-3 py-2 bg-muted hover:bg-muted/80 rounded-xl transition-smooth text-left"
             >
               {userAvatar ? (
                 <img
                   src={userAvatar}
                   alt="Avatar"
-                  className="w-10 h-10 rounded-full object-cover"
+                  className="w-8 h-8 rounded-full object-cover"
                 />
               ) : (
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm">
                   {userName?.charAt(0).toUpperCase() || 'U'}
                 </div>
               )}
-              <span className="text-muted-foreground">Quoi de neuf avec ton chien ?</span>
-              <Plus size={20} className="ml-auto text-primary" />
+              <span className="text-muted-foreground text-sm">Quoi de neuf avec ton chien ?</span>
+              <Plus size={18} className="ml-auto text-primary" />
             </button>
           </div>
           
           {/* Section Top Posts */}
           {topPosts.length > 0 && (
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div className="flex items-center gap-2">
-                <TrendingUp className="text-orange-500" size={24} />
-                <h2 className="text-xl font-heading font-bold text-foreground">
+                <TrendingUp className="text-orange-500" size={20} />
+                <h2 className="text-lg font-heading font-bold text-foreground">
                   🔥 Les posts les plus utiles
                 </h2>
               </div>
               
-              <div className="grid grid-cols-1 gap-4">
+              <div className="grid grid-cols-1 gap-3">
                 {topPosts.map((post) => (
                   <PostCard 
                     key={post.id} 
@@ -275,8 +275,8 @@ const SocialFeed = () => {
                 ))}
               </div>
               
-              <div className="border-t border-border pt-4">
-                <h3 className="text-lg font-heading font-semibold text-foreground mb-4">
+              <div className="border-t border-border pt-3">
+                <h3 className="text-base font-heading font-semibold text-foreground mb-3">
                   Tous les posts
                 </h3>
               </div>
@@ -289,7 +289,7 @@ const SocialFeed = () => {
               <button
                 key={tag}
                 onClick={() => setSelectedTag(tag)}
-                className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-smooth ${
+                className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-smooth ${
                   selectedTag === tag
                     ? 'bg-primary text-primary-foreground'
                     : 'bg-card border border-border hover:bg-muted'
@@ -306,7 +306,7 @@ const SocialFeed = () => {
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
             </div>
           ) : posts.length > 0 ? (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {posts.map((post) => (
                 <PostCard 
                   key={post.id} 
@@ -586,146 +586,159 @@ const PostCard = ({ post, currentUserId, currentUserAvatar, currentUserName, onU
   };
   
   const cardClasses = isTopPost 
-    ? "bg-gradient-to-br from-orange-50 to-yellow-50 border-2 border-orange-200 rounded-3xl p-6 transition-smooth"
-    : "bg-card border border-border rounded-3xl p-6 transition-smooth";
+    ? "bg-gradient-to-br from-orange-50 to-yellow-50 border-2 border-orange-200 rounded-2xl p-4 transition-smooth"
+    : "bg-card border border-border rounded-2xl p-4 transition-smooth";
   
   return (
     <div className={cardClasses}>
       {/* Header du post */}
-      <div className="flex items-start gap-4 mb-4">
+      <div className="flex items-start gap-3 mb-3">
         <Avatar 
           src={authorAvatar} 
           name={authorName} 
-          size="lg" 
+          size="md" 
           className={isTopPost ? 'bg-gradient-to-br from-orange-500 to-yellow-600' : ''}
         />
         
         <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="font-semibold text-foreground">{authorName}</span>
-              {isTopPost && <TrendingUp size={16} className="text-orange-500" />}
-              {post.is_short && <Play size={16} className="text-primary" />}
-              <span className="text-muted-foreground text-sm">
-                {formatDate(post.created_at)}
-              </span>
-            </div>
+          <div className="flex items-center gap-2">
+            <span className="font-semibold text-foreground text-sm">{authorName}</span>
+            {isTopPost && <TrendingUp size={14} className="text-orange-500" />}
+            {post.is_short && <Play size={14} className="text-primary" />}
+            <span className="text-muted-foreground text-xs">
+              {formatDate(post.created_at)}
+            </span>
           </div>
         </div>
       </div>
       
-      {/* Contenu du post */}
-      <div>
-        {post.title && (
-          <h3 className="text-lg font-bold text-foreground mb-2">{post.title}</h3>
-        )}
-        
-        <p className="text-foreground whitespace-pre-wrap mb-3">{post.content}</p>
-        
-        {/* Vidéo du post (si c'est un short) - FORMAT VERTICAL */}
-        {post.is_short && post.video_url && (
-          <div className="mb-3 flex justify-center relative">
-            <video
-              src={post.video_url}
-              controls
-              className="rounded-2xl"
-              style={{ maxWidth: '100%', maxHeight: '700px', width: 'auto' }}
-              preload="metadata"
-            >
-              Votre navigateur ne supporte pas la lecture de vidéos.
-            </video>
-            {post.video_duration && (
-              <div className="absolute bottom-2 right-2 bg-black/70 text-white px-2 py-1 rounded-lg text-xs">
-                {post.video_duration}s
-              </div>
-            )}
-          </div>
-        )}
-        
-        {/* Images du post (seulement si pas de vidéo) - FORMAT FACEBOOK */}
-        {!post.is_short && !loadingImages && postImages.length > 0 && (
-          <div className="mb-3 space-y-2">
-            {postImages.map((img) => (
-              <div key={img.id} className="w-full">
-                <img
-                  src={img.image_url}
-                  alt={img.caption || 'Image du post'}
-                  className="w-full rounded-2xl"
-                  style={{ maxHeight: '600px', objectFit: 'contain', backgroundColor: '#f3f4f6' }}
-                />
-              </div>
-            ))}
-          </div>
-        )}
-        
-        {/* Tags */}
-        {post.tags && post.tags.length > 0 && (
-          <div className="flex gap-2 mb-4">
-            {post.tags.map((tag, idx) => (
-              <span 
-                key={idx} 
-                className={`px-3 py-1 text-xs font-medium rounded-full ${
-                  isTopPost
-                    ? 'bg-orange-100 text-orange-700'
-                    : 'bg-primary/10 text-primary'
-                }`}
+      {/* Layout principal : Contenu à gauche + Actions à droite */}
+      <div className="flex gap-4">
+        {/* Colonne gauche : Contenu */}
+        <div className="flex-1 min-w-0">
+          {post.title && (
+            <h3 className="text-base font-bold text-foreground mb-2">{post.title}</h3>
+          )}
+          
+          <p className="text-sm text-foreground whitespace-pre-wrap mb-3">{post.content}</p>
+          
+          {/* Vidéo du post (si c'est un short) */}
+          {post.is_short && post.video_url && (
+            <div className="mb-3 flex justify-center relative">
+              <video
+                src={post.video_url}
+                controls
+                className="rounded-xl"
+                style={{ maxWidth: '100%', maxHeight: '400px', width: 'auto' }}
+                preload="metadata"
               >
-                #{tag}
-              </span>
-            ))}
-          </div>
-        )}
-      </div>
-      
-      {/* Actions */}
-      <div className="flex items-center gap-6 pt-4 border-t border-border">
-        <button
-          onClick={handleLike}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-smooth ${
-            hasLiked
-              ? 'bg-red-100 text-red-600'
-              : 'hover:bg-muted'
-          }`}
-        >
-          <Heart size={20} fill={hasLiked ? 'currentColor' : 'none'} />
-          <span>{localLikeCount}</span>
-        </button>
+                Votre navigateur ne supporte pas la lecture de vidéos.
+              </video>
+              {post.video_duration && (
+                <div className="absolute bottom-2 right-2 bg-black/70 text-white px-2 py-1 rounded-lg text-xs">
+                  {post.video_duration}s
+                </div>
+              )}
+            </div>
+          )}
+          
+          {/* Images du post (seulement si pas de vidéo) */}
+          {!post.is_short && !loadingImages && postImages.length > 0 && (
+            <div className="mb-3 space-y-2">
+              {postImages.map((img) => (
+                <div key={img.id} className="w-full">
+                  <img
+                    src={img.image_url}
+                    alt={img.caption || 'Image du post'}
+                    className="w-full rounded-xl"
+                    style={{ maxHeight: '400px', objectFit: 'contain', backgroundColor: '#f3f4f6' }}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+          
+          {/* Tags */}
+          {post.tags && post.tags.length > 0 && (
+            <div className="flex gap-2 flex-wrap">
+              {post.tags.map((tag, idx) => (
+                <span 
+                  key={idx} 
+                  className={`px-2 py-1 text-xs font-medium rounded-full ${
+                    isTopPost
+                      ? 'bg-orange-100 text-orange-700'
+                      : 'bg-primary/10 text-primary'
+                  }`}
+                >
+                  #{tag}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
         
-        <button
-          onClick={toggleComments}
-          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-smooth"
-        >
-          <MessageCircle size={20} />
-          <span>{post.comment_count || 0}</span>
-          {showComments ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-        </button>
-        
-        <button className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-smooth ml-auto">
-          <Share2 size={20} />
-        </button>
+        {/* Colonne droite : Actions verticales */}
+        <div className="flex flex-col items-center gap-4 pt-2">
+          {/* Like */}
+          <button
+            onClick={handleLike}
+            className="flex flex-col items-center gap-1 transition-smooth"
+          >
+            <div className={`p-2 rounded-full ${hasLiked ? 'bg-red-100' : 'hover:bg-muted'}`}>
+              <Heart 
+                size={22} 
+                className={hasLiked ? 'text-red-600' : 'text-muted-foreground'} 
+                fill={hasLiked ? 'currentColor' : 'none'} 
+              />
+            </div>
+            <span className={`text-xs font-medium ${hasLiked ? 'text-red-600' : 'text-muted-foreground'}`}>
+              {localLikeCount}
+            </span>
+          </button>
+          
+          {/* Commentaires */}
+          <button
+            onClick={toggleComments}
+            className="flex flex-col items-center gap-1 transition-smooth"
+          >
+            <div className="p-2 rounded-full hover:bg-muted">
+              <MessageCircle size={22} className="text-muted-foreground" />
+            </div>
+            <span className="text-xs font-medium text-muted-foreground">
+              {post.comment_count || 0}
+            </span>
+          </button>
+          
+          {/* Partage */}
+          <button className="flex flex-col items-center gap-1 transition-smooth">
+            <div className="p-2 rounded-full hover:bg-muted">
+              <Share2 size={22} className="text-muted-foreground" />
+            </div>
+          </button>
+        </div>
       </div>
       
       {/* Section Commentaires */}
       {showComments && (
-        <div className="mt-6 pt-6 border-t border-border space-y-4">
+        <div className="mt-4 pt-4 border-t border-border space-y-3">
           {/* Formulaire nouveau commentaire */}
-          <form onSubmit={handleCommentSubmit} className="flex gap-3">
-            <Avatar src={currentUserAvatar} name={currentUserName} size="md" />
+          <form onSubmit={handleCommentSubmit} className="flex gap-2">
+            <Avatar src={currentUserAvatar} name={currentUserName} size="sm" />
             <div className="flex-1">
               <textarea
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
                 placeholder="Écrivez un commentaire..."
-                className="w-full px-4 py-2 border border-border rounded-xl focus:ring-2 focus:ring-primary resize-none"
+                className="w-full px-3 py-2 text-sm border border-border rounded-xl focus:ring-2 focus:ring-primary resize-none"
                 rows={2}
                 disabled={submittingComment}
               />
               <button
                 type="submit"
                 disabled={!newComment.trim() || submittingComment}
-                className="mt-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-smooth disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center gap-2"
+                className="mt-2 px-3 py-1.5 text-sm bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-smooth disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center gap-1"
               >
-                <Send size={16} />
+                <Send size={14} />
                 {submittingComment ? 'Envoi...' : 'Commenter'}
               </button>
             </div>
@@ -733,11 +746,11 @@ const PostCard = ({ post, currentUserId, currentUserAvatar, currentUserName, onU
           
           {/* Liste des commentaires */}
           {loadingComments ? (
-            <div className="flex justify-center py-6">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            <div className="flex justify-center py-4">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
             </div>
           ) : comments.length > 0 ? (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {comments.map((comment) => {
                 const commentAuthorName = comment.author?.full_name || 
                                          comment.author?.email?.split('@')[0] || 
@@ -745,12 +758,12 @@ const PostCard = ({ post, currentUserId, currentUserAvatar, currentUserName, onU
                 const commentAuthorAvatar = getUserAvatar(comment.author);
                 
                 return (
-                  <div key={comment.id} className="flex gap-3">
+                  <div key={comment.id} className="flex gap-2">
                     <Avatar src={commentAuthorAvatar} name={commentAuthorName} size="sm" />
                     <div className="flex-1">
-                      <div className="bg-muted rounded-2xl px-4 py-3">
-                        <div className="font-semibold text-sm mb-1">{commentAuthorName}</div>
-                        <p className="text-sm text-foreground">{comment.content}</p>
+                      <div className="bg-muted rounded-xl px-3 py-2">
+                        <div className="font-semibold text-xs mb-1">{commentAuthorName}</div>
+                        <p className="text-xs text-foreground">{comment.content}</p>
                       </div>
                       <div className="text-xs text-muted-foreground mt-1 ml-2">
                         {formatDate(comment.created_at)}
@@ -761,7 +774,7 @@ const PostCard = ({ post, currentUserId, currentUserAvatar, currentUserName, onU
               })}
             </div>
           ) : (
-            <p className="text-muted-foreground text-center py-6">
+            <p className="text-muted-foreground text-center text-sm py-4">
               Aucun commentaire pour le moment. Soyez le premier à commenter !
             </p>
           )}
