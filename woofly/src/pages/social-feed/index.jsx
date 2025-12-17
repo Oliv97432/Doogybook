@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
-import { Heart, MessageCircle, TrendingUp, Plus, Eye, Share2, Send, ChevronDown, ChevronUp, User } from 'lucide-react';
+import { Heart, MessageCircle, TrendingUp, Plus, Eye, Share2, Send, ChevronDown, ChevronUp, User, Play } from 'lucide-react';
 import TabNavigation from '../../components/TabNavigation';
 import UserMenu from '../../components/UserMenu';
 import Footer from '../../components/Footer';
@@ -62,15 +62,12 @@ const SocialFeed = () => {
       if (!user?.id) return;
       
       try {
-        // Récupérer l'avatar depuis user_profiles ou raw_user_meta_data
         const avatarPath = user?.user_metadata?.avatar_url;
         
         if (avatarPath) {
-          // Si c'est déjà une URL complète
           if (avatarPath.startsWith('http')) {
             setUserAvatar(avatarPath);
           } else {
-            // Si c'est un chemin dans le storage
             const { data } = supabase.storage
               .from('user-avatars')
               .getPublicUrl(avatarPath);
@@ -109,7 +106,6 @@ const SocialFeed = () => {
       
       if (error) throw error;
       
-      // Filtrer ceux avec au moins 3 likes
       const filtered = data.filter(post => post.like_count >= 3);
       setTopPosts(filtered);
     } catch (error) {
@@ -128,7 +124,6 @@ const SocialFeed = () => {
         .order('created_at', { ascending: false })
         .limit(50);
       
-      // Filtrer par tag si sélectionné
       if (selectedTag !== 'all') {
         query = query.contains('tags', [selectedTag]);
       }
@@ -449,7 +444,6 @@ const PostCard = ({ post, currentUserId, currentUserAvatar, onUpdate, isTopPost 
       setNewComment('');
       fetchComments();
       
-      // Incrémenter le compteur de commentaires
       await supabase
         .from('forum_posts')
         .update({ comment_count: (post.comment_count || 0) + 1 })
@@ -503,6 +497,7 @@ const PostCard = ({ post, currentUserId, currentUserAvatar, onUpdate, isTopPost 
             <div className="flex items-center gap-2">
               <span className="font-semibold text-foreground">{authorName}</span>
               {isTopPost && <TrendingUp size={16} className="text-orange-500" />}
+              {post.is_short && <Play size={16} className="text-primary" />}
               <span className="text-muted-foreground text-sm">
                 {formatDate(post.created_at)}
               </span>
@@ -519,8 +514,28 @@ const PostCard = ({ post, currentUserId, currentUserAvatar, onUpdate, isTopPost 
         
         <p className="text-foreground whitespace-pre-wrap mb-3">{post.content}</p>
         
-        {/* Images du post */}
-        {!loadingImages && postImages.length > 0 && (
+        {/* Vidéo du post (si c'est un short) */}
+        {post.is_short && post.video_url && (
+          <div className="mb-3 flex justify-center">
+            <video
+              src={post.video_url}
+              controls
+              className="max-w-full rounded-2xl"
+              style={{ maxHeight: '600px' }}
+              preload="metadata"
+            >
+              Votre navigateur ne supporte pas la lecture de vidéos.
+            </video>
+            {post.video_duration && (
+              <div className="absolute bottom-2 right-2 bg-black/70 text-white px-2 py-1 rounded-lg text-xs">
+                {post.video_duration}s
+              </div>
+            )}
+          </div>
+        )}
+        
+        {/* Images du post (seulement si pas de vidéo) */}
+        {!post.is_short && !loadingImages && postImages.length > 0 && (
           <div className={`mb-3 ${postImages.length === 1 ? 'grid grid-cols-1' : 'grid grid-cols-2 gap-2'}`}>
             {postImages.map((img) => (
               <img
