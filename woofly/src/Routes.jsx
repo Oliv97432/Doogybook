@@ -9,12 +9,12 @@ import Login from './pages/login';
 import DogProfile from './pages/dog-profile';
 import DailyTip from './pages/daily-tip';
 import ForumHub from './pages/forum-hub';
-import SocialFeed from './pages/social-feed';              // ← AJOUTER CETTE LIGNE
+import SocialFeed from './pages/social-feed';
 import ForumDetail from './pages/forum-detail';
 import PostDetail from './pages/post-detail';
 import MultiProfileManagement from './pages/multi-profile-management';
 import Register from './pages/register';
-import UserProfile from './pages/UserProfile';
+import UserProfile from './pages/profile/UserProfile';  // ← CHEMIN CORRIGÉ
 import Settings from './pages/settings';
 import CGU from './pages/CGU';
 import MentionsLegales from './pages/MentionsLegales';
@@ -28,7 +28,6 @@ const Routes = () => {
       <ErrorBoundary>
       <ScrollToTop />
       <RouterRoutes>
-        {/* Define your route here */}
         <Route path="/" element={<Login />} />
         <Route path="/important-contacts" element={<ImportantContacts />} />
         <Route path="/forum-discussion" element={<ForumDiscussion />} />
@@ -37,12 +36,15 @@ const Routes = () => {
         <Route path="/dog-profile/:id" element={<DogProfile />} />
         <Route path="/daily-tip" element={<DailyTip />} />
         <Route path="/forum-hub" element={<ForumHub />} />
-        <Route path="/social-feed" element={<SocialFeed />} />              {/* ← AJOUTER CETTE LIGNE */}
+        <Route path="/social-feed" element={<SocialFeed />} />
         <Route path="/forum/:slug" element={<ForumDetail />} />
         <Route path="/post/:id" element={<PostDetail />} />
         <Route path="/multi-profile-management" element={<MultiProfileManagement />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/user-profile" element={<UserProfile />} />
+        
+        {/* Profils publics */}
+        <Route path="/profile/:userId" element={<UserProfile />} />  {/* ← AJOUTER CETTE LIGNE */}
+        
         <Route path="/settings" element={<Settings />} />
         
         {/* Pages légales */}
