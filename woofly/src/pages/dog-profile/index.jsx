@@ -694,8 +694,8 @@ const DogProfile = () => {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-          <p className="mt-4 text-muted-foreground">Chargement du profil...</p>
+          <div className="inline-block animate-spin rounded-full h-8 w-8 sm:h-12 sm:w-12 border-b-2 border-primary"></div>
+          <p className="mt-2 sm:mt-4 text-muted-foreground text-sm sm:text-base">Chargement du profil...</p>
         </div>
       </div>
     );
@@ -706,19 +706,20 @@ const DogProfile = () => {
       <div className="min-h-screen bg-background">
         <TabNavigation />
         <div className="main-content">
-          <div className="max-w-7xl mx-auto px-4 py-6">
-            <div className="text-center py-16">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-muted rounded-full mb-4">
-                <span className="text-3xl">🐕</span>
+          <div className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
+            <div className="text-center py-8 sm:py-16">
+              <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-muted rounded-full mb-3 sm:mb-4">
+                <span className="text-xl sm:text-3xl">🐕</span>
               </div>
-              <h3 className="text-lg font-heading font-semibold text-foreground mb-2">
+              <h3 className="text-base sm:text-lg font-heading font-semibold text-foreground mb-1 sm:mb-2">
                 Aucun chien enregistré
               </h3>
-              <p className="text-muted-foreground mb-4">
+              <p className="text-muted-foreground text-xs sm:text-sm mb-3 sm:mb-4">
                 Ajoutez votre premier chien pour commencer
               </p>
               <Button
                 variant="default"
+                size="sm"
                 onClick={() => navigate('/multi-profile-management')}
               >
                 Ajouter un chien
@@ -734,18 +735,19 @@ const DogProfile = () => {
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header avec UserMenu + Export PDF */}
       <div className="sticky top-0 z-50 bg-card border-b border-border shadow-soft">
-        <div className="max-w-7xl mx-auto px-4 py-4">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 py-3 sm:py-4">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-heading font-semibold text-foreground">
-              Profil de {currentProfile.name}
+            <h1 className="text-lg sm:text-2xl font-heading font-semibold text-foreground truncate max-w-[60%] sm:max-w-none">
+              {currentProfile.name}
             </h1>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               <Button
                 variant="outline"
                 iconName="Download"
                 iconPosition="left"
                 onClick={handleExportPDF}
                 className="hidden sm:flex"
+                size="sm"
               >
                 Exporter fiche
               </Button>
@@ -762,7 +764,7 @@ const DogProfile = () => {
       {/* ✅ NOUVEAU : Bandeau Cover Photo style Facebook */}
       <div className="relative">
         {/* Cover Photo */}
-        <div className="relative h-80 bg-gradient-to-br from-blue-500 to-purple-600 overflow-hidden">
+        <div className="relative h-48 sm:h-64 md:h-80 bg-gradient-to-br from-blue-500 to-purple-600 overflow-hidden">
           {currentProfile.cover_photo_url ? (
             <img
               src={currentProfile.cover_photo_url}
@@ -772,18 +774,18 @@ const DogProfile = () => {
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-white/30">
-              <Icon name="Image" size={64} />
+              <Icon name="Image" size={32} className="sm:w-16 sm:h-16" />
             </div>
           )}
           
           {/* Bouton modifier cover */}
           <label 
             htmlFor="cover-photo-upload-input"
-            className="absolute bottom-4 right-4 z-10 bg-white/90 hover:bg-white px-4 py-2 rounded-lg cursor-pointer shadow-lg transition-smooth flex items-center gap-2"
+            className="absolute bottom-2 right-2 sm:bottom-4 sm:right-4 z-10 bg-white/90 hover:bg-white px-2 sm:px-4 py-1 sm:py-2 rounded-lg cursor-pointer shadow-lg transition-smooth flex items-center gap-1 sm:gap-2"
           >
-            <Icon name="Camera" size={18} />
-            <span className="font-medium text-sm">
-              {isUploadingCover ? 'Upload...' : 'Modifier la couverture'}
+            <Icon name="Camera" size={14} className="sm:w-4 sm:h-4" />
+            <span className="font-medium text-xs sm:text-sm">
+              {isUploadingCover ? 'Upload...' : 'Modifier couverture'}
             </span>
             <input
               id="cover-photo-upload-input"
@@ -797,11 +799,11 @@ const DogProfile = () => {
         </div>
 
         {/* Avatar + Infos chien (par-dessus le bandeau) */}
-        <div className="relative max-w-7xl mx-auto px-4">
-          <div className="flex items-end gap-4 -mt-16 pb-6">
+        <div className="relative max-w-7xl mx-auto px-3 sm:px-4">
+          <div className="flex items-end gap-3 sm:gap-4 -mt-10 sm:-mt-16 pb-4 sm:pb-6">
             {/* Avatar du chien */}
             <div className="relative">
-              <div className="w-32 h-32 rounded-full border-4 border-card bg-gradient-to-br from-blue-500 to-purple-600 overflow-hidden shadow-xl">
+              <div className="w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full border-4 border-card bg-gradient-to-br from-blue-500 to-purple-600 overflow-hidden shadow-xl">
                 {currentProfile.image ? (
                   <img
                     src={currentProfile.image}
@@ -809,7 +811,7 @@ const DogProfile = () => {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-white text-4xl font-bold">
+                  <div className="w-full h-full flex items-center justify-center text-white text-2xl sm:text-3xl md:text-4xl font-bold">
                     {currentProfile.name?.charAt(0).toUpperCase()}
                   </div>
                 )}
@@ -818,36 +820,38 @@ const DogProfile = () => {
               {/* Bouton modifier photo profil */}
               <button
                 onClick={() => openModal('gallery')}
-                className="absolute bottom-0 right-0 bg-primary hover:bg-primary/90 text-white p-3 rounded-full cursor-pointer shadow-lg transition-smooth"
+                className="absolute bottom-0 right-0 bg-primary hover:bg-primary/90 text-white p-1.5 sm:p-2 md:p-3 rounded-full cursor-pointer shadow-lg transition-smooth"
               >
-                <Icon name="Camera" size={20} />
+                <Icon name="Camera" size={14} className="sm:w-4 sm:h-4 md:w-5 md:h-5" />
               </button>
             </div>
 
             {/* Infos chien */}
-            <div className="flex-1 pb-2">
-              <h2 className="text-3xl font-heading font-bold text-foreground">
+            <div className="flex-1 pb-0 sm:pb-2">
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-heading font-bold text-foreground truncate">
                 {currentProfile.name}
               </h2>
-              <div className="flex items-center gap-4 text-muted-foreground mt-1">
-                <span className="flex items-center gap-1">
-                  <Icon name="Dog" size={16} />
-                  {currentProfile.breed}
+              <div className="flex flex-wrap items-center gap-1 sm:gap-2 text-muted-foreground text-xs sm:text-sm mt-0.5 sm:mt-1">
+                <span className="flex items-center gap-0.5 sm:gap-1">
+                  <Icon name="Dog" size={12} className="sm:w-4 sm:h-4" />
+                  <span className="truncate max-w-[80px] sm:max-w-none">{currentProfile.breed}</span>
                 </span>
-                <span className="flex items-center gap-1">
-                  <Icon name="Calendar" size={16} />
+                <span className="text-gray-300">•</span>
+                <span className="flex items-center gap-0.5 sm:gap-1">
+                  <Icon name="Calendar" size={12} className="sm:w-4 sm:h-4" />
                   {currentProfile.age || calculateAge(currentProfile.birthdate)}
                 </span>
-                <span className="flex items-center gap-1">
+                <span className="text-gray-300">•</span>
+                <span className="flex items-center gap-0.5 sm:gap-1">
                   {currentProfile.gender === 'male' ? (
                     <>
-                      <Icon name="Mars" size={16} />
-                      Mâle
+                      <Icon name="Mars" size={12} className="sm:w-4 sm:h-4" />
+                      <span>Mâle</span>
                     </>
                   ) : (
                     <>
-                      <Icon name="Venus" size={16} />
-                      Femelle
+                      <Icon name="Venus" size={12} className="sm:w-4 sm:h-4" />
+                      <span>Femelle</span>
                     </>
                   )}
                 </span>
@@ -860,43 +864,38 @@ const DogProfile = () => {
       <TabNavigation />
       
       <main className="main-content flex-1">
-        <div className="max-w-7xl mx-auto px-4 py-6 lg:py-8">
-          <ProfileHeader
-            profile={currentProfile}
-            onEdit={() => openModal('editProfile')}
-            onGallery={() => openModal('gallery')}
-          />
-
-          <div className="mt-6">
-            <div className="bg-card rounded-lg shadow-soft overflow-hidden">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-6 lg:py-8">
+          <div className="mt-4 sm:mt-6">
+            <div className="bg-card rounded-lg sm:rounded-xl shadow-soft overflow-hidden">
+              {/* Tabs - ajusté pour mobile */}
               <div className="border-b border-border overflow-x-auto">
-                <div className="flex min-w-max">
+                <div className="flex min-w-max px-2 sm:px-0">
                   {tabs.map((tab) => (
                     <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id)}
-                      className={`flex items-center gap-2 px-6 py-4 font-medium transition-smooth border-b-2 ${
+                      className={`flex items-center gap-1 sm:gap-2 px-3 sm:px-6 py-3 font-medium transition-smooth border-b-2 text-sm sm:text-base ${
                         activeTab === tab.id
                           ? 'border-primary text-primary'
                           : 'border-transparent text-muted-foreground hover:text-foreground'
                       }`}
                     >
-                      <Icon name={tab.icon} size={20} />
-                      <span>{tab.label}</span>
+                      <Icon name={tab.icon} size={16} className="sm:w-5 sm:h-5" />
+                      <span className="whitespace-nowrap">{tab.label}</span>
                     </button>
                   ))}
                 </div>
               </div>
 
-              <div className="p-6">
+              <div className="p-4 sm:p-6">
                 {activeTab === 'vaccinations' && (
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between mb-6">
-                      <div>
-                        <h3 className="text-xl font-heading font-semibold text-foreground mb-1">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4 sm:mb-6">
+                      <div className="w-full sm:w-auto">
+                        <h3 className="text-lg sm:text-xl font-heading font-semibold text-foreground mb-1">
                           Vaccinations
                         </h3>
-                        <p className="text-sm text-muted-foreground font-caption">
+                        <p className="text-xs sm:text-sm text-muted-foreground font-caption">
                           Gérez le calendrier vaccinal de {currentProfile.name}
                         </p>
                       </div>
@@ -905,17 +904,19 @@ const DogProfile = () => {
                         iconName="Plus"
                         iconPosition="left"
                         onClick={() => openModal('vaccination')}
+                        size="sm"
+                        className="w-full sm:w-auto"
                       >
                         Ajouter
                       </Button>
                     </div>
 
                     {vaccinations.length === 0 ? (
-                      <div className="text-center py-12">
-                        <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
-                          <Icon name="Syringe" size={32} color="var(--color-muted-foreground)" />
+                      <div className="text-center py-6 sm:py-12">
+                        <div className="w-12 h-12 sm:w-16 sm:h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                          <Icon name="Syringe" size={20} className="sm:w-8 sm:h-8" color="var(--color-muted-foreground)" />
                         </div>
-                        <p className="text-muted-foreground font-caption mb-4">
+                        <p className="text-muted-foreground font-caption text-sm sm:text-base mb-3 sm:mb-4">
                           Aucune vaccination enregistrée
                         </p>
                         <Button
@@ -923,12 +924,14 @@ const DogProfile = () => {
                           iconName="Plus"
                           iconPosition="left"
                           onClick={() => openModal('vaccination')}
+                          size="sm"
+                          className="w-full sm:w-auto"
                         >
                           Ajouter une vaccination
                         </Button>
                       </div>
                     ) : (
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
                         {vaccinations.map((vaccination) => (
                           <VaccinationCard
                             key={vaccination.id}
@@ -944,12 +947,12 @@ const DogProfile = () => {
 
                 {activeTab === 'vermifuge' && (
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between mb-6">
-                      <div>
-                        <h3 className="text-xl font-heading font-semibold text-foreground mb-1">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4 sm:mb-6">
+                      <div className="w-full sm:w-auto">
+                        <h3 className="text-lg sm:text-xl font-heading font-semibold text-foreground mb-1">
                           Vermifuge
                         </h3>
-                        <p className="text-sm text-muted-foreground font-caption">
+                        <p className="text-xs sm:text-sm text-muted-foreground font-caption">
                           Suivez les traitements antiparasitaires internes
                         </p>
                       </div>
@@ -958,17 +961,19 @@ const DogProfile = () => {
                         iconName="Plus"
                         iconPosition="left"
                         onClick={() => openModal('vermifuge')}
+                        size="sm"
+                        className="w-full sm:w-auto"
                       >
                         Ajouter
                       </Button>
                     </div>
 
                     {vermifuges.length === 0 ? (
-                      <div className="text-center py-12">
-                        <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
-                          <Icon name="Pill" size={32} color="var(--color-muted-foreground)" />
+                      <div className="text-center py-6 sm:py-12">
+                        <div className="w-12 h-12 sm:w-16 sm:h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                          <Icon name="Pill" size={20} className="sm:w-8 sm:h-8" color="var(--color-muted-foreground)" />
                         </div>
-                        <p className="text-muted-foreground font-caption mb-4">
+                        <p className="text-muted-foreground font-caption text-sm sm:text-base mb-3 sm:mb-4">
                           Aucun traitement vermifuge enregistré
                         </p>
                         <Button
@@ -976,12 +981,14 @@ const DogProfile = () => {
                           iconName="Plus"
                           iconPosition="left"
                           onClick={() => openModal('vermifuge')}
+                          size="sm"
+                          className="w-full sm:w-auto"
                         >
                           Ajouter un traitement
                         </Button>
                       </div>
                     ) : (
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
                         {vermifuges.map((treatment) => (
                           <TreatmentCard
                             key={treatment.id}
@@ -998,12 +1005,12 @@ const DogProfile = () => {
 
                 {activeTab === 'flea' && (
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between mb-6">
-                      <div>
-                        <h3 className="text-xl font-heading font-semibold text-foreground mb-1">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4 sm:mb-6">
+                      <div className="w-full sm:w-auto">
+                        <h3 className="text-lg sm:text-xl font-heading font-semibold text-foreground mb-1">
                           Anti-puces et tiques
                         </h3>
-                        <p className="text-sm text-muted-foreground font-caption">
+                        <p className="text-xs sm:text-sm text-muted-foreground font-caption">
                           Gérez les traitements antiparasitaires externes
                         </p>
                       </div>
@@ -1012,17 +1019,19 @@ const DogProfile = () => {
                         iconName="Plus"
                         iconPosition="left"
                         onClick={() => openModal('flea')}
+                        size="sm"
+                        className="w-full sm:w-auto"
                       >
                         Ajouter
                       </Button>
                     </div>
 
                     {fleaTreatments.length === 0 ? (
-                      <div className="text-center py-12">
-                        <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
-                          <Icon name="Bug" size={32} color="var(--color-muted-foreground)" />
+                      <div className="text-center py-6 sm:py-12">
+                        <div className="w-12 h-12 sm:w-16 sm:h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                          <Icon name="Bug" size={20} className="sm:w-8 sm:h-8" color="var(--color-muted-foreground)" />
                         </div>
-                        <p className="text-muted-foreground font-caption mb-4">
+                        <p className="text-muted-foreground font-caption text-sm sm:text-base mb-3 sm:mb-4">
                           Aucun traitement anti-puces enregistré
                         </p>
                         <Button
@@ -1030,12 +1039,14 @@ const DogProfile = () => {
                           iconName="Plus"
                           iconPosition="left"
                           onClick={() => openModal('flea')}
+                          size="sm"
+                          className="w-full sm:w-auto"
                         >
                           Ajouter un traitement
                         </Button>
                       </div>
                     ) : (
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
                         {fleaTreatments.map((treatment) => (
                           <TreatmentCard
                             key={treatment.id}
