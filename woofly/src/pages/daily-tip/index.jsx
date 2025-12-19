@@ -12,33 +12,25 @@ import TabNavigation from '../../components/TabNavigation';
 import UserMenu from '../../components/UserMenu';
 import Footer from '../../components/Footer';
 
-/**
- * Page Daily Tip - Conseil du Jour Unique
- * Concept: 1 conseil par jour avec révélation progressive + gamification
- */
 const DailyTip = () => {
   const { user } = useAuth();
   const { unreadCount } = useNotifications();
   const navigate = useNavigate();
   
-  // États pour le conseil du jour
   const [todayTip, setTodayTip] = useState(null);
   const [isRevealed, setIsRevealed] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
   const [totalLikes, setTotalLikes] = useState(0);
   const [loadingTip, setLoadingTip] = useState(true);
   
-  // États pour le streak
   const [streakData, setStreakData] = useState({
     current_streak: 0,
     longest_streak: 0,
     total_tips_read: 0
   });
   
-  // États pour le countdown
   const [timeUntilNext, setTimeUntilNext] = useState('');
   
-  // États vétérinaire
   const [userVet, setUserVet] = useState(null);
   const [showVetForm, setShowVetForm] = useState(false);
   const [currentProfile, setCurrentProfile] = useState(null);
@@ -49,7 +41,6 @@ const DailyTip = () => {
     hours: ''
   });
 
-  // États contacts d'urgence
   const [emergencyContacts, setEmergencyContacts] = useState([]);
   const [showEmergencyForm, setShowEmergencyForm] = useState(false);
   const [emergencyForm, setEmergencyForm] = useState({
@@ -58,10 +49,8 @@ const DailyTip = () => {
     description: ''
   });
 
-  // Profils de chiens (chargés depuis Supabase)
   const [dogProfiles, setDogProfiles] = useState([]);
 
-  // ✅ TES VRAIES PHOTOS IMGBB
   const categoryImages = {
     health: 'https://i.ibb.co/bjrCnNkY/health-golden-doctor.png',
     nutrition: 'https://i.ibb.co/vCC7CYXp/nutrition-golden-food.png',
@@ -70,7 +59,6 @@ const DailyTip = () => {
     wellness: 'https://i.ibb.co/twjS8qyY/wellness-golden-peace.png'
   };
 
-  // Catégories avec icons et couleurs
   const categories = {
     health: { 
       name: 'Santé', 
@@ -109,8 +97,6 @@ const DailyTip = () => {
     }
   };
 
-  // ========== EFFETS ==========
-
   useEffect(() => {
     const savedProfile = localStorage.getItem('currentDogProfile');
     if (savedProfile) {
@@ -118,7 +104,6 @@ const DailyTip = () => {
     }
   }, []);
 
-  // Charger les profils de chiens depuis Supabase
   useEffect(() => {
     const fetchDogProfiles = async () => {
       if (!user?.id) return;
@@ -135,7 +120,6 @@ const DailyTip = () => {
         if (data && data.length > 0) {
           setDogProfiles(data);
           
-          // Si pas de profil actuel, sélectionner le premier
           if (!currentProfile) {
             setCurrentProfile(data[0]);
             localStorage.setItem('currentDogProfile', JSON.stringify(data[0]));
@@ -164,7 +148,6 @@ const DailyTip = () => {
     }
   }, [user, todayTip]);
 
-  // Countdown timer
   useEffect(() => {
     const updateCountdown = () => {
       const now = new Date();
@@ -184,8 +167,6 @@ const DailyTip = () => {
     
     return () => clearInterval(interval);
   }, []);
-
-  // ========== FONCTIONS ==========
 
   const fetchTodayTip = async () => {
     try {
@@ -416,8 +397,6 @@ const DailyTip = () => {
     localStorage.setItem('currentDogProfile', JSON.stringify(profile));
   };
 
-  // ========== RENDER ==========
-
   const getCategoryData = () => {
     return todayTip ? categories[todayTip.category] : categories.health;
   };
@@ -427,7 +406,6 @@ const DailyTip = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Header sticky */}
       <div className="sticky top-0 z-50 bg-card border-b border-border shadow-soft">
         <div className="max-w-screen-xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
@@ -458,14 +436,11 @@ const DailyTip = () => {
         </div>
       </div>
 
-      {/* TabNavigation */}
       <TabNavigation />
 
-      {/* Main content */}
       <main className="main-content flex-1">
         <div className="max-w-3xl mx-auto px-4 py-6 space-y-8">
           
-          {/* ========== CONSEIL DU JOUR ========== */}
           <section className="space-y-4">
             <div className="text-center mb-6">
               <h2 className="text-2xl font-heading font-bold text-foreground mb-2">
@@ -493,7 +468,6 @@ const DailyTip = () => {
               </div>
             ) : (
               <div className="bg-card rounded-2xl overflow-hidden shadow-lg">
-                {/* Image avec effet blur ou révélée */}
                 <div className="relative h-64 md:h-80 overflow-hidden">
                   <img
                     src={categoryImages[todayTip.category]}
@@ -503,10 +477,8 @@ const DailyTip = () => {
                     }`}
                   />
                   
-                  {/* Gradient léger pour contraste du badge */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent" />
                   
-                  {/* Badge catégorie */}
                   <div className="absolute top-4 left-4">
                     <div className="flex items-center gap-2 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full">
                       <Icon className="w-5 h-5" />
@@ -516,7 +488,6 @@ const DailyTip = () => {
                     </div>
                   </div>
 
-                  {/* Bouton révéler (si pas encore révélé) */}
                   {!isRevealed && (
                     <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-sm">
                       <button
@@ -530,7 +501,6 @@ const DailyTip = () => {
                   )}
                 </div>
 
-                {/* Contenu (visible uniquement si révélé) */}
                 {isRevealed && (
                   <div className="p-6 space-y-4">
                     <h3 className="text-2xl font-heading font-bold text-foreground">
@@ -549,7 +519,6 @@ const DailyTip = () => {
                       </div>
                     )}
 
-                    {/* Actions */}
                     <div className="flex items-center justify-between pt-4 border-t border-border">
                       <div className="flex items-center gap-4">
                         <button
@@ -580,9 +549,7 @@ const DailyTip = () => {
               </div>
             )}
 
-            {/* Countdown et Streak */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Countdown */}
               <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl p-5 text-white">
                 <div className="flex items-center gap-3 mb-2">
                   <Timer className="w-6 h-6" />
@@ -592,7 +559,6 @@ const DailyTip = () => {
                 <p className="text-sm text-blue-100 mt-1">Revenez demain !</p>
               </div>
 
-              {/* Streak */}
               {user && (
                 <div className="bg-gradient-to-r from-orange-500 to-red-600 rounded-xl p-5 text-white">
                   <div className="flex items-center gap-3 mb-2">
@@ -610,16 +576,13 @@ const DailyTip = () => {
             </div>
           </section>
 
-          {/* ========== PUB ADSENSE ========== */}
           <section className="bg-gray-100 rounded-lg p-6 text-center border-2 border-dashed border-gray-300">
             <p className="text-sm text-gray-500 mb-2">Publicité</p>
-            {/* TODO: Insérer le code AdSense ici */}
             <div className="bg-white h-32 flex items-center justify-center rounded">
               <p className="text-gray-400">Espace réservé pour AdSense</p>
             </div>
           </section>
 
-          {/* ========== MON VÉTÉRINAIRE ========== */}
           <section className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
@@ -750,7 +713,6 @@ const DailyTip = () => {
             )}
           </section>
 
-          {/* ========== MES CONTACTS D'URGENCE ========== */}
           <section className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
@@ -772,7 +734,6 @@ const DailyTip = () => {
               )}
             </div>
 
-            {/* Formulaire ajout */}
             {showEmergencyForm && (
               <div className="bg-white border border-gray-200 rounded-3xl p-6">
                 <h3 className="font-semibold text-gray-900 mb-4">Nouveau contact d'urgence</h3>
@@ -829,7 +790,6 @@ const DailyTip = () => {
               </div>
             )}
 
-            {/* Liste des contacts */}
             {emergencyContacts.length > 0 ? (
               <div className="space-y-3">
                 {emergencyContacts.map((contact) => (
@@ -883,7 +843,6 @@ const DailyTip = () => {
         </div>
       </main>
 
-      {/* Footer */}
       <Footer />
     </div>
   );
