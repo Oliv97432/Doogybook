@@ -406,21 +406,22 @@ const DailyTip = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      {/* Header avec ajustements mobile */}
       <div className="sticky top-0 z-50 bg-card border-b border-border shadow-soft">
-        <div className="max-w-screen-xl mx-auto px-4 py-4">
+        <div className="max-w-screen-xl mx-auto px-3 sm:px-4 py-3 sm:py-4">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-heading font-semibold text-foreground">
+            <h1 className="text-lg sm:text-2xl font-heading font-semibold text-foreground">
               Conseils & Contacts
             </h1>
             
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               <button 
                 onClick={() => navigate('/notifications')}
-                className="relative p-2 hover:bg-muted rounded-full transition-smooth"
+                className="relative p-1.5 sm:p-2 hover:bg-muted rounded-full transition-smooth"
               >
-                <Bell size={24} className="text-foreground" />
+                <Bell size={20} className="sm:w-6 sm:h-6 text-foreground" />
                 {unreadCount > 0 && (
-                  <div className="absolute top-0 right-0 bg-red-500 text-white text-xs font-bold rounded-full min-w-[20px] h-5 flex items-center justify-center px-1">
+                  <div className="absolute top-0 right-0 bg-red-500 text-white text-xs font-bold rounded-full min-w-[16px] h-4 sm:min-w-[20px] sm:h-5 flex items-center justify-center px-0.5 sm:px-1 text-[10px] sm:text-xs">
                     {unreadCount > 9 ? '9+' : unreadCount}
                   </div>
                 )}
@@ -439,14 +440,15 @@ const DailyTip = () => {
       <TabNavigation />
 
       <main className="main-content flex-1">
-        <div className="max-w-3xl mx-auto px-4 py-6 space-y-8">
+        <div className="max-w-3xl mx-auto px-3 sm:px-4 py-4 sm:py-6 space-y-6 sm:space-y-8">
           
+          {/* Section Conseil du Jour */}
           <section className="space-y-4">
-            <div className="text-center mb-6">
-              <h2 className="text-2xl font-heading font-bold text-foreground mb-2">
+            <div className="text-center mb-4 sm:mb-6">
+              <h2 className="text-xl sm:text-2xl font-heading font-bold text-foreground mb-1 sm:mb-2">
                 💡 Conseil du Jour
               </h2>
-              <p className="text-muted-foreground font-caption">
+              <p className="text-muted-foreground font-caption text-sm sm:text-base">
                 {new Date().toLocaleDateString('fr-FR', { 
                   weekday: 'long', 
                   day: 'numeric', 
@@ -456,19 +458,20 @@ const DailyTip = () => {
             </div>
 
             {loadingTip ? (
-              <div className="flex justify-center py-20">
-                <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
+              <div className="flex justify-center py-12 sm:py-20">
+                <div className="animate-spin h-6 w-6 sm:h-8 sm:w-8 border-4 border-primary border-t-transparent rounded-full" />
               </div>
             ) : !todayTip ? (
-              <div className="bg-card rounded-lg p-8 text-center border border-border">
-                <Sparkles size={48} className="text-muted-foreground mx-auto mb-4" />
-                <p className="text-muted-foreground font-caption">
+              <div className="bg-card rounded-lg p-6 sm:p-8 text-center border border-border">
+                <Sparkles size={32} className="sm:w-12 sm:h-12 text-muted-foreground mx-auto mb-3 sm:mb-4" />
+                <p className="text-muted-foreground font-caption text-sm sm:text-base">
                   Aucun conseil disponible pour aujourd'hui
                 </p>
               </div>
             ) : (
               <div className="bg-card rounded-2xl overflow-hidden shadow-lg">
-                <div className="relative h-64 md:h-80 overflow-hidden">
+                {/* Image du conseil */}
+                <div className="relative h-48 sm:h-64 md:h-80 overflow-hidden">
                   <img
                     src={categoryImages[todayTip.category]}
                     alt={categoryData.name}
@@ -479,54 +482,58 @@ const DailyTip = () => {
                   
                   <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent" />
                   
-                  <div className="absolute top-4 left-4">
-                    <div className="flex items-center gap-2 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full">
-                      <Icon className="w-5 h-5" />
-                      <span className="font-bold text-gray-800">
+                  {/* Badge catégorie */}
+                  <div className="absolute top-3 left-3 sm:top-4 sm:left-4">
+                    <div className="flex items-center gap-1 sm:gap-2 bg-white/90 backdrop-blur-sm px-2 sm:px-4 py-1 sm:py-2 rounded-full">
+                      <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
+                      <span className="font-bold text-gray-800 text-xs sm:text-sm">
                         {categoryData.emoji} {categoryData.name}
                       </span>
                     </div>
                   </div>
 
+                  {/* Bouton découvrir (avant révélation) */}
                   {!isRevealed && (
                     <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-sm">
                       <button
                         onClick={handleReveal}
-                        className="bg-white text-gray-900 px-8 py-4 rounded-full font-bold text-lg shadow-xl hover:scale-105 transition-transform flex items-center gap-2"
+                        className="bg-white text-gray-900 px-4 sm:px-8 py-3 sm:py-4 rounded-full font-bold text-sm sm:text-lg shadow-xl hover:scale-105 transition-transform flex items-center gap-2"
                       >
-                        <Sparkles className="w-6 h-6" />
+                        <Sparkles className="w-4 h-4 sm:w-6 sm:h-6" />
                         Découvrir le conseil
                       </button>
                     </div>
                   )}
                 </div>
 
+                {/* Contenu révélé */}
                 {isRevealed && (
-                  <div className="p-6 space-y-4">
-                    <h3 className="text-2xl font-heading font-bold text-foreground">
+                  <div className="p-4 sm:p-6 space-y-3 sm:space-y-4">
+                    <h3 className="text-lg sm:text-2xl font-heading font-bold text-foreground">
                       {todayTip.title}
                     </h3>
                     
-                    <p className="text-base text-foreground leading-relaxed">
+                    <p className="text-sm sm:text-base text-foreground leading-relaxed">
                       {todayTip.content}
                     </p>
 
                     {todayTip.pro_tip && (
-                      <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg">
-                        <p className="text-sm text-blue-900 font-caption">
+                      <div className="bg-blue-50 border-l-4 border-blue-500 p-3 sm:p-4 rounded-r-lg">
+                        <p className="text-xs sm:text-sm text-blue-900 font-caption">
                           <strong>💡 Astuce Pro :</strong> {todayTip.pro_tip}
                         </p>
                       </div>
                     )}
 
-                    <div className="flex items-center justify-between pt-4 border-t border-border">
-                      <div className="flex items-center gap-4">
+                    {/* Actions (like/share) */}
+                    <div className="flex items-center justify-between pt-3 sm:pt-4 border-t border-border">
+                      <div className="flex items-center gap-3 sm:gap-4">
                         <button
                           onClick={toggleLike}
-                          className="flex items-center gap-2 hover:scale-110 transition-transform"
+                          className="flex items-center gap-1 sm:gap-2 hover:scale-110 transition-transform"
                         >
                           <Heart
-                            className={`w-6 h-6 ${
+                            className={`w-5 h-5 sm:w-6 sm:h-6 ${
                               isLiked ? 'fill-red-500 text-red-500' : 'text-gray-400'
                             }`}
                           />
@@ -537,9 +544,9 @@ const DailyTip = () => {
                         
                         <button
                           onClick={handleShare}
-                          className="flex items-center gap-2 text-gray-600 hover:text-primary hover:scale-110 transition-all"
+                          className="flex items-center gap-1 sm:gap-2 text-gray-600 hover:text-primary hover:scale-110 transition-all"
                         >
-                          <Share2 className="w-5 h-5" />
+                          <Share2 className="w-4 h-4 sm:w-5 sm:h-5" />
                           <span className="text-sm font-medium">Partager</span>
                         </button>
                       </div>
@@ -549,26 +556,27 @@ const DailyTip = () => {
               </div>
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl p-5 text-white">
-                <div className="flex items-center gap-3 mb-2">
-                  <Timer className="w-6 h-6" />
-                  <span className="font-bold">Prochain conseil</span>
+            {/* Cartes statistiques */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+              <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl p-4 sm:p-5 text-white">
+                <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
+                  <Timer className="w-5 h-5 sm:w-6 sm:h-6" />
+                  <span className="font-bold text-sm sm:text-base">Prochain conseil</span>
                 </div>
-                <p className="text-3xl font-heading font-bold">{timeUntilNext}</p>
-                <p className="text-sm text-blue-100 mt-1">Revenez demain !</p>
+                <p className="text-2xl sm:text-3xl font-heading font-bold">{timeUntilNext}</p>
+                <p className="text-xs sm:text-sm text-blue-100 mt-1">Revenez demain !</p>
               </div>
 
               {user && (
-                <div className="bg-gradient-to-r from-orange-500 to-red-600 rounded-xl p-5 text-white">
-                  <div className="flex items-center gap-3 mb-2">
-                    <TrendingUp className="w-6 h-6" />
-                    <span className="font-bold">Votre série</span>
+                <div className="bg-gradient-to-r from-orange-500 to-red-600 rounded-xl p-4 sm:p-5 text-white">
+                  <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
+                    <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6" />
+                    <span className="font-bold text-sm sm:text-base">Votre série</span>
                   </div>
-                  <p className="text-3xl font-heading font-bold">
+                  <p className="text-2xl sm:text-3xl font-heading font-bold">
                     🔥 {streakData.current_streak} jour{streakData.current_streak > 1 ? 's' : ''}
                   </p>
-                  <p className="text-sm text-orange-100 mt-1">
+                  <p className="text-xs sm:text-sm text-orange-100 mt-1">
                     {streakData.total_tips_read}/365 conseils lus
                   </p>
                 </div>
@@ -576,88 +584,90 @@ const DailyTip = () => {
             </div>
           </section>
 
-          <section className="bg-gray-100 rounded-lg p-6 text-center border-2 border-dashed border-gray-300">
-            <p className="text-sm text-gray-500 mb-2">Publicité</p>
-            <div className="bg-white h-32 flex items-center justify-center rounded">
-              <p className="text-gray-400">Espace réservé pour AdSense</p>
+          {/* Publicité */}
+          <section className="bg-gray-100 rounded-lg p-4 sm:p-6 text-center border-2 border-dashed border-gray-300">
+            <p className="text-xs sm:text-sm text-gray-500 mb-2">Publicité</p>
+            <div className="bg-white h-24 sm:h-32 flex items-center justify-center rounded">
+              <p className="text-gray-400 text-sm sm:text-base">Espace réservé pour AdSense</p>
             </div>
           </section>
 
+          {/* Section Vétérinaire */}
           <section className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-heading font-semibold text-foreground mb-1">
+                <h2 className="text-lg sm:text-xl font-heading font-semibold text-foreground mb-1">
                   Mon Vétérinaire
                 </h2>
-                <p className="text-muted-foreground font-caption">
+                <p className="text-muted-foreground font-caption text-xs sm:text-sm">
                   Gardez les coordonnées de votre vétérinaire à portée de main
                 </p>
               </div>
               {userVet && !showVetForm && (
                 <button
                   onClick={() => setShowVetForm(true)}
-                  className="text-primary text-sm font-medium hover:underline flex items-center gap-1"
+                  className="text-primary text-xs sm:text-sm font-medium hover:underline flex items-center gap-1"
                 >
-                  <Edit size={16} />
+                  <Edit size={14} className="sm:w-4 sm:h-4" />
                   Modifier
                 </button>
               )}
             </div>
 
             {showVetForm ? (
-              <div className="bg-card border border-border rounded-lg p-6">
-                <div className="space-y-4">
+              <div className="bg-card border border-border rounded-lg p-4 sm:p-6">
+                <div className="space-y-3 sm:space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-foreground mb-2">Nom du cabinet *</label>
+                    <label className="block text-sm font-medium text-foreground mb-1 sm:mb-2">Nom du cabinet *</label>
                     <input
                       type="text"
                       value={vetForm.name}
                       onChange={(e) => setVetForm({...vetForm, name: e.target.value})}
                       placeholder="Dr. Martin"
-                      className="w-full px-4 py-3 border border-border rounded-xl bg-card focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-border rounded-xl bg-card focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-foreground mb-2">Téléphone *</label>
+                    <label className="block text-sm font-medium text-foreground mb-1 sm:mb-2">Téléphone *</label>
                     <input
                       type="tel"
                       value={vetForm.phone}
                       onChange={(e) => setVetForm({...vetForm, phone: e.target.value})}
                       placeholder="01 42 56 78 90"
-                      className="w-full px-4 py-3 border border-border rounded-xl bg-card focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-border rounded-xl bg-card focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-foreground mb-2">Adresse</label>
+                    <label className="block text-sm font-medium text-foreground mb-1 sm:mb-2">Adresse</label>
                     <input
                       type="text"
                       value={vetForm.address}
                       onChange={(e) => setVetForm({...vetForm, address: e.target.value})}
                       placeholder="15 Rue de la Santé, 75014 Paris"
-                      className="w-full px-4 py-3 border border-border rounded-xl bg-card focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-border rounded-xl bg-card focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-foreground mb-2">Horaires</label>
+                    <label className="block text-sm font-medium text-foreground mb-1 sm:mb-2">Horaires</label>
                     <input
                       type="text"
                       value={vetForm.hours}
                       onChange={(e) => setVetForm({...vetForm, hours: e.target.value})}
                       placeholder="Lun-Ven: 9h-19h"
-                      className="w-full px-4 py-3 border border-border rounded-xl bg-card focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-border rounded-xl bg-card focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
                     />
                   </div>
-                  <div className="flex gap-3">
+                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                     <button
                       onClick={saveVet}
                       disabled={!vetForm.name || !vetForm.phone}
-                      className="flex-1 bg-blue-500 text-white py-3 rounded-xl font-semibold hover:bg-blue-600 transition-smooth disabled:bg-gray-300 disabled:cursor-not-allowed"
+                      className="flex-1 bg-blue-500 text-white py-2 sm:py-3 rounded-xl font-semibold hover:bg-blue-600 transition-smooth disabled:bg-gray-300 disabled:cursor-not-allowed text-sm sm:text-base"
                     >
                       Enregistrer
                     </button>
                     <button
                       onClick={() => setShowVetForm(false)}
-                      className="px-6 py-3 border-2 border-border rounded-xl hover:bg-muted transition-smooth font-medium"
+                      className="px-4 sm:px-6 py-2 sm:py-3 border-2 border-border rounded-xl hover:bg-muted transition-smooth font-medium text-sm sm:text-base"
                     >
                       Annuler
                     </button>
@@ -665,114 +675,115 @@ const DailyTip = () => {
                 </div>
               </div>
             ) : userVet ? (
-              <div className="bg-white rounded-3xl shadow-sm border border-gray-200 p-6">
-                <div className="space-y-3 mb-4">
-                  <div className="flex items-center gap-3">
-                    <Stethoscope size={20} className="text-blue-500" />
-                    <span className="font-semibold text-gray-900">{userVet.name}</span>
+              <div className="bg-white rounded-2xl sm:rounded-3xl shadow-sm border border-gray-200 p-4 sm:p-6">
+                <div className="space-y-2 sm:space-y-3 mb-3 sm:mb-4">
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <Stethoscope size={18} className="sm:w-5 sm:h-5 text-blue-500" />
+                    <span className="font-semibold text-gray-900 text-sm sm:text-base">{userVet.name}</span>
                   </div>
                   {userVet.phone && (
-                    <div className="flex items-center gap-3">
-                      <Phone size={20} className="text-green-500" />
-                      <span className="text-gray-900 font-semibold">{userVet.phone}</span>
+                    <div className="flex items-center gap-2 sm:gap-3">
+                      <Phone size={18} className="sm:w-5 sm:h-5 text-green-500" />
+                      <span className="text-gray-900 font-semibold text-sm sm:text-base">{userVet.phone}</span>
                     </div>
                   )}
                   {userVet.address && (
-                    <div className="flex items-center gap-3">
-                      <MapPin size={20} className="text-gray-400" />
-                      <span className="text-gray-700">{userVet.address}</span>
+                    <div className="flex items-center gap-2 sm:gap-3">
+                      <MapPin size={18} className="sm:w-5 sm:h-5 text-gray-400" />
+                      <span className="text-gray-700 text-sm sm:text-base">{userVet.address}</span>
                     </div>
                   )}
                   {userVet.hours && (
-                    <div className="flex items-center gap-3">
-                      <Clock size={20} className="text-gray-400" />
-                      <span className="text-gray-700">{userVet.hours}</span>
+                    <div className="flex items-center gap-2 sm:gap-3">
+                      <Clock size={18} className="sm:w-5 sm:h-5 text-gray-400" />
+                      <span className="text-gray-700 text-sm sm:text-base">{userVet.hours}</span>
                     </div>
                   )}
                 </div>
                 
                 <a
                   href={`tel:${userVet.phone}`}
-                  className="w-full bg-blue-500 text-white py-3 rounded-xl font-medium text-center hover:bg-blue-600 transition-smooth flex items-center justify-center gap-2"
+                  className="w-full bg-blue-500 text-white py-2 sm:py-3 rounded-xl font-medium text-center hover:bg-blue-600 transition-smooth flex items-center justify-center gap-2 text-sm sm:text-base"
                 >
-                  <Phone size={18} />
+                  <Phone size={16} className="sm:w-5 sm:h-5" />
                   Appeler mon vétérinaire
                 </a>
               </div>
             ) : (
               <button
                 onClick={() => setShowVetForm(true)}
-                className="w-full bg-white border-2 border-dashed border-gray-300 rounded-3xl p-8 hover:border-blue-500 transition-smooth"
+                className="w-full bg-white border-2 border-dashed border-gray-300 rounded-2xl sm:rounded-3xl p-6 sm:p-8 hover:border-blue-500 transition-smooth"
               >
-                <Plus size={32} className="text-gray-400 mx-auto mb-3" />
-                <p className="font-semibold text-gray-900">Ajouter mon vétérinaire</p>
-                <p className="text-sm text-gray-600 font-caption mt-1">
+                <Plus size={24} className="sm:w-8 sm:h-8 text-gray-400 mx-auto mb-2 sm:mb-3" />
+                <p className="font-semibold text-gray-900 text-sm sm:text-base">Ajouter mon vétérinaire</p>
+                <p className="text-xs sm:text-sm text-gray-600 font-caption mt-1">
                   Gardez les coordonnées à portée de main
                 </p>
               </button>
             )}
           </section>
 
+          {/* Section Contacts d'Urgence */}
           <section className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-heading font-semibold text-foreground mb-1">
+                <h2 className="text-lg sm:text-xl font-heading font-semibold text-foreground mb-1">
                   Mes Contacts d'Urgence
                 </h2>
-                <p className="text-muted-foreground font-caption">
+                <p className="text-muted-foreground font-caption text-xs sm:text-sm">
                   Ajoutez vos numéros d'urgence personnalisés
                 </p>
               </div>
               {!showEmergencyForm && (
                 <button
                   onClick={() => setShowEmergencyForm(true)}
-                  className="text-red-500 text-sm font-medium hover:underline flex items-center gap-1"
+                  className="text-red-500 text-xs sm:text-sm font-medium hover:underline flex items-center gap-1"
                 >
-                  <Plus size={16} />
+                  <Plus size={14} className="sm:w-4 sm:h-4" />
                   Ajouter
                 </button>
               )}
             </div>
 
             {showEmergencyForm && (
-              <div className="bg-white border border-gray-200 rounded-3xl p-6">
-                <h3 className="font-semibold text-gray-900 mb-4">Nouveau contact d'urgence</h3>
-                <div className="space-y-4">
+              <div className="bg-white border border-gray-200 rounded-2xl sm:rounded-3xl p-4 sm:p-6">
+                <h3 className="font-semibold text-gray-900 mb-3 sm:mb-4 text-sm sm:text-base">Nouveau contact d'urgence</h3>
+                <div className="space-y-3 sm:space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Nom *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1 sm:mb-2">Nom *</label>
                     <input
                       type="text"
                       value={emergencyForm.name}
                       onChange={(e) => setEmergencyForm({...emergencyForm, name: e.target.value})}
                       placeholder="SOS Vétérinaire"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500"
+                      className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 text-sm sm:text-base"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Téléphone *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1 sm:mb-2">Téléphone *</label>
                     <input
                       type="tel"
                       value={emergencyForm.phone}
                       onChange={(e) => setEmergencyForm({...emergencyForm, phone: e.target.value})}
                       placeholder="01 43 11 80 00"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500"
+                      className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 text-sm sm:text-base"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Description (optionnel)</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1 sm:mb-2">Description (optionnel)</label>
                     <input
                       type="text"
                       value={emergencyForm.description}
                       onChange={(e) => setEmergencyForm({...emergencyForm, description: e.target.value})}
                       placeholder="Urgences 24h/24"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500"
+                      className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 text-sm sm:text-base"
                     />
                   </div>
-                  <div className="flex gap-3">
+                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                     <button
                       onClick={saveEmergencyContact}
                       disabled={!emergencyForm.name || !emergencyForm.phone}
-                      className="flex-1 bg-red-500 text-white py-3 rounded-xl font-semibold hover:bg-red-600 transition-smooth disabled:bg-gray-300 disabled:cursor-not-allowed"
+                      className="flex-1 bg-red-500 text-white py-2 sm:py-3 rounded-xl font-semibold hover:bg-red-600 transition-smooth disabled:bg-gray-300 disabled:cursor-not-allowed text-sm sm:text-base"
                     >
                       Enregistrer
                     </button>
@@ -781,7 +792,7 @@ const DailyTip = () => {
                         setShowEmergencyForm(false);
                         setEmergencyForm({ name: '', phone: '', description: '' });
                       }}
-                      className="px-6 py-3 border-2 border-gray-200 rounded-xl hover:bg-gray-50 transition-smooth font-medium"
+                      className="px-4 sm:px-6 py-2 sm:py-3 border-2 border-gray-200 rounded-xl hover:bg-gray-50 transition-smooth font-medium text-sm sm:text-base"
                     >
                       Annuler
                     </button>
@@ -793,28 +804,28 @@ const DailyTip = () => {
             {emergencyContacts.length > 0 ? (
               <div className="space-y-3">
                 {emergencyContacts.map((contact) => (
-                  <div key={contact.id} className="bg-white border-2 border-red-200 rounded-3xl p-6">
-                    <div className="flex items-start gap-4 mb-4">
-                      <div className="w-12 h-12 bg-red-500 text-white rounded-xl flex items-center justify-center flex-shrink-0">
-                        <AlertCircle size={24} />
+                  <div key={contact.id} className="bg-white border-2 border-red-200 rounded-2xl sm:rounded-3xl p-4 sm:p-6">
+                    <div className="flex items-start gap-3 sm:gap-4 mb-3 sm:mb-4">
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 bg-red-500 text-white rounded-xl flex items-center justify-center flex-shrink-0">
+                        <AlertCircle size={20} className="sm:w-6 sm:h-6" />
                       </div>
                       <div className="flex-1">
-                        <div className="flex items-start justify-between mb-2">
+                        <div className="flex items-start justify-between mb-1 sm:mb-2">
                           <div>
-                            <h3 className="font-semibold text-gray-900">{contact.name}</h3>
+                            <h3 className="font-semibold text-gray-900 text-sm sm:text-base">{contact.name}</h3>
                             {contact.description && (
-                              <p className="text-sm text-gray-600 mt-1">{contact.description}</p>
+                              <p className="text-xs sm:text-sm text-gray-600 mt-1">{contact.description}</p>
                             )}
                           </div>
                           <button
                             onClick={() => deleteEmergencyContact(contact.id)}
-                            className="text-red-500 hover:text-red-700 text-sm font-medium"
+                            className="text-red-500 hover:text-red-700 text-xs sm:text-sm font-medium"
                           >
                             Supprimer
                           </button>
                         </div>
-                        <a href={`tel:${contact.phone}`} className="flex items-center gap-2 text-red-600 font-semibold hover:underline">
-                          <Phone size={18} />
+                        <a href={`tel:${contact.phone}`} className="flex items-center gap-1 sm:gap-2 text-red-600 font-semibold hover:underline text-sm sm:text-base">
+                          <Phone size={16} className="sm:w-5 sm:h-5" />
                           {contact.phone}
                         </a>
                       </div>
@@ -822,19 +833,19 @@ const DailyTip = () => {
                     
                     <a
                       href={`tel:${contact.phone.replace(/\s/g, '')}`}
-                      className="w-full bg-red-500 text-white py-3 rounded-xl font-medium text-center hover:bg-red-600 transition-smooth flex items-center justify-center gap-2"
+                      className="w-full bg-red-500 text-white py-2 sm:py-3 rounded-xl font-medium text-center hover:bg-red-600 transition-smooth flex items-center justify-center gap-1 sm:gap-2 text-sm sm:text-base"
                     >
-                      <Phone size={18} />
+                      <Phone size={16} className="sm:w-5 sm:h-5" />
                       Appeler maintenant
                     </a>
                   </div>
                 ))}
               </div>
             ) : !showEmergencyForm && (
-              <div className="bg-white border-2 border-dashed border-gray-300 rounded-3xl p-8 text-center">
-                <AlertCircle size={32} className="text-gray-400 mx-auto mb-3" />
-                <p className="font-semibold text-gray-900 mb-1">Aucun contact d'urgence</p>
-                <p className="text-sm text-gray-600">
+              <div className="bg-white border-2 border-dashed border-gray-300 rounded-2xl sm:rounded-3xl p-6 sm:p-8 text-center">
+                <AlertCircle size={24} className="sm:w-8 sm:h-8 text-gray-400 mx-auto mb-2 sm:mb-3" />
+                <p className="font-semibold text-gray-900 mb-1 text-sm sm:text-base">Aucun contact d'urgence</p>
+                <p className="text-xs sm:text-sm text-gray-600">
                   Cliquez sur "Ajouter" pour enregistrer vos numéros d'urgence
                 </p>
               </div>
