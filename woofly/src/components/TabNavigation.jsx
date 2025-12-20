@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Dog, Users, BookOpen } from 'lucide-react';
+import { Dog, Users, Heart, BookOpen } from 'lucide-react';  // ← Heart ajouté
 
 const TabNavigation = () => {
   const navigate = useNavigate();
@@ -18,6 +18,11 @@ const TabNavigation = () => {
       icon: Users 
     },
     { 
+      path: '/adoption',       // ✅ Adoption - NOUVEAU
+      label: 'Adoption', 
+      icon: Heart 
+    },
+    { 
       path: '/daily-tip',      // ✅ Conseils
       label: 'Conseils', 
       icon: BookOpen 
@@ -25,7 +30,7 @@ const TabNavigation = () => {
   ];
 
   const isActive = (path) => {
-    return location.pathname === path;
+    return location.pathname === path || location.pathname.startsWith(path + '/');
   };
 
   return (
