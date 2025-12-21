@@ -25,6 +25,43 @@ const AdoptionPage = () => {
   const [currentProfile, setCurrentProfile] = useState(null);
   const [dogProfiles, setDogProfiles] = useState([]);
 
+  // Empêcher le zoom avec des événements tactiles
+  useEffect(() => {
+    const preventZoom = (e) => {
+      if (e.touches.length > 1) {
+        e.preventDefault();
+      }
+    };
+    
+    const preventDoubleTapZoom = (e) => {
+      const now = Date.now();
+      if (now - lastTouchEnd <= 300) {
+        e.preventDefault();
+      }
+      lastTouchEnd = now;
+    };
+    
+    let lastTouchEnd = 0;
+    
+    document.addEventListener('touchstart', preventZoom, { passive: false });
+    document.addEventListener('touchend', preventDoubleTapZoom, { passive: false });
+    
+    // Styles pour empêcher le zoom
+    document.documentElement.style.touchAction = 'pan-y';
+    document.body.style.overflowX = 'hidden';
+    document.documentElement.style.webkitTextSizeAdjust = '100%';
+    document.documentElement.style.textSizeAdjust = '100%';
+    
+    return () => {
+      document.removeEventListener('touchstart', preventZoom);
+      document.removeEventListener('touchend', preventDoubleTapZoom);
+      document.documentElement.style.touchAction = '';
+      document.body.style.overflowX = '';
+      document.documentElement.style.webkitTextSizeAdjust = '';
+      document.documentElement.style.textSizeAdjust = '';
+    };
+  }, []);
+
   useEffect(() => {
     fetchDogs();
     fetchDogProfiles();
@@ -123,9 +160,53 @@ const AdoptionPage = () => {
   const cities = [...new Set(dogs.map(d => d.professional_accounts?.city).filter(Boolean))].sort();
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div 
+      className="min-h-screen bg-background flex flex-col"
+      style={{
+        touchAction: 'pan-y',
+        WebkitTouchCallout: 'none',
+        WebkitUserSelect: 'none',
+        userSelect: 'none',
+        maxWidth: '100vw',
+        overflowX: 'hidden'
+      }}
+    >
+      {/* Script pour forcer le viewport */}
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `
+            (function() {
+              var meta = document.querySelector('meta[name="viewport"]');
+              if (meta) {
+                meta.content = 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no';
+              }
+              
+              // Empêcher le zoom avec la molette
+              document.addEventListener('wheel', function(e) {
+                if (e.ctrlKey) {
+                  e.preventDefault();
+                }
+              }, { passive: false });
+              
+              // Garantir une taille minimale pour les inputs (prévient le zoom iOS)
+              var style = document.createElement('style');
+              style.textContent = '@media screen and (max-width: 768px) {' +
+                'input, select, textarea { font-size: 16px !important; }' +
+                'button, [role="button"] { min-height: 44px !important; }' +
+              '}';
+              document.head.appendChild(style);
+            })();
+          `
+        }}
+      />
+
       {/* Header */}
-      <div className="sticky top-0 z-50 bg-card border-b border-border shadow-soft">
+      <div 
+        className="sticky top-0 z-50 bg-card border-b border-border shadow-soft"
+        style={{
+          WebkitTapHighlightColor: 'transparent'
+        }}
+      >
         <div className="max-w-screen-xl mx-auto px-3 sm:px-4 py-3 sm:py-4">
           <div className="flex items-center justify-between">
             <div className="flex-1 min-w-0">
@@ -149,7 +230,7 @@ const AdoptionPage = () => {
       <TabNavigation />
 
       {/* Main content */}
-      <main className="main-content flex-1">
+      <main className="main-content flex-1" style={{ maxWidth: '100vw', overflowX: 'hidden' }}>
         <div className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
           
           {/* Bannière info */}
@@ -171,7 +252,10 @@ const AdoptionPage = () => {
           </div>
 
           {/* Barre de recherche et filtres */}
-          <div className="bg-white rounded-2xl sm:rounded-3xl shadow-sm border border-gray-200 p-4 sm:p-6 mb-4 sm:mb-6">
+          <div 
+            className="bg-white rounded-2xl sm:rounded-3xl shadow-sm border border-gray-200 p-4 sm:p-6 mb-4 sm:mb-6"
+            style={{ WebkitTapHighlightColor: 'transparent' }}
+          >
             {/* Recherche */}
             <div className="relative mb-3 sm:mb-4">
               <Search className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} className="sm:w-5 sm:h-5" />
@@ -181,6 +265,7 @@ const AdoptionPage = () => {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 sm:pl-12 pr-3 sm:pr-4 py-2 sm:py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
+                style={{ fontSize: '16px' }} // Important pour iOS
               />
             </div>
 
@@ -190,6 +275,7 @@ const AdoptionPage = () => {
                 value={selectedBreed}
                 onChange={(e) => setSelectedBreed(e.target.value)}
                 className="px-3 sm:px-4 py-2 sm:py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
+                style={{ fontSize: '16px' }} // Important pour iOS
               >
                 <option value="all">Toutes les races</option>
                 {breeds.map(breed => (
@@ -201,6 +287,7 @@ const AdoptionPage = () => {
                 value={selectedSize}
                 onChange={(e) => setSelectedSize(e.target.value)}
                 className="px-3 sm:px-4 py-2 sm:py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
+                style={{ fontSize: '16px' }} // Important pour iOS
               >
                 <option value="all">Toutes les tailles</option>
                 <option value="petit">Petit (&lt; 10kg)</option>
@@ -212,6 +299,7 @@ const AdoptionPage = () => {
                 value={selectedAge}
                 onChange={(e) => setSelectedAge(e.target.value)}
                 className="px-3 sm:px-4 py-2 sm:py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
+                style={{ fontSize: '16px' }} // Important pour iOS
               >
                 <option value="all">Tous les âges</option>
                 <option value="young">Jeune (&lt; 2 ans)</option>
@@ -223,6 +311,7 @@ const AdoptionPage = () => {
                 value={selectedCity}
                 onChange={(e) => setSelectedCity(e.target.value)}
                 className="px-3 sm:px-4 py-2 sm:py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
+                style={{ fontSize: '16px' }} // Important pour iOS
               >
                 <option value="all">Toutes les villes</option>
                 {cities.map(city => (
@@ -233,12 +322,13 @@ const AdoptionPage = () => {
 
             {/* Toggle Urgent */}
             <div className="mt-3 sm:mt-4">
-              <label className="flex items-center gap-2 cursor-pointer w-fit">
+              <label className="flex items-center gap-2 cursor-pointer w-fit" style={{ minHeight: '44px' }}>
                 <input
                   type="checkbox"
                   checked={showUrgentOnly}
                   onChange={(e) => setShowUrgentOnly(e.target.checked)}
-                  className="w-4 h-4 sm:w-5 sm:h-5 rounded text-red-500 focus:ring-red-500"
+                  className="w-5 h-5 sm:w-5 sm:h-5 rounded text-red-500 focus:ring-red-500"
+                  style={{ minHeight: '20px', minWidth: '20px' }}
                 />
                 <span className="text-xs sm:text-sm font-medium text-gray-700">
                   🚨 Adoptions urgentes uniquement
@@ -296,6 +386,14 @@ const DogCard = ({ dog }) => {
     <div 
       onClick={() => navigate(`/adoption/${dog.id}`)}
       className="bg-white rounded-xl sm:rounded-3xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg transition-all cursor-pointer group"
+      style={{
+        WebkitTapHighlightColor: 'transparent',
+        minHeight: '44px', // Taille minimale pour les zones cliquables
+        cursor: 'pointer'
+      }}
+      role="button"
+      tabIndex={0}
+      onKeyPress={(e) => e.key === 'Enter' && navigate(`/adoption/${dog.id}`)}
     >
       {/* Image */}
       <div className="relative aspect-square">
@@ -304,6 +402,7 @@ const DogCard = ({ dog }) => {
             src={dog.photo_url}
             alt={dog.name}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            loading="lazy"
           />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center">
@@ -343,7 +442,12 @@ const DogCard = ({ dog }) => {
         {org && (
           <div className="flex items-center gap-2 mb-2 sm:mb-3 p-1.5 sm:p-2 bg-gray-50 rounded-lg sm:rounded-xl">
             {org.logo_url ? (
-              <img src={org.logo_url} alt={org.organization_name} className="w-6 h-6 sm:w-8 sm:h-8 rounded-full object-cover flex-shrink-0" />
+              <img 
+                src={org.logo_url} 
+                alt={org.organization_name} 
+                className="w-6 h-6 sm:w-8 sm:h-8 rounded-full object-cover flex-shrink-0"
+                loading="lazy"
+              />
             ) : (
               <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
                 {org.organization_name?.charAt(0).toUpperCase()}
@@ -377,7 +481,14 @@ const DogCard = ({ dog }) => {
         )}
 
         {/* Bouton */}
-        <button className="w-full py-2 sm:py-3 bg-blue-500 text-white rounded-lg sm:rounded-xl font-medium hover:bg-blue-600 transition-smooth flex items-center justify-center gap-1 sm:gap-2 text-sm sm:text-base">
+        <button 
+          className="w-full py-3 sm:py-3 bg-blue-500 text-white rounded-lg sm:rounded-xl font-medium hover:bg-blue-600 transition-smooth flex items-center justify-center gap-1 sm:gap-2 text-sm sm:text-base"
+          style={{ minHeight: '44px' }}
+          onClick={(e) => {
+            e.stopPropagation();
+            navigate(`/adoption/${dog.id}`);
+          }}
+        >
           <Heart size={16} className="sm:w-5 sm:h-5" />
           Voir le profil
         </button>
