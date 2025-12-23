@@ -23,11 +23,14 @@ import PolitiqueConfidentialite from './pages/PolitiqueConfidentialite';
 import About from './pages/About';
 import Contact from './pages/Contact';
 
+// Landing Page - NOUVEAU ⬇️
+import LandingPage from './pages/LandingPage';
+
 // Pages Adoption
 import AdoptionPage from './pages/adoption';
 import AdoptionDetail from './pages/adoption/AdoptionDetail';
 
-// Route hybride /chien/:id - NOUVEAU ⬇️
+// Route hybride /chien/:id
 import HybridDogProfile from './pages/chien/HybridDogProfile';
 
 const Routes = () => {
@@ -36,12 +39,14 @@ const Routes = () => {
       <ErrorBoundary>
       <ScrollToTop />
       <RouterRoutes>
-        <Route path="/" element={<Login />} />
+        {/* Landing Page publique - NOUVEAU ⬇️ */}
+        <Route path="/" element={<LandingPage />} />
+        
         <Route path="/important-contacts" element={<ImportantContacts />} />
         <Route path="/forum-discussion" element={<ForumDiscussion />} />
         <Route path="/login" element={<Login />} />
         
-        {/* Route hybride PUBLIC/PRIVÉ - NOUVEAU ⬇️ */}
+        {/* Route hybride PUBLIC/PRIVÉ */}
         <Route path="/chien/:id" element={<HybridDogProfile />} />
         
         {/* Route privée (dashboard santé) */}
