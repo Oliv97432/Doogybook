@@ -258,7 +258,7 @@ const AdoptionPage = () => {
           >
             {/* Recherche */}
             <div className="relative mb-3 sm:mb-4">
-              <Search className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} className="sm:w-5 sm:h-5" />
+              <Search className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-gray-400 sm:w-5 sm:h-5" size={18} />
               <input
                 type="text"
                 placeholder="Rechercher par nom ou race..."
