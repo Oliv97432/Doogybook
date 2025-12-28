@@ -11,8 +11,8 @@ const DashboardRedirect = () => {
   useEffect(() => {
     console.log('🔵 DashboardRedirect: Component mounted!');
     
-    const checkProAccount = async () => {
-      console.log('🔵 DashboardRedirect: Checking pro account...');
+    const checkAccountType = async () => {
+      console.log('🔵 DashboardRedirect: Checking account type...');
       console.log('🔵 User:', user);
       
       if (!user) {
@@ -24,16 +24,34 @@ const DashboardRedirect = () => {
       console.log('🟢 DashboardRedirect: User found:', user.id);
 
       try {
-        console.log('🔵 DashboardRedirect: Querying professional_accounts...');
+        console.log('🔵 DashboardRedirect: Step 1 - Checking if admin...');
         
-        // Vérifier si l'utilisateur a un compte pro
-        const { data: proAccount, error } = await supabase
+        // ÉTAPE 1 : Vérifier si l'utilisateur est admin
+        const { data: profile, error: profileError } = await supabase
+          .from('user_profiles')
+          .select('is_admin')
+          .eq('user_id', user.id)
+          .single();
+
+        console.log('🔵 DashboardRedirect: Admin check result:', { profile, profileError });
+
+        if (profile && profile.is_admin) {
+          // Est un admin → Dashboard Admin
+          console.log('🟣 DashboardRedirect: User is ADMIN! Redirecting to /admin/dashboard');
+          navigate('/admin/dashboard');
+          return;
+        }
+
+        console.log('🔵 DashboardRedirect: Step 2 - Checking if professional account...');
+        
+        // ÉTAPE 2 : Vérifier si l'utilisateur a un compte pro
+        const { data: proAccount, error: proError } = await supabase
           .from('professional_accounts')
           .select('id, is_active')
           .eq('user_id', user.id)
           .single();
 
-        console.log('🔵 DashboardRedirect: Query result:', { proAccount, error });
+        console.log('🔵 DashboardRedirect: Pro account result:', { proAccount, proError });
 
         if (proAccount && proAccount.is_active) {
           // A un compte pro → Dashboard Pro
@@ -41,11 +59,11 @@ const DashboardRedirect = () => {
           navigate('/pro/dashboard');
         } else {
           // Pas de compte pro → Dashboard User
-          console.log('🟡 DashboardRedirect: No pro account. Redirecting to /dog-profile');
+          console.log('🟡 DashboardRedirect: Regular user. Redirecting to /dog-profile');
           navigate('/dog-profile');
         }
       } catch (error) {
-        // En cas d'erreur ou pas de compte pro → Dashboard User
+        // En cas d'erreur → Dashboard User
         console.log('🔴 DashboardRedirect: Error occurred:', error);
         console.log('🟡 DashboardRedirect: Redirecting to /dog-profile');
         navigate('/dog-profile');
@@ -54,7 +72,7 @@ const DashboardRedirect = () => {
       }
     };
 
-    checkProAccount();
+    checkAccountType();
   }, [user, navigate]);
 
   if (checking) {
