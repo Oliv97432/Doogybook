@@ -7,11 +7,16 @@ import {
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import TabNavigation from '../../components/TabNavigation';
+import TabNavigationPro from '../../components/TabNavigationPro';
 import Footer from '../../components/Footer';
 
 const Settings = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  
+  // Détection du type de compte
+  const [isProAccount, setIsProAccount] = useState(false);
+  const [checkingAccountType, setCheckingAccountType] = useState(true);
   
   // États pour le profil utilisateur
   const [profile, setProfile] = useState({
@@ -26,10 +31,37 @@ const Settings = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteConfirmEmail, setDeleteConfirmEmail] = useState('');
 
+  // Vérifier le type de compte
+  useEffect(() => {
+    checkAccountType();
+  }, [user]);
+
   // Charger le profil utilisateur
   useEffect(() => {
-    loadProfile();
+    if (user) {
+      loadProfile();
+    }
   }, [user]);
+
+  const checkAccountType = async () => {
+    if (!user) return;
+    
+    setCheckingAccountType(true);
+    try {
+      const { data: proAccount } = await supabase
+        .from('professional_accounts')
+        .select('id, is_active')
+        .eq('user_id', user.id)
+        .single();
+      
+      setIsProAccount(proAccount && proAccount.is_active);
+    } catch (error) {
+      console.log('No pro account found');
+      setIsProAccount(false);
+    } finally {
+      setCheckingAccountType(false);
+    }
+  };
 
   const loadProfile = async () => {
     if (!user) return;
@@ -138,9 +170,21 @@ const Settings = () => {
     }
   };
 
+  if (checkingAccountType) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin h-12 w-12 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p className="text-gray-600">Chargement...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <TabNavigation />
+      {/* Afficher la bonne navigation selon le type de compte */}
+      {isProAccount ? <TabNavigationPro /> : <TabNavigation />}
 
       <main className="main-content flex-1">
         <div className="max-w-2xl mx-auto px-3 sm:px-4 py-4 sm:py-6 space-y-4 sm:space-y-6">
