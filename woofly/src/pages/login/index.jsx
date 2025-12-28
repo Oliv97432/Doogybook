@@ -11,7 +11,7 @@ const Login = () => {
   useEffect(() => {
     const user = localStorage.getItem('Doogybook_user');
     if (user) {
-      navigate('/dog-profile');
+      navigate('/dashboard'); // ← CORRIGÉ ICI
     }
   }, [navigate]);
 
