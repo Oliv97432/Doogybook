@@ -43,6 +43,9 @@ import InstagramGenerator from './pages/pro/InstagramGenerator';
 // Redirection intelligente - NOUVEAU
 import DashboardRedirect from './components/DashboardRedirect';
 
+// Dashboard Admin - NOUVEAU
+import AdminDashboard from './pages/admin/AdminDashboard';
+
 const Routes = () => {
   return (
     <BrowserRouter>
@@ -61,6 +64,9 @@ const Routes = () => {
         
         {/* Redirection intelligente - NOUVEAU */}
         <Route path="/dashboard" element={<DashboardRedirect />} />
+        
+        {/* Dashboard Admin - NOUVEAU */}
+        <Route path="/admin/dashboard" element={<AdminDashboard />} />
         
         {/* Route privée (dashboard santé) */}
         <Route path="/dog-profile" element={<DogProfile />} />
