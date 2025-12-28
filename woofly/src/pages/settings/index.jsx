@@ -191,7 +191,7 @@ const Settings = () => {
           <section className="bg-card rounded-xl sm:rounded-2xl border border-border p-4 sm:p-6">
             <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
               <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                <User className="text-blue-600" size={20} className="sm:w-6 sm:h-6" />
+                <User className="text-blue-600 sm:w-6 sm:h-6" size={20} />
               </div>
               <div>
                 <h3 className="text-base sm:text-lg font-heading font-semibold text-foreground">
@@ -297,7 +297,7 @@ const Settings = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 sm:gap-4">
                 <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-amber-100 to-yellow-100 flex items-center justify-center flex-shrink-0">
-                  <Crown className="text-amber-500" size={20} className="sm:w-6 sm:h-6" />
+                  <Crown className="text-amber-500 sm:w-6 sm:h-6" size={20} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="text-base sm:text-lg font-heading font-semibold text-foreground flex items-center gap-1 sm:gap-2">
@@ -319,7 +319,7 @@ const Settings = () => {
           <section className="bg-card rounded-xl sm:rounded-2xl border border-red-200 p-4 sm:p-6">
             <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
               <div className="w-8 h-8 sm:w-10 sm:h-10 bg-red-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                <AlertCircle className="text-white" size={16} className="sm:w-5 sm:h-5" />
+                <AlertCircle className="text-white sm:w-5 sm:h-5" size={16} />
               </div>
               <div className="flex-1 min-w-0">
                 <h3 className="text-base sm:text-lg font-heading font-semibold text-red-900">
