@@ -66,7 +66,7 @@ const LoginForm = () => {
           general: error?.message || 'Échec de la connexion. Veuillez vérifier vos identifiants.'
         });
       } else if (data?.user) {
-        navigate('/dog-profile');
+        navigate('/dashboard'); // ← CORRIGÉ ICI
       }
     } catch (err) {
       setErrors({
@@ -110,6 +110,7 @@ const LoginForm = () => {
         required
         disabled={isLoading}
       />
+
       <div className="relative">
         <Input
           type={showPassword ? 'text' : 'password'}
@@ -132,6 +133,7 @@ const LoginForm = () => {
           <Icon name={showPassword ? 'EyeOff' : 'Eye'} size={20} />
         </button>
       </div>
+
       <div className="flex items-center justify-between">
         <button
           type="button"
@@ -142,6 +144,7 @@ const LoginForm = () => {
           Mot de passe oublié ?
         </button>
       </div>
+
       <Button
         type="submit"
         variant="default"
@@ -152,6 +155,7 @@ const LoginForm = () => {
       >
         Se connecter
       </Button>
+
       <div className="relative">
         <div className="absolute inset-0 flex items-center">
           <div className="w-full border-t border-border"></div>
@@ -162,6 +166,7 @@ const LoginForm = () => {
           </span>
         </div>
       </div>
+
       <Button
         type="button"
         variant="outline"
