@@ -9,13 +9,23 @@ const DashboardRedirect = () => {
   const [checking, setChecking] = useState(true);
 
   useEffect(() => {
+    console.log('🔵 DashboardRedirect: Component mounted!');
+    
     const checkProAccount = async () => {
+      console.log('🔵 DashboardRedirect: Checking pro account...');
+      console.log('🔵 User:', user);
+      
       if (!user) {
+        console.log('🔴 DashboardRedirect: No user, redirecting to login');
         navigate('/login');
         return;
       }
 
+      console.log('🟢 DashboardRedirect: User found:', user.id);
+
       try {
+        console.log('🔵 DashboardRedirect: Querying professional_accounts...');
+        
         // Vérifier si l'utilisateur a un compte pro
         const { data: proAccount, error } = await supabase
           .from('professional_accounts')
@@ -23,16 +33,21 @@ const DashboardRedirect = () => {
           .eq('user_id', user.id)
           .single();
 
+        console.log('🔵 DashboardRedirect: Query result:', { proAccount, error });
+
         if (proAccount && proAccount.is_active) {
           // A un compte pro → Dashboard Pro
+          console.log('🟢 DashboardRedirect: Pro account found! Redirecting to /pro/dashboard');
           navigate('/pro/dashboard');
         } else {
           // Pas de compte pro → Dashboard User
+          console.log('🟡 DashboardRedirect: No pro account. Redirecting to /dog-profile');
           navigate('/dog-profile');
         }
       } catch (error) {
         // En cas d'erreur ou pas de compte pro → Dashboard User
-        console.log('No pro account found, redirecting to user dashboard');
+        console.log('🔴 DashboardRedirect: Error occurred:', error);
+        console.log('🟡 DashboardRedirect: Redirecting to /dog-profile');
         navigate('/dog-profile');
       } finally {
         setChecking(false);
