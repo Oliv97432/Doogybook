@@ -46,6 +46,9 @@ import DashboardRedirect from './components/DashboardRedirect';
 // Dashboard Admin - NOUVEAU
 import AdminDashboard from './pages/admin/AdminDashboard';
 
+// Page de récupération de chien - NOUVEAU
+import ClaimDogPage from './pages/ClaimDogPage';
+
 const Routes = () => {
   return (
     <BrowserRouter>
@@ -67,6 +70,9 @@ const Routes = () => {
         
         {/* Dashboard Admin - NOUVEAU */}
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        
+        {/* Page de récupération de chien - NOUVEAU */}
+        <Route path="/claim-dog" element={<ClaimDogPage />} />
         
         {/* Route privée (dashboard santé) */}
         <Route path="/dog-profile" element={<DogProfile />} />
