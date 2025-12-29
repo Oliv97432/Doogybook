@@ -173,7 +173,7 @@ const ProDogManagement = () => {
     try {
       const dogData = {
         ...formData,
-        user_id: user.id,
+        user_id: null, // Pas de propriétaire pour les chiens d'adoption
         professional_account_id: proAccount.id,
         is_for_adoption: true,
         adoption_status: 'available'
