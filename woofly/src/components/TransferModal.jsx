@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { X, Send, CheckCircle, AlertCircle, Loader } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
@@ -8,6 +8,21 @@ const TransferModal = ({ dog, professionalAccountId, onClose, onSuccess }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [transferMode, setTransferMode] = useState(null); // 'immediate' ou 'pending'
+  const modalRef = useRef(null);
+
+  // Fermer le modal quand on clique en dehors
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (modalRef.current && !modalRef.current.contains(event.target)) {
+        onClose();
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [onClose]);
 
   const handleEmailSubmit = async (e) => {
     e.preventDefault();
@@ -165,13 +180,10 @@ const TransferModal = ({ dog, professionalAccountId, onClose, onSuccess }) => {
   };
 
   return (
-    <div 
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
-      onClick={onClose}
-    >
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div 
+        ref={modalRef}
         className="bg-white rounded-3xl max-w-md w-full p-8 relative"
-        onClick={(e) => e.stopPropagation()}
       >
         
         {/* Bouton fermer */}
