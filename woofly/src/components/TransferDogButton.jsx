@@ -17,6 +17,7 @@ const TransferDogButton = ({ dog, professionalAccountId, onTransferComplete }) =
   return (
     <>
       <button
+        type="button"
         onClick={() => setShowModal(true)}
         className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-4 rounded-2xl font-semibold hover:from-blue-600 hover:to-blue-700 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-3 text-lg"
       >
