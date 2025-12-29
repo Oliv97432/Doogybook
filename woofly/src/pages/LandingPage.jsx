@@ -6,7 +6,6 @@ import {
   Heart, Stethoscope, Users, Calendar, ArrowRight,
   Check, Sparkles, Shield, MapPin
 } from 'lucide-react';
-import Footer from '../components/Footer';
 
 const LandingPage = () => {
   const { user } = useAuth();
@@ -363,8 +362,6 @@ const LandingPage = () => {
           </div>
         </div>
       </section>
-
-      <Footer />
     </div>
   );
 };
