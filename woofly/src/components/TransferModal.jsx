@@ -3,11 +3,11 @@ import { X, Send, CheckCircle, AlertCircle, Loader } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 const TransferModal = ({ dog, professionalAccountId, onClose, onSuccess }) => {
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(1); // 1: Email, 2: Confirmation, 3: Success
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [transferMode, setTransferMode] = useState(null);
+  const [transferMode, setTransferMode] = useState(null); // 'immediate' ou 'pending'
 
   const handleEmailSubmit = async (e) => {
     e.preventDefault();
@@ -15,6 +15,7 @@ const TransferModal = ({ dog, professionalAccountId, onClose, onSuccess }) => {
     setError('');
 
     try {
+      // Vérifier si l'email existe dans user_profiles
       const { data: existingUser, error: userError } = await supabase
         .from('user_profiles')
         .select('id, email')
@@ -26,8 +27,10 @@ const TransferModal = ({ dog, professionalAccountId, onClose, onSuccess }) => {
       }
 
       if (existingUser) {
+        // L'utilisateur existe déjà
         setTransferMode('immediate');
       } else {
+        // L'utilisateur n'existe pas, on va créer un pending_transfer
         setTransferMode('pending');
       }
 
@@ -46,13 +49,16 @@ const TransferModal = ({ dog, professionalAccountId, onClose, onSuccess }) => {
 
     try {
       if (transferMode === 'immediate') {
+        // Transfert immédiat
         await handleImmediateTransfer();
       } else {
+        // Transfert avec invitation
         await handlePendingTransfer();
       }
 
       setStep(3);
       
+      // Fermer et callback après 2 secondes
       setTimeout(() => {
         if (onSuccess) onSuccess();
       }, 2000);
@@ -66,6 +72,7 @@ const TransferModal = ({ dog, professionalAccountId, onClose, onSuccess }) => {
   };
 
   const handleImmediateTransfer = async () => {
+    // Récupérer l'utilisateur
     const { data: userProfile, error: userError } = await supabase
       .from('user_profiles')
       .select('id')
@@ -74,6 +81,7 @@ const TransferModal = ({ dog, professionalAccountId, onClose, onSuccess }) => {
 
     if (userError) throw userError;
 
+    // Transférer le chien
     const { error: updateError } = await supabase
       .from('dogs')
       .update({
@@ -87,6 +95,7 @@ const TransferModal = ({ dog, professionalAccountId, onClose, onSuccess }) => {
 
     if (updateError) throw updateError;
 
+    // Créer une notification
     const { error: notifError } = await supabase
       .from('notifications')
       .insert({
@@ -102,11 +111,13 @@ const TransferModal = ({ dog, professionalAccountId, onClose, onSuccess }) => {
   };
 
   const handlePendingTransfer = async () => {
+    // Générer un token aléatoire
     const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
     const token12 = token.substring(0, 12).toUpperCase();
 
+    // Créer le pending_transfer
     const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + 7);
+    expiresAt.setDate(expiresAt.getDate() + 7); // Expire dans 7 jours
 
     const { data: transfer, error: transferError } = await supabase
       .from('pending_transfers')
@@ -116,7 +127,7 @@ const TransferModal = ({ dog, professionalAccountId, onClose, onSuccess }) => {
         to_email: email.toLowerCase(),
         transfer_token: token12,
         status: 'pending',
-        dog_data: dog,
+        dog_data: dog, // Backup des données du chien
         expires_at: expiresAt.toISOString(),
         created_at: new Date().toISOString()
       })
@@ -125,6 +136,7 @@ const TransferModal = ({ dog, professionalAccountId, onClose, onSuccess }) => {
 
     if (transferError) throw transferError;
 
+    // Mettre à jour le statut du chien
     const { error: updateError } = await supabase
       .from('dogs')
       .update({
@@ -135,6 +147,7 @@ const TransferModal = ({ dog, professionalAccountId, onClose, onSuccess }) => {
 
     if (updateError) throw updateError;
 
+    // Appeler l'Edge Function pour envoyer l'email
     const { error: emailError } = await supabase.functions.invoke('send-transfer-email', {
       body: {
         to_email: email.toLowerCase(),
@@ -147,13 +160,21 @@ const TransferModal = ({ dog, professionalAccountId, onClose, onSuccess }) => {
 
     if (emailError) {
       console.error('Erreur envoi email:', emailError);
+      // On ne bloque pas le transfert si l'email échoue
     }
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-3xl max-w-md w-full p-8 relative">
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+      onClick={onClose}
+    >
+      <div 
+        className="bg-white rounded-3xl max-w-md w-full p-8 relative"
+        onClick={(e) => e.stopPropagation()}
+      >
         
+        {/* Bouton fermer */}
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
@@ -161,6 +182,7 @@ const TransferModal = ({ dog, professionalAccountId, onClose, onSuccess }) => {
           <X size={24} />
         </button>
 
+        {/* Étape 1 : Saisie email */}
         {step === 1 && (
           <>
             <h2 className="text-2xl font-heading font-bold text-gray-900 mb-2">
@@ -220,6 +242,7 @@ const TransferModal = ({ dog, professionalAccountId, onClose, onSuccess }) => {
           </>
         )}
 
+        {/* Étape 2 : Confirmation */}
         {step === 2 && (
           <>
             <div className="text-center mb-6">
@@ -294,6 +317,7 @@ const TransferModal = ({ dog, professionalAccountId, onClose, onSuccess }) => {
           </>
         )}
 
+        {/* Étape 3 : Succès */}
         {step === 3 && (
           <div className="text-center">
             <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
