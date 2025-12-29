@@ -195,7 +195,7 @@ const ProDogManagement = () => {
     return (
       <div className="min-h-screen bg-background">
         <header className="sticky top-0 z-50 bg-white border-b border-gray-200">
-          <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="max-w-4xl mx-auto px-3 sm:px-4 py-3 sm:py-4 flex items-center justify-between">
             <button
               onClick={() => {
                 setShowForm(false);
@@ -203,21 +203,22 @@ const ProDogManagement = () => {
                 resetForm();
                 navigate('/pro/dogs');
               }}
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
+              className="flex items-center gap-1 sm:gap-2 text-gray-600 hover:text-gray-900 min-h-[44px] min-w-[44px]"
+              aria-label="Annuler"
             >
-              <X size={20} />
-              <span className="font-medium">Annuler</span>
+              <X size={18} className="sm:size-5" />
+              <span className="font-medium text-sm sm:text-base hidden xs:inline">Annuler</span>
             </button>
-            <h1 className="text-xl font-heading font-bold text-gray-900">
+            <h1 className="text-lg sm:text-xl font-heading font-bold text-gray-900 truncate px-2">
               {editingDog ? 'Modifier' : 'Nouveau chien'}
             </h1>
-            <div className="w-20"></div>
+            <div className="w-10 sm:w-20"></div>
           </div>
         </header>
 
-        <main className="max-w-4xl mx-auto px-4 py-8">
-          <form onSubmit={handleSubmit} className="bg-white rounded-3xl p-8 shadow-sm">
-            <div className="space-y-6">
+        <main className="max-w-4xl mx-auto px-3 sm:px-4 py-6 sm:py-8">
+          <form onSubmit={handleSubmit} className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 shadow-sm">
+            <div className="space-y-4 sm:space-y-6">
               {/* Nom */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -229,7 +230,7 @@ const ProDogManagement = () => {
                   value={formData.name}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
                 />
               </div>
 
@@ -244,12 +245,12 @@ const ProDogManagement = () => {
                   value={formData.breed}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
                 />
               </div>
 
               {/* Sexe & Date de naissance */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 xs:grid-cols-2 gap-3 sm:gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Sexe *
@@ -258,7 +259,7 @@ const ProDogManagement = () => {
                     name="gender"
                     value={formData.gender}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
                   >
                     <option value="male">Mâle</option>
                     <option value="female">Femelle</option>
@@ -274,13 +275,13 @@ const ProDogManagement = () => {
                     name="birth_date"
                     value={formData.birth_date}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
                   />
                 </div>
               </div>
 
               {/* Taille & Poids */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 xs:grid-cols-2 gap-3 sm:gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Taille
@@ -291,7 +292,7 @@ const ProDogManagement = () => {
                     value={formData.size}
                     onChange={handleChange}
                     placeholder="Ex: Moyen"
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
                   />
                 </div>
 
@@ -304,7 +305,7 @@ const ProDogManagement = () => {
                     name="weight"
                     value={formData.weight}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
                   />
                 </div>
               </div>
@@ -320,7 +321,7 @@ const ProDogManagement = () => {
                   value={formData.photo_url}
                   onChange={handleChange}
                   placeholder="https://..."
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
                 />
               </div>
 
@@ -334,9 +335,9 @@ const ProDogManagement = () => {
                   value={formData.adoption_story}
                   onChange={handleChange}
                   required
-                  rows={4}
+                  rows={3}
                   placeholder="Racontez l'histoire de ce chien..."
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm sm:text-base"
                 />
               </div>
 
@@ -349,9 +350,9 @@ const ProDogManagement = () => {
                   name="adoption_requirements"
                   value={formData.adoption_requirements}
                   onChange={handleChange}
-                  rows={3}
+                  rows={2}
                   placeholder="Maison avec jardin, expérience avec les chiens..."
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm sm:text-base"
                 />
               </div>
 
@@ -366,37 +367,37 @@ const ProDogManagement = () => {
                   value={formData.adoption_fee}
                   onChange={handleChange}
                   placeholder="150"
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
                 />
               </div>
 
               {/* Checkboxes */}
               <div className="space-y-3">
-                <label className="flex items-center gap-3">
+                <label className="flex items-center gap-3 cursor-pointer min-h-[44px]">
                   <input
                     type="checkbox"
                     name="sterilized"
                     checked={formData.sterilized}
                     onChange={handleChange}
-                    className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
                   />
-                  <span className="text-gray-700">Stérilisé(e)</span>
+                  <span className="text-gray-700 text-sm sm:text-base">Stérilisé(e)</span>
                 </label>
 
-                <label className="flex items-center gap-3">
+                <label className="flex items-center gap-3 cursor-pointer min-h-[44px]">
                   <input
                     type="checkbox"
                     name="is_urgent"
                     checked={formData.is_urgent}
                     onChange={handleChange}
-                    className="w-5 h-5 rounded border-gray-300 text-red-600 focus:ring-red-500"
+                    className="w-5 h-5 rounded border-gray-300 text-red-600 focus:ring-red-500 cursor-pointer"
                   />
-                  <span className="text-gray-700">Adoption urgente</span>
+                  <span className="text-gray-700 text-sm sm:text-base">Adoption urgente</span>
                 </label>
               </div>
 
               {/* Boutons */}
-              <div className="flex gap-4 pt-6 border-t border-gray-200">
+              <div className="flex flex-col xs:flex-row gap-3 sm:gap-4 pt-4 sm:pt-6 border-t border-gray-200">
                 <button
                   type="button"
                   onClick={() => {
@@ -405,23 +406,23 @@ const ProDogManagement = () => {
                     resetForm();
                     navigate('/pro/dogs');
                   }}
-                  className="flex-1 py-3 border-2 border-gray-200 rounded-xl font-medium hover:bg-gray-50"
+                  className="flex-1 py-3 border-2 border-gray-200 rounded-xl font-medium hover:bg-gray-50 text-sm sm:text-base min-h-[44px]"
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
                   disabled={loading}
-                  className="flex-1 py-3 bg-blue-500 text-white rounded-xl font-medium hover:bg-blue-600 disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="flex-1 py-3 bg-blue-500 text-white rounded-xl font-medium hover:bg-blue-600 disabled:opacity-50 flex items-center justify-center gap-2 text-sm sm:text-base min-h-[44px]"
                 >
-                  <Save size={20} />
+                  <Save size={18} className="sm:size-5" />
                   {loading ? 'Enregistrement...' : 'Enregistrer'}
                 </button>
               </div>
 
               {/* Bouton de transfert - NOUVEAU */}
               {editingDog && editingDog.adoption_status !== 'adopted' && (
-                <div className="pt-6 border-t border-gray-200 mt-6">
+                <div className="pt-4 sm:pt-6 border-t border-gray-200 mt-4 sm:mt-6">
                   <TransferDogButton
                     dog={editingDog}
                     professionalAccountId={proAccount?.id}
@@ -448,43 +449,45 @@ const ProDogManagement = () => {
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-50 bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between mb-4">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 py-3 sm:py-4">
+          <div className="flex items-center justify-between mb-3 sm:mb-4">
             <button
               onClick={() => navigate('/pro/dashboard')}
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
+              className="flex items-center gap-1 sm:gap-2 text-gray-600 hover:text-gray-900 min-h-[44px] min-w-[44px]"
+              aria-label="Retour au tableau de bord"
             >
-              <ArrowLeft size={20} />
-              <span className="font-medium">Dashboard</span>
+              <ArrowLeft size={18} className="sm:size-5" />
+              <span className="font-medium text-sm sm:text-base hidden xs:inline">Dashboard</span>
             </button>
             <button
               onClick={() => {
                 setShowForm(true);
                 navigate('/pro/dogs/new');
               }}
-              className="px-4 py-2 bg-blue-500 text-white rounded-xl font-medium hover:bg-blue-600 flex items-center gap-2"
+              className="px-3 sm:px-4 py-2 bg-blue-500 text-white rounded-xl font-medium hover:bg-blue-600 flex items-center gap-1 sm:gap-2 min-h-[44px] text-sm sm:text-base"
             >
-              <Plus size={20} />
-              Ajouter un chien
+              <Plus size={18} className="sm:size-5" />
+              <span className="hidden xs:inline">Ajouter un chien</span>
+              <span className="xs:hidden">Ajouter</span>
             </button>
           </div>
 
           {/* Recherche & Filtres */}
-          <div className="flex gap-4">
+          <div className="flex flex-col xs:flex-row gap-3 sm:gap-4">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} className="sm:size-5" />
               <input
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Rechercher un chien..."
-                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-9 sm:pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
               />
             </div>
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="px-3 sm:px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base min-h-[44px]"
             >
               <option value="all">Tous</option>
               <option value="available">Disponibles</option>
@@ -495,41 +498,41 @@ const ProDogManagement = () => {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 py-6">
+      <main className="max-w-7xl mx-auto px-3 sm:px-4 py-6">
         {filteredDogs.length === 0 ? (
-          <div className="bg-white rounded-3xl p-12 text-center">
-            <Heart size={48} className="text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-600 mb-4">Aucun chien trouvé</p>
+          <div className="bg-white rounded-2xl sm:rounded-3xl p-8 sm:p-12 text-center">
+            <Heart size={40} className="sm:size-12 text-gray-300 mx-auto mb-3 sm:mb-4" />
+            <p className="text-gray-600 mb-4 text-sm sm:text-base">Aucun chien trouvé</p>
             <button
               onClick={() => setShowForm(true)}
-              className="px-6 py-3 bg-blue-500 text-white rounded-xl font-medium hover:bg-blue-600"
+              className="px-4 sm:px-6 py-2 sm:py-3 bg-blue-500 text-white rounded-xl font-medium hover:bg-blue-600 text-sm sm:text-base min-h-[44px]"
             >
               Ajouter votre premier chien
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {filteredDogs.map((dog) => (
-              <div key={dog.id} className="bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-200">
+              <div key={dog.id} className="bg-white rounded-2xl sm:rounded-3xl overflow-hidden shadow-sm border border-gray-200">
                 <div className="aspect-square relative">
                   {dog.photo_url ? (
                     <img src={dog.photo_url} alt={dog.name} className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center">
-                      <span className="text-6xl text-white font-bold">
+                      <span className="text-4xl sm:text-5xl md:text-6xl text-white font-bold">
                         {dog.name?.charAt(0).toUpperCase()}
                       </span>
                     </div>
                   )}
                   {dog.is_urgent && (
-                    <div className="absolute top-3 left-3">
-                      <span className="px-3 py-1 bg-red-500 text-white text-xs font-bold rounded-full">
+                    <div className="absolute top-2 left-2 sm:top-3 sm:left-3">
+                      <span className="px-2 py-1 sm:px-3 sm:py-1 bg-red-500 text-white text-xs font-bold rounded-full">
                         URGENT
                       </span>
                     </div>
                   )}
-                  <div className="absolute top-3 right-3">
-                    <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                  <div className="absolute top-2 right-2 sm:top-3 sm:right-3">
+                    <span className={`px-2 py-1 sm:px-3 sm:py-1 rounded-full text-xs font-bold ${
                       dog.adoption_status === 'available' ? 'bg-green-500 text-white' :
                       dog.adoption_status === 'pending' ? 'bg-orange-500 text-white' :
                       'bg-gray-500 text-white'
@@ -540,17 +543,17 @@ const ProDogManagement = () => {
                   </div>
                 </div>
                 
-                <div className="p-4">
-                  <h3 className="font-bold text-lg text-gray-900 mb-1">{dog.name}</h3>
-                  <p className="text-gray-600 text-sm mb-4">{dog.breed}</p>
+                <div className="p-4 sm:p-6">
+                  <h3 className="font-bold text-base sm:text-lg md:text-xl text-gray-900 mb-1 truncate">{dog.name}</h3>
+                  <p className="text-gray-600 text-sm mb-4 truncate">{dog.breed}</p>
                   
                   <div className="flex gap-2">
                     <button
                       onClick={() => navigate(`/adoption/${dog.id}`)}
-                      className="flex-1 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 flex items-center justify-center gap-2 text-sm"
+                      className="flex-1 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 flex items-center justify-center gap-1 sm:gap-2 text-xs sm:text-sm min-h-[44px]"
                     >
-                      <Eye size={16} />
-                      Voir
+                      <Eye size={14} className="sm:size-4" />
+                      <span className="truncate">Voir</span>
                     </button>
                     <button
                       onClick={() => {
@@ -559,16 +562,17 @@ const ProDogManagement = () => {
                         setShowForm(true);
                         navigate(`/pro/dogs/${dog.id}`);
                       }}
-                      className="flex-1 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 flex items-center justify-center gap-2 text-sm"
+                      className="flex-1 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 flex items-center justify-center gap-1 sm:gap-2 text-xs sm:text-sm min-h-[44px]"
                     >
-                      <Edit size={16} />
-                      Modifier
+                      <Edit size={14} className="sm:size-4" />
+                      <span className="truncate">Modifier</span>
                     </button>
                     <button
                       onClick={() => handleDelete(dog.id)}
-                      className="px-3 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200"
+                      className="px-3 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 min-h-[44px] min-w-[44px] flex items-center justify-center"
+                      aria-label="Supprimer"
                     >
-                      <Trash2 size={16} />
+                      <Trash2 size={14} className="sm:size-4" />
                     </button>
                   </div>
                 </div>
