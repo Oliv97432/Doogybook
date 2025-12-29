@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState } from 'react';
 import { X, Send, CheckCircle, AlertCircle, Loader } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
@@ -9,35 +9,9 @@ const TransferModal = ({ dog, professionalAccountId, onClose, onSuccess }) => {
   const [error, setError] = useState('');
   const [transferMode, setTransferMode] = useState(null); // 'immediate' ou 'pending'
 
-  // Fermeture avec Échap
-  const handleKeyDown = useCallback((e) => {
-    if (e.key === 'Escape') {
-      onClose();
-    }
-  }, [onClose]);
-
-  useEffect(() => {
-    // Ajouter l'écouteur pour Échap
-    document.addEventListener('keydown', handleKeyDown);
-    
-    // Empêcher le scroll sur le body
-    document.body.style.overflow = 'hidden';
-    
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = 'unset';
-    };
-  }, [handleKeyDown]);
-
-  const handleOverlayClick = useCallback((e) => {
-    // Fermer seulement si on clique directement sur l'overlay
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
-  }, [onClose]);
-
   const handleEmailSubmit = async (e) => {
     e.preventDefault();
+    e.stopPropagation(); // Empêcher la propagation au form parent
     setLoading(true);
     setError('');
 
@@ -194,10 +168,11 @@ const TransferModal = ({ dog, professionalAccountId, onClose, onSuccess }) => {
   return (
     <div 
       className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
-      onClick={handleOverlayClick}
+      onClick={onClose}
     >
       <div 
         className="bg-white rounded-3xl max-w-md w-full p-8 relative"
+        onClick={(e) => e.stopPropagation()}
       >
         
         {/* Bouton fermer */}
@@ -218,7 +193,10 @@ const TransferModal = ({ dog, professionalAccountId, onClose, onSuccess }) => {
               Entrez l'adresse email de la personne qui adopte {dog.name}
             </p>
 
-            <form onSubmit={handleEmailSubmit}>
+            <form 
+              onSubmit={handleEmailSubmit}
+              onClick={(e) => e.stopPropagation()}
+            >
               <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Email de l'adoptant
@@ -227,8 +205,6 @@ const TransferModal = ({ dog, professionalAccountId, onClose, onSuccess }) => {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  onClick={(e) => e.stopPropagation()}
-                  onMouseDown={(e) => e.stopPropagation()}
                   required
                   placeholder="exemple@email.com"
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
