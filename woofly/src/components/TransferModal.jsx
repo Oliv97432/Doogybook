@@ -10,8 +10,15 @@ const TransferModal = ({ dog, professionalAccountId, onClose, onSuccess }) => {
   const [transferMode, setTransferMode] = useState(null); // 'immediate' ou 'pending'
 
   const handleEmailSubmit = async (e) => {
-    e.preventDefault();
-    e.stopPropagation(); // Empêcher la propagation au form parent
+    if (e && e.preventDefault) {
+      e.preventDefault();
+    }
+    if (e && e.stopPropagation) {
+      e.stopPropagation();
+    }
+    
+    if (!email) return; // Validation basique
+    
     setLoading(true);
     setError('');
 
@@ -193,10 +200,7 @@ const TransferModal = ({ dog, professionalAccountId, onClose, onSuccess }) => {
               Entrez l'adresse email de la personne qui adopte {dog.name}
             </p>
 
-            <form 
-              onSubmit={handleEmailSubmit}
-              onClick={(e) => e.stopPropagation()}
-            >
+            <div>
               <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Email de l'adoptant
@@ -208,6 +212,12 @@ const TransferModal = ({ dog, professionalAccountId, onClose, onSuccess }) => {
                   required
                   placeholder="exemple@email.com"
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter' && email) {
+                      e.preventDefault();
+                      handleEmailSubmit(e);
+                    }
+                  }}
                 />
               </div>
 
@@ -226,7 +236,8 @@ const TransferModal = ({ dog, professionalAccountId, onClose, onSuccess }) => {
                   Annuler
                 </button>
                 <button
-                  type="submit"
+                  type="button"
+                  onClick={handleEmailSubmit}
                   disabled={loading || !email}
                   className="flex-1 px-4 py-3 bg-blue-500 text-white rounded-xl font-medium hover:bg-blue-600 disabled:opacity-50 flex items-center justify-center gap-2"
                 >
@@ -242,7 +253,7 @@ const TransferModal = ({ dog, professionalAccountId, onClose, onSuccess }) => {
                   )}
                 </button>
               </div>
-            </form>
+            </div>
           </>
         )}
 
