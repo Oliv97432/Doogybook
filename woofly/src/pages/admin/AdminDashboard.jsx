@@ -265,6 +265,23 @@ const AdminDashboard = () => {
     }
 
     try {
+      // ✅ DOUBLE VÉRIFICATION ADMIN CÔTÉ CLIENT
+      console.log('🔵 Vérification que l\'utilisateur est admin...');
+      const { data: profile, error: profileError } = await supabase
+        .from('user_profiles')
+        .select('is_admin')
+        .eq('id', user.id)
+        .single();
+
+      if (profileError || !profile?.is_admin) {
+        console.error('❌ User n\'est pas admin !');
+        alert('❌ Erreur : Vous devez être administrateur pour effectuer cette action');
+        return;
+      }
+
+      console.log('✅ User confirmé admin, update du compte pro...');
+
+      // UPDATE du compte pro
       const { data, error } = await supabase
         .from('professional_accounts')
         .update({ 
@@ -283,9 +300,24 @@ const AdminDashboard = () => {
       }
 
       console.log('✅ Compte vérifié avec succès !');
-      alert('✅ Compte vérifié !');
-      await loadAllStats();
-      setSelectedPro(null);
+      console.log('🔵 Data retournée:', data);
+      
+      // Vérifier si l'update a vraiment fonctionné
+      if (data && data.length > 0) {
+        console.log('✅ Update confirmé dans la base !');
+        alert('✅ Compte vérifié ! La page va se recharger...');
+        
+        // Fermer le modal
+        setSelectedPro(null);
+        
+        // Recharger la page après 1 seconde
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
+      } else {
+        console.error('⚠️ Update exécuté mais pas de data retournée');
+        alert('⚠️ Vérification effectuée mais impossible de confirmer. Rechargez la page manuellement.');
+      }
     } catch (error) {
       console.error('❌ Erreur vérification:', error);
       alert('❌ Erreur lors de la vérification: ' + error.message);
