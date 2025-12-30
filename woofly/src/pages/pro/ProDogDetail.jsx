@@ -596,7 +596,7 @@ const ProDogDetail = () => {
   // Après transfert réussi
   const handleTransferSuccess = () => {
     alert('✅ Transfert réussi ! Le chien a été transféré.');
-    navigate('/pro/dogs');
+    navigate('/pro/dashboard');
   };
 
   const tabs = [
@@ -626,8 +626,8 @@ const ProDogDetail = () => {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <p className="text-gray-600 mb-4">Chien non trouvé</p>
-          <Button onClick={() => navigate('/pro/dogs')}>
-            Retour à mes chiens
+          <Button onClick={() => navigate('/pro/dashboard')}>
+            Retour au dashboard
           </Button>
         </div>
       </div>
@@ -642,7 +642,7 @@ const ProDogDetail = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <button
-                onClick={() => navigate('/pro/dogs')}
+                onClick={() => navigate('/pro/dashboard')}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-smooth"
               >
                 <ArrowLeft size={20} />
