@@ -147,22 +147,26 @@ const AdminDashboard = () => {
       // ═══════════════════════════════════════════════════════════
       // DOGS
       // ═══════════════════════════════════════════════════════════
-      const { data: dogs } = await supabase
+      // ✅ MODIFIÉ : Récupérer TOUS les chiens, pas seulement ceux "à l'adoption"
+      const { data: allDogs } = await supabase
         .from('dogs')
         .select('*')
-        .eq('is_for_adoption', true)
         .order('created_at', { ascending: false });
 
-      const totalDogs = dogs?.length || 0;
-      const adoptedDogs = dogs?.filter(d => d.adoption_status === 'adopted').length || 0;
-      const newDogsWeek = dogs?.filter(d => 
+      // Chiens à l'adoption (pour affichage récent)
+      const dogs = allDogs?.filter(d => d.is_for_adoption === true) || [];
+
+      // ✅ STATS : Compter sur TOUS les chiens
+      const totalDogs = allDogs?.length || 0;
+      const adoptedDogs = allDogs?.filter(d => d.adoption_status === 'adopted').length || 0;
+      const newDogsWeek = allDogs?.filter(d => 
         new Date(d.created_at) >= weekAgo
       ).length || 0;
 
       setRecentDogs(dogs?.slice(0, 10) || []);
 
-      // Chiens récemment adoptés
-      const adoptedRecently = dogs?.filter(d => 
+      // Chiens récemment adoptés (depuis TOUS les chiens)
+      const adoptedRecently = allDogs?.filter(d => 
         d.adoption_status === 'adopted'
       ).slice(0, 5) || [];
       setRecentAdoptions(adoptedRecently);
