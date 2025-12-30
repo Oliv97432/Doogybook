@@ -28,7 +28,6 @@ const ProDogDetail = () => {
   const [loading, setLoading] = useState(true);
   const [proAccount, setProAccount] = useState(null);
 
-  // États pour les données
   const [dog, setDog] = useState(null);
   const [vaccinations, setVaccinations] = useState([]);
   const [treatments, setTreatments] = useState([]);
@@ -55,7 +54,6 @@ const ProDogDetail = () => {
 
   const [editingItem, setEditingItem] = useState(null);
 
-  // Charger le compte pro
   useEffect(() => {
     if (!user?.id) return;
 
@@ -77,7 +75,6 @@ const ProDogDetail = () => {
     fetchProAccount();
   }, [user?.id]);
 
-  // Charger le chien
   useEffect(() => {
     if (!dogId || !proAccount?.id) return;
 
@@ -129,7 +126,6 @@ const ProDogDetail = () => {
     fetchDog();
   }, [dogId, proAccount?.id, navigate]);
 
-  // Charger les vaccinations
   useEffect(() => {
     if (!dogId) return;
 
@@ -161,7 +157,6 @@ const ProDogDetail = () => {
     fetchVaccinations();
   }, [dogId]);
 
-  // Charger les traitements
   useEffect(() => {
     if (!dogId) return;
 
@@ -193,7 +188,6 @@ const ProDogDetail = () => {
     fetchTreatments();
   }, [dogId]);
 
-  // Charger le poids
   useEffect(() => {
     if (!dogId) return;
 
@@ -221,7 +215,6 @@ const ProDogDetail = () => {
     fetchWeight();
   }, [dogId]);
 
-  // Charger les notes de santé
   useEffect(() => {
     if (!dogId) return;
 
@@ -254,7 +247,6 @@ const ProDogDetail = () => {
     fetchHealthNotes();
   }, [dogId]);
 
-  // Charger la galerie photos
   useEffect(() => {
     if (!dogId) return;
 
@@ -287,7 +279,6 @@ const ProDogDetail = () => {
     setEditingItem(null);
   };
 
-  // Sauvegarder vaccination
   const handleSaveVaccination = async (data) => {
     try {
       if (editingItem) {
@@ -358,7 +349,6 @@ const ProDogDetail = () => {
     }
   };
 
-  // Sauvegarder traitement
   const handleSaveTreatment = async (data, type) => {
     try {
       const treatmentType = type === 'vermifuge' ? 'worm' : 'flea';
@@ -431,7 +421,6 @@ const ProDogDetail = () => {
     }
   };
 
-  // Sauvegarder poids
   const handleSaveWeight = async (data) => {
     try {
       const { data: newWeight, error } = await supabase
@@ -458,7 +447,6 @@ const ProDogDetail = () => {
     }
   };
 
-  // Sauvegarder profil
   const handleSaveProfile = async (data) => {
     try {
       const { error } = await supabase
@@ -485,7 +473,6 @@ const ProDogDetail = () => {
     }
   };
 
-  // Définir une photo comme photo de profil
   const handleSetProfilePhoto = async (photoUrl) => {
     try {
       const { error } = await supabase
@@ -503,7 +490,6 @@ const ProDogDetail = () => {
     }
   };
 
-  // Upload cover photo
   const handleCoverPhotoUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -547,7 +533,6 @@ const ProDogDetail = () => {
     }
   };
 
-  // Ajouter photo
   const handleAddPhoto = async (file) => {
     if (!file || file.size > 5 * 1024 * 1024) {
       alert('⚠️ Fichier invalide ou trop volumineux');
@@ -588,12 +573,10 @@ const ProDogDetail = () => {
     }
   };
 
-  // Export PDF
   const handleExportPDF = () => {
     alert(`📄 Export PDF en développement\n\nLe fichier "${dog?.name}_fiche_sante.pdf" sera généré`);
   };
 
-  // Après transfert réussi
   const handleTransferSuccess = () => {
     alert('✅ Transfert réussi ! Le chien a été transféré.');
     navigate('/pro/dashboard');
@@ -636,7 +619,6 @@ const ProDogDetail = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Header */}
       <div className="sticky top-0 z-50 bg-card border-b border-border shadow-soft">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 py-3 sm:py-4">
           <div className="flex items-center justify-between">
@@ -675,7 +657,6 @@ const ProDogDetail = () => {
         </div>
       </div>
 
-      {/* Cover Photo */}
       <div className="relative">
         <div className="relative h-48 sm:h-64 md:h-80 bg-gradient-to-br from-green-500 to-teal-600 overflow-hidden">
           {dog.cover_photo_url ? (
@@ -709,7 +690,6 @@ const ProDogDetail = () => {
           </label>
         </div>
 
-        {/* Avatar + Infos */}
         <div className="relative max-w-7xl mx-auto px-3 sm:px-4">
           <div className="flex items-end gap-4 -mt-16 pb-6">
             <div className="relative">
@@ -775,7 +755,6 @@ const ProDogDetail = () => {
       <main className="main-content flex-1">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 py-6">
           <div className="bg-card rounded-xl shadow-soft overflow-hidden">
-            {/* Tabs */}
             <div className="border-b border-border overflow-x-auto">
               <div className="flex min-w-max">
                 {tabs.map((tab) => (
@@ -957,7 +936,6 @@ const ProDogDetail = () => {
         </div>
       </main>
 
-      {/* Modals */}
       <AddVaccinationModal
         isOpen={modals.vaccination}
         onClose={() => closeModal('vaccination')}
@@ -1017,27 +995,3 @@ const ProDogDetail = () => {
 };
 
 export default ProDogDetail;
-```
-
----
-
-## ✅ **CE QUI A ÉTÉ CORRIGÉ :**
-
-**Lignes 9-17** (imports) :
-- `../DogProfile/components/` → `../dog-profile/components/` ✅
-
-**Changement** : Tous les imports pointent maintenant vers `dog-profile` (avec tiret minuscule) !
-
----
-
-## 🚀 **ÉTAPES GITHUB (2 MIN) :**
-
-1. **Ouvre** : https://github.com/Oliv97432/woofly_5739/blob/main/src/pages/pro/ProDogDetail.jsx
-2. **Clique ✏️ (Edit)**
-3. **Sélectionne TOUT** (Ctrl+A)
-4. **Supprime**
-5. **Copie TOUT** le code ci-dessus
-6. **Colle**
-7. **Commit** :
-```
-fix: Corriger chemins imports ProDogDetail (dog-profile avec tiret)
