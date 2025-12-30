@@ -6,15 +6,15 @@ import TabNavigationPro from '../../components/TabNavigationPro';
 import UserMenu from '../../components/UserMenu';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
-import VaccinationCard from '../DogProfile/components/VaccinationCard';
-import TreatmentCard from '../DogProfile/components/TreatmentCard';
-import WeightChart from '../DogProfile/components/WeightChart';
-import HealthNotesSection from '../DogProfile/components/HealthNotesSection';
-import AddVaccinationModal from '../DogProfile/components/AddVaccinationModal';
-import AddTreatmentModal from '../DogProfile/components/AddTreatmentModal';
-import AddWeightModal from '../DogProfile/components/AddWeightModal';
-import EditProfileModal from '../DogProfile/components/EditProfileModal';
-import PhotoGalleryModal from '../DogProfile/components/PhotoGalleryModal';
+import VaccinationCard from '../dog-profile/components/VaccinationCard';
+import TreatmentCard from '../dog-profile/components/TreatmentCard';
+import WeightChart from '../dog-profile/components/WeightChart';
+import HealthNotesSection from '../dog-profile/components/HealthNotesSection';
+import AddVaccinationModal from '../dog-profile/components/AddVaccinationModal';
+import AddTreatmentModal from '../dog-profile/components/AddTreatmentModal';
+import AddWeightModal from '../dog-profile/components/AddWeightModal';
+import EditProfileModal from '../dog-profile/components/EditProfileModal';
+import PhotoGalleryModal from '../dog-profile/components/PhotoGalleryModal';
 import TransferDogModal from '../../components/TransferDogModal';
 import Footer from '../../components/Footer';
 import { ArrowLeft, Share2 } from 'lucide-react';
@@ -120,7 +120,7 @@ const ProDogDetail = () => {
       } catch (err) {
         console.error('Erreur chargement chien:', err);
         alert('Erreur lors du chargement du chien');
-        navigate('/pro/dogs');
+        navigate('/pro/dashboard');
       } finally {
         setLoading(false);
       }
@@ -1017,3 +1017,27 @@ const ProDogDetail = () => {
 };
 
 export default ProDogDetail;
+```
+
+---
+
+## ✅ **CE QUI A ÉTÉ CORRIGÉ :**
+
+**Lignes 9-17** (imports) :
+- `../DogProfile/components/` → `../dog-profile/components/` ✅
+
+**Changement** : Tous les imports pointent maintenant vers `dog-profile` (avec tiret minuscule) !
+
+---
+
+## 🚀 **ÉTAPES GITHUB (2 MIN) :**
+
+1. **Ouvre** : https://github.com/Oliv97432/woofly_5739/blob/main/src/pages/pro/ProDogDetail.jsx
+2. **Clique ✏️ (Edit)**
+3. **Sélectionne TOUT** (Ctrl+A)
+4. **Supprime**
+5. **Copie TOUT** le code ci-dessus
+6. **Colle**
+7. **Commit** :
+```
+fix: Corriger chemins imports ProDogDetail (dog-profile avec tiret)
