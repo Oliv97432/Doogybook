@@ -95,7 +95,6 @@ const ProDashboard = () => {
     available: dogs.filter(d => d.adoption_status === 'available' && !d.foster_family_user_id).length,
     inFoster: dogs.filter(d => d.foster_family_user_id).length,
     pending: dogs.filter(d => d.adoption_status === 'pending').length,
-    adopted: dogs.filter(d => d.adoption_status === 'adopted').length,
     applications: applications.length
   };
 
@@ -110,8 +109,6 @@ const ProDashboard = () => {
       matchesFilter = !!dog.foster_family_user_id;
     } else if (filterStatus === 'pending') {
       matchesFilter = dog.adoption_status === 'pending';
-    } else if (filterStatus === 'adopted') {
-      matchesFilter = dog.adoption_status === 'adopted';
     }
     
     return matchesSearch && matchesFilter;
@@ -192,7 +189,7 @@ const ProDashboard = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
             <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 border border-blue-200">
               <div className="flex items-center justify-between mb-2">
                 <div className="p-2 bg-blue-500 rounded-lg">
@@ -232,16 +229,6 @@ const ProDashboard = () => {
               </div>
               <p className="text-2xl sm:text-3xl font-bold text-orange-900">{stats.pending}</p>
               <p className="text-xs sm:text-sm text-orange-700">En cours</p>
-            </div>
-
-            <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-4 border border-gray-200">
-              <div className="flex items-center justify-between mb-2">
-                <div className="p-2 bg-gray-500 rounded-lg">
-                  <CheckCircle size={20} className="text-white" />
-                </div>
-              </div>
-              <p className="text-2xl sm:text-3xl font-bold text-gray-900">{stats.adopted}</p>
-              <p className="text-xs sm:text-sm text-gray-700">Adoptés</p>
             </div>
 
             <div className="bg-gradient-to-br from-pink-50 to-pink-100 rounded-xl p-4 border border-pink-200">
@@ -314,16 +301,6 @@ const ProDashboard = () => {
                   }`}
                 >
                   En cours
-                </button>
-                <button
-                  onClick={() => setFilterStatus('adopted')}
-                  className={`px-4 py-2 rounded-lg font-medium text-sm whitespace-nowrap transition-smooth ${
-                    filterStatus === 'adopted'
-                      ? 'bg-gray-500 text-white'
-                      : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                  }`}
-                >
-                  Adoptés
                 </button>
               </div>
             </div>
