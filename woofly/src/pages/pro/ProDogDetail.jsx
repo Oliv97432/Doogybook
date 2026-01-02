@@ -15,6 +15,7 @@ import AddTreatmentModal from '../dog-profile/components/AddTreatmentModal';
 import AddWeightModal from '../dog-profile/components/AddWeightModal';
 import EditProfileModal from '../dog-profile/components/EditProfileModal';
 import PhotoGalleryModal from '../dog-profile/components/PhotoGalleryModal';
+import TransferDogButton from '../../components/TransferDogButton';
 import { ArrowLeft } from 'lucide-react';
 
 const ProDogDetail = () => {
@@ -733,6 +734,21 @@ const ProDogDetail = () => {
           </div>
         </div>
       </div>
+
+      {/* Bouton de transfert */}
+      {dog && dog.adoption_status !== 'adopted' && proAccount?.id && (
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 pb-6">
+          <div className="bg-card rounded-xl shadow-soft p-6 border border-border">
+            <TransferDogButton
+              dog={dog}
+              professionalAccountId={proAccount.id}
+              onTransferComplete={() => {
+                navigate('/pro/dashboard');
+              }}
+            />
+          </div>
+        </div>
+      )}
 
       <TabNavigationPro />
       
