@@ -5,7 +5,6 @@ import { useAuth } from '../../contexts/AuthContext';
 import TabNavigationPro from '../../components/TabNavigationPro';
 import UserMenuPro from '../../components/UserMenuPro';
 import Icon from '../../components/AppIcon';
-import Button from '../../components/ui/Button';
 import VaccinationCard from '../dog-profile/components/VaccinationCard';
 import TreatmentCard from '../dog-profile/components/TreatmentCard';
 import WeightChart from '../dog-profile/components/WeightChart';
@@ -15,8 +14,9 @@ import AddTreatmentModal from '../dog-profile/components/AddTreatmentModal';
 import AddWeightModal from '../dog-profile/components/AddWeightModal';
 import EditProfileModal from '../dog-profile/components/EditProfileModal';
 import PhotoGalleryModal from '../dog-profile/components/PhotoGalleryModal';
-import TransferDogButton from '../../components/TransferDogButton';
-import { ArrowLeft } from 'lucide-react';
+import PlaceFAModal from '../../components/pro/PlaceFAModal';
+import TransferToAdopterModal from '../../components/pro/TransferToAdopterModal';
+import { ArrowLeft, Home, User, ArrowRight } from 'lucide-react';
 
 const ProDogDetail = () => {
   const { dogId } = useParams();
@@ -51,6 +51,11 @@ const ProDogDetail = () => {
   });
 
   const [editingItem, setEditingItem] = useState(null);
+  
+  // États pour le système de placement
+  const [showPlaceFAModal, setShowPlaceFAModal] = useState(false);
+  const [showTransferModal, setShowTransferModal] = useState(false);
+  const [fosterFamily, setFosterFamily] = useState(null);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -110,8 +115,16 @@ const ProDogDetail = () => {
           notes: data.notes,
           cover_photo_url: data.cover_photo_url || null,
           adoption_status: data.adoption_status,
-          is_for_adoption: data.is_for_adoption
+          is_for_adoption: data.is_for_adoption,
+          foster_family_user_id: data.foster_family_user_id
         });
+
+        // Charger la FA si le chien est en famille d'accueil
+        if (data.foster_family_user_id) {
+          fetchFosterFamily(data.foster_family_user_id);
+        } else {
+          setFosterFamily(null);
+        }
       } catch (err) {
         console.error('Erreur chargement chien:', err);
         alert('Erreur lors du chargement du chien');
@@ -575,6 +588,75 @@ const ProDogDetail = () => {
     alert(`📄 Export PDF en développement\n\nLe fichier "${dog?.name}_fiche_sante.pdf" sera généré`);
   };
 
+  // Charger les informations de la famille d'accueil
+  const fetchFosterFamily = async (fosterFamilyUserId) => {
+    if (!fosterFamilyUserId || !proAccount?.id) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('contacts')
+        .select('*')
+        .eq('user_id', fosterFamilyUserId)
+        .eq('professional_account_id', proAccount.id)
+        .single();
+      
+      if (error) throw error;
+      setFosterFamily(data);
+    } catch (err) {
+      console.error('Erreur chargement FA:', err);
+      setFosterFamily(null);
+    }
+  };
+
+  // Retirer le chien de la famille d'accueil
+  const handleReturnFromFA = async () => {
+    if (!confirm(`Retirer ${dog.name} de chez ${fosterFamily?.full_name} ?`)) {
+      return;
+    }
+
+    try {
+      // 1. Fermer le placement FA
+      const { data: activePlacement } = await supabase
+        .from('placement_history')
+        .select('*')
+        .eq('dog_id', dog.id)
+        .eq('status', 'active')
+        .eq('placement_type', 'foster')
+        .single();
+
+      if (activePlacement) {
+        await supabase
+          .from('placement_history')
+          .update({
+            end_date: new Date().toISOString(),
+            status: 'completed',
+            end_reason: 'returned'
+          })
+          .eq('id', activePlacement.id);
+
+        // Décrémenter le compteur de la FA
+        await supabase
+          .from('contacts')
+          .update({
+            current_dogs_count: supabase.raw('current_dogs_count - 1')
+          })
+          .eq('id', activePlacement.contact_id);
+      }
+
+      // 2. Retirer la FA du chien
+      await supabase
+        .from('dogs')
+        .update({ foster_family_user_id: null })
+        .eq('id', dog.id);
+
+      alert(`✅ ${dog.name} a été retiré de la famille d'accueil`);
+      window.location.reload();
+    } catch (err) {
+      console.error('Erreur retour FA:', err);
+      alert('❌ Erreur lors du retour: ' + err.message);
+    }
+  };
+
   const tabs = [
     { id: 'vaccinations', label: 'Vaccinations', icon: 'Syringe' },
     { id: 'vermifuge', label: 'Vermifuge', icon: 'Pill' },
@@ -602,9 +684,12 @@ const ProDogDetail = () => {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <p className="text-gray-600 mb-4">Chien non trouvé</p>
-          <Button onClick={() => navigate('/pro/dashboard')}>
+          <button
+            onClick={() => navigate('/pro/dashboard')}
+            className="px-6 py-3 bg-primary text-primary-foreground rounded-xl font-medium hover:bg-primary/90 transition-smooth"
+          >
             Retour au dashboard
-          </Button>
+          </button>
         </div>
       </div>
     );
@@ -627,15 +712,13 @@ const ProDogDetail = () => {
               </h1>
             </div>
             <div className="flex items-center gap-2 sm:gap-3">
-              <Button
-                variant="outline"
-                iconName="Download"
+              <button
                 onClick={handleExportPDF}
-                className="hidden sm:flex"
-                size="sm"
+                className="hidden sm:flex px-4 py-2 border-2 border-border rounded-xl font-medium hover:bg-muted items-center gap-2 min-h-[44px]"
               >
+                <Icon name="Download" size={16} />
                 Exporter fiche
-              </Button>
+              </button>
               <UserMenuPro />
             </div>
           </div>
@@ -721,31 +804,81 @@ const ProDogDetail = () => {
                   </div>
                 </div>
                 
-                <Button
-                  variant="outline"
-                  iconName="Edit"
+                <button
                   onClick={() => openModal('editProfile')}
-                  size="sm"
+                  className="px-4 py-2 border-2 border-border rounded-xl font-medium hover:bg-muted flex items-center gap-2 min-h-[44px]"
                 >
+                  <Icon name="Edit" size={16} />
                   Modifier
-                </Button>
+                </button>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Bouton de transfert */}
+      {/* Gestion du placement */}
       {dog && dog.adoption_status !== 'adopted' && proAccount?.id && (
         <div className="max-w-7xl mx-auto px-3 sm:px-4 pb-6">
           <div className="bg-card rounded-xl shadow-soft p-6 border border-border">
-            <TransferDogButton
-              dog={dog}
-              professionalAccountId={proAccount.id}
-              onTransferComplete={() => {
-                navigate('/pro/dashboard');
-              }}
-            />
+            
+            {/* SI le chien est en FA */}
+            {dog.foster_family_user_id && fosterFamily ? (
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 p-4 bg-purple-50 rounded-xl border border-purple-200">
+                  <div className="w-12 h-12 rounded-full bg-purple-500 text-white flex items-center justify-center text-xl font-bold">
+                    {fosterFamily.full_name?.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm text-purple-700 font-medium">Actuellement en famille d'accueil</p>
+                    <p className="text-lg font-bold text-purple-900">{fosterFamily.full_name}</p>
+                    {fosterFamily.city && (
+                      <p className="text-sm text-purple-600">{fosterFamily.city}</p>
+                    )}
+                  </div>
+                  <Home size={24} className="text-purple-600" />
+                </div>
+
+                <button
+                  onClick={handleReturnFromFA}
+                  className="w-full px-6 py-3 bg-orange-500 text-white rounded-xl font-medium hover:bg-orange-600 transition-smooth flex items-center justify-center gap-2 min-h-[44px]"
+                >
+                  <ArrowRight size={20} className="rotate-180" />
+                  Retour du chien au refuge
+                </button>
+              </div>
+            ) : (
+              // SI le chien est disponible au refuge
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 p-4 bg-green-50 rounded-xl border border-green-200">
+                  <div className="w-12 h-12 rounded-full bg-green-500 text-white flex items-center justify-center">
+                    <Home size={24} />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm text-green-700 font-medium">Chien disponible au refuge</p>
+                    <p className="text-lg font-bold text-green-900">Prêt pour placement ou transfert</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <button
+                    onClick={() => setShowPlaceFAModal(true)}
+                    className="px-6 py-3 bg-purple-500 text-white rounded-xl font-medium hover:bg-purple-600 transition-smooth flex items-center justify-center gap-2 min-h-[44px]"
+                  >
+                    <Home size={20} />
+                    Placer en famille d'accueil
+                  </button>
+
+                  <button
+                    onClick={() => setShowTransferModal(true)}
+                    className="px-6 py-3 bg-pink-500 text-white rounded-xl font-medium hover:bg-pink-600 transition-smooth flex items-center justify-center gap-2 min-h-[44px]"
+                  >
+                    <User size={20} />
+                    Transférer à un adoptant
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -979,6 +1112,23 @@ const ProDogDetail = () => {
         onAddPhoto={handleAddPhoto}
         currentProfilePhotoUrl={dog?.image}
         onSetProfilePhoto={handleSetProfilePhoto}
+      />
+
+      {/* Modals de placement */}
+      <PlaceFAModal
+        isOpen={showPlaceFAModal}
+        onClose={() => setShowPlaceFAModal(false)}
+        dog={dog}
+        proAccount={proAccount}
+        onSuccess={() => window.location.reload()}
+      />
+
+      <TransferToAdopterModal
+        isOpen={showTransferModal}
+        onClose={() => setShowTransferModal(false)}
+        dog={dog}
+        proAccount={proAccount}
+        onSuccess={() => navigate('/pro/dashboard')}
       />
     </div>
   );
