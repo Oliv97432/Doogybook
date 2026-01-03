@@ -157,8 +157,24 @@ const AdoptionDetail = () => {
               </div>
             )}
             
+            {/* Badge statut : FA ou Disponible */}
+            <div className="absolute top-3 right-3 sm:top-6 sm:right-6">
+              {dog.foster_family_user_id ? (
+                <div className="bg-purple-500 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-full font-bold flex items-center gap-1 sm:gap-2 text-xs sm:text-sm shadow-lg">
+                  <Home size={14} className="sm:w-5 sm:h-5" />
+                  <span className="hidden xs:inline">En famille d'accueil</span>
+                  <span className="xs:hidden">En FA</span>
+                </div>
+              ) : (
+                <div className="bg-green-500 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-full font-bold flex items-center gap-1 sm:gap-2 text-xs sm:text-sm shadow-lg">
+                  <CheckCircle size={14} className="sm:w-5 sm:h-5" />
+                  <span>Disponible</span>
+                </div>
+              )}
+            </div>
+
             {dog.is_urgent && (
-              <div className="absolute top-3 left-3 sm:top-6 sm:left-6 bg-red-500 text-white px-2 sm:px-4 py-1 sm:py-2 rounded-full font-bold flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+              <div className="absolute top-3 left-3 sm:top-6 sm:left-6 bg-red-500 text-white px-2 sm:px-4 py-1 sm:py-2 rounded-full font-bold flex items-center gap-1 sm:gap-2 text-xs sm:text-sm shadow-lg">
                 <AlertCircle size={14} className="sm:w-5 sm:h-5" />
                 <span className="hidden xs:inline">ADOPTION URGENTE</span>
                 <span className="xs:hidden">URGENT</span>
@@ -166,7 +182,7 @@ const AdoptionDetail = () => {
             )}
 
             {org?.is_verified && (
-              <div className="absolute top-3 right-3 sm:top-6 sm:right-6 bg-blue-500 text-white px-2 sm:px-4 py-1 sm:py-2 rounded-full font-bold flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+              <div className="absolute bottom-3 right-3 sm:bottom-6 sm:right-6 bg-blue-500 text-white px-2 sm:px-4 py-1 sm:py-2 rounded-full font-bold flex items-center gap-1 sm:gap-2 text-xs sm:text-sm shadow-lg">
                 <Check size={14} className="sm:w-5 sm:h-5" />
                 <span className="hidden xs:inline">Refuge Vérifié</span>
                 <span className="xs:hidden">Vérifié</span>
