@@ -5,7 +5,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { 
   Plus, Search, Filter, Heart, Edit, Trash2, Eye, 
   ArrowLeft, Upload, Save, X, Camera, Loader,
-  ChevronDown, ChevronUp
+  ChevronDown, ChevronUp, Home
 } from 'lucide-react';
 
 import TransferDogButton from '../../components/TransferDogButton';
@@ -838,12 +838,15 @@ const ProDogManagement = () => {
                     </div>
                   )}
                   <div className="absolute top-2 right-2 sm:top-3 sm:right-3">
-                    <span className={`px-2 py-1 sm:px-3 sm:py-1 rounded-full text-xs font-bold ${
+                    <span className={`px-2 py-1 sm:px-3 sm:py-1 rounded-full text-xs font-bold flex items-center gap-1 ${
+                      dog.foster_family_contact_id ? 'bg-purple-500 text-white' :
                       dog.adoption_status === 'available' ? 'bg-green-500 text-white' :
                       dog.adoption_status === 'pending' ? 'bg-orange-500 text-white' :
                       'bg-gray-500 text-white'
                     }`}>
-                      {dog.adoption_status === 'available' ? 'Disponible' :
+                      {dog.foster_family_contact_id && <Home size={12} />}
+                      {dog.foster_family_contact_id ? 'En FA' :
+                       dog.adoption_status === 'available' ? 'Disponible' :
                        dog.adoption_status === 'pending' ? 'En cours' : 'Adopté'}
                     </span>
                   </div>
