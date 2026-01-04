@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Dog, FileText, Instagram, Settings, Users } from 'lucide-react';
+import { Home, Grid, List, Users, Send, PawPrint } from 'lucide-react';
 
 const TabNavigationPro = () => {
   const navigate = useNavigate();
@@ -8,101 +8,61 @@ const TabNavigationPro = () => {
 
   const tabs = [
     {
-      id: 'dashboard',
-      label: 'Tableau de bord',
-      icon: LayoutDashboard,
       path: '/pro/dashboard',
-      color: 'blue'
+      icon: Home,
+      label: 'Tableau de bord',
+      matchPaths: ['/pro/dashboard']
     },
     {
-      id: 'dogs',
-      label: 'Mes Chiens',
-      icon: Dog,
       path: '/pro/dogs',
-      color: 'purple'
+      icon: Grid,
+      label: 'Mes Chiens',
+      matchPaths: ['/pro/dogs', '/pro/dogs/new']
     },
     {
-      id: 'applications',
-      label: 'Candidatures',
-      icon: FileText,
-      path: '/pro/applications',
-      color: 'green'
+      path: '/pro/dogs-list',
+      icon: List,
+      label: 'Liste',
+      matchPaths: ['/pro/dogs-list']
     },
     {
-      id: 'crm',
-      label: 'Contacts',
+      path: '/pro/foster-families',
       icon: Users,
-      path: '/pro/crm/contacts',
-      color: 'orange'
+      label: 'Familles',
+      matchPaths: ['/pro/foster-families']
     },
     {
-      id: 'instagram',
-      label: 'Instagram',
-      icon: Instagram,
-      path: '/pro/instagram',
-      color: 'pink'
-    },
-    {
-      id: 'settings',
-      label: 'Paramètres',
-      icon: Settings,
-      path: '/settings',
-      color: 'gray'
+      path: '/pro/applications',
+      icon: Send,
+      label: 'Candidatures',
+      matchPaths: ['/pro/applications']
     }
   ];
 
-  const isActive = (path) => {
-    // Pour CRM, activer l'onglet si on est sur n'importe quelle page CRM
-    if (path === '/pro/crm/contacts') {
-      return location.pathname.startsWith('/pro/crm');
-    }
-    return location.pathname === path;
-  };
-
-  const getColorClasses = (color, active) => {
-    const colors = {
-      blue: active ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50',
-      purple: active ? 'text-purple-600 bg-purple-50' : 'text-gray-600 hover:text-purple-600 hover:bg-purple-50',
-      green: active ? 'text-green-600 bg-green-50' : 'text-gray-600 hover:text-green-600 hover:bg-green-50',
-      orange: active ? 'text-orange-600 bg-orange-50' : 'text-gray-600 hover:text-orange-600 hover:bg-orange-50',
-      pink: active ? 'text-pink-600 bg-pink-50' : 'text-gray-600 hover:text-pink-600 hover:bg-pink-50',
-      gray: active ? 'text-gray-900 bg-gray-100' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-    };
-    return colors[color] || colors.gray;
+  const isActive = (tab) => {
+    return tab.matchPaths.some(path => location.pathname.startsWith(path));
   };
 
   return (
-    <nav className="sticky top-0 z-40 bg-white border-b border-gray-200 shadow-sm">
+    <nav className="border-b border-border bg-card">
       <div className="max-w-7xl mx-auto px-3 sm:px-4">
-        <div className="flex items-center justify-around sm:justify-start sm:gap-2">
+        <div className="flex overflow-x-auto scrollbar-hide -mb-px">
           {tabs.map((tab) => {
             const Icon = tab.icon;
-            const active = isActive(tab.path);
+            const active = isActive(tab);
             
             return (
               <button
-                key={tab.id}
+                key={tab.path}
                 onClick={() => navigate(tab.path)}
-                className={`
-                  flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 
-                  px-3 sm:px-4 py-3 sm:py-3 rounded-xl transition-all
-                  flex-1 sm:flex-none
-                  ${getColorClasses(tab.color, active)}
-                  ${active ? 'font-semibold' : 'font-medium'}
-                `}
-                style={{
-                  minHeight: '64px',
-                  WebkitTapHighlightColor: 'transparent'
-                }}
+                className={`flex items-center gap-2 px-4 py-3 border-b-2 whitespace-nowrap text-sm font-medium transition-colors min-h-[44px] ${
+                  active
+                    ? 'border-primary text-primary'
+                    : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
+                }`}
               >
-                <Icon 
-                  size={20} 
-                  className="sm:w-5 sm:h-5" 
-                  strokeWidth={active ? 2.5 : 2}
-                />
-                <span className="text-xs sm:text-sm whitespace-nowrap">
-                  {tab.label}
-                </span>
+                <Icon size={18} />
+                <span className="hidden sm:inline">{tab.label}</span>
               </button>
             );
           })}
