@@ -35,11 +35,12 @@ const UserProfile = () => {
     try {
       setLoading(true);
 
-      // Récupérer les données depuis user_profiles (pas users)
+      // Récupérer les données depuis user_profiles
+      // La colonne s'appelle 'id' (pas 'user_id')
       const { data, error } = await supabase
         .from('user_profiles')
         .select('*')
-        .eq('user_id', user?.id)
+        .eq('id', user?.id)
         .single();
 
       if (error && error.code !== 'PGRST116') throw error;
@@ -152,19 +153,18 @@ const UserProfile = () => {
       // Upload de la photo si présente
       const avatarUrl = await uploadPhoto();
 
-      // Mettre à jour dans user_profiles (pas users)
+      // Mettre à jour dans user_profiles
+      // Utiliser 'id' comme clé (pas 'user_id')
       const { error } = await supabase
         .from('user_profiles')
-        .upsert({
-          user_id: user?.id,
+        .update({
           full_name: formData.fullName.trim(),
           phone: formData.phone.trim() || null,
           location: formData.zipcode.trim() || null,
           avatar_url: avatarUrl || null,
           updated_at: new Date().toISOString()
-        }, {
-          onConflict: 'user_id'
-        });
+        })
+        .eq('id', user?.id);
 
       if (error) throw error;
 
