@@ -68,7 +68,7 @@ const Settings = () => {
       const { data, error } = await supabase
         .from('user_profiles')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('id', user.id)
         .single();
 
       if (error && error.code !== 'PGRST116') throw error;
@@ -111,15 +111,13 @@ const Settings = () => {
 
       const { error: profileError } = await supabase
         .from('user_profiles')
-        .upsert({
-          user_id: user.id,
+        .update({
           full_name: profile.full_name,
           phone: profile.phone,
           location: profile.location,
           updated_at: new Date().toISOString()
-        }, {
-          onConflict: 'user_id'
-        });
+        })
+        .eq('id', user.id);
       
       if (profileError) throw profileError;
       
@@ -154,7 +152,7 @@ const Settings = () => {
       const { error: profileError } = await supabase
         .from('user_profiles')
         .delete()
-        .eq('user_id', user.id);
+        .eq('id', user.id);
 
       if (profileError) throw profileError;
 
