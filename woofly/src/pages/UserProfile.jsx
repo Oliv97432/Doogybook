@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import Icon from '../components/AppIcon';
-import Footer from '../components/Footer';  // ✅ AJOUTÉ
+import Footer from '../components/Footer';
+import SubscriptionBadge from '../components/SubscriptionBadge';
 
 const UserProfile = () => {
   const navigate = useNavigate();
@@ -12,6 +13,7 @@ const UserProfile = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [subscriptionTier, setSubscriptionTier] = useState('free');
   
   const [formData, setFormData] = useState({
     fullName: '',
@@ -51,6 +53,15 @@ const UserProfile = () => {
       });
 
       setPhotoPreview(data?.avatar_url || null);
+      
+      // Charger le subscription_tier depuis user_profiles
+      const { data: profileData } = await supabase
+        .from('user_profiles')
+        .select('subscription_tier')
+        .eq('user_id', user?.id)
+        .single();
+      
+      setSubscriptionTier(profileData?.subscription_tier || 'free');
     } catch (error) {
       console.error('Erreur chargement profil:', error);
     } finally {
@@ -209,9 +220,12 @@ const UserProfile = () => {
           >
             <Icon name="ArrowLeft" size={24} className="text-foreground" />
           </button>
-          <h1 className="text-2xl font-heading font-bold text-foreground">
-            Mon profil
-          </h1>
+          <div className="flex-1">
+            <h1 className="text-2xl font-heading font-bold text-foreground">
+              Mon profil
+            </h1>
+            <SubscriptionBadge tier={subscriptionTier} size="sm" />
+          </div>
         </div>
 
         {/* Formulaire */}
