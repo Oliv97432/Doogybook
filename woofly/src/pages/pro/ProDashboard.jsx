@@ -22,8 +22,11 @@ const ProDashboard = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
 
-  // États pour le modal FA
-  const [showFAModal, setShowFAModal] = useState(false);
+  // États pour les modals
+  const [showModal, setShowModal] = useState(false);
+  const [modalTitle, setModalTitle] = useState('');
+  const [modalItems, setModalItems] = useState([]);
+  const [modalType, setModalType] = useState('dogs'); // 'dogs' ou 'contacts'
 
   useEffect(() => {
     if (user) {
@@ -71,7 +74,14 @@ const ProDashboard = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setDogs(data || []);
+      
+      // Formater pour ajouter le nom de la FA dans le chien
+      const formattedDogs = data?.map(dog => ({
+        ...dog,
+        foster_family_name: dog.foster_family?.full_name
+      })) || [];
+      
+      setDogs(formattedDogs);
     } catch (error) {
       console.error('Erreur chargement chiens:', error);
     }
@@ -120,8 +130,48 @@ const ProDashboard = () => {
     }
   };
 
+  // Fonctions pour ouvrir le modal avec différents filtres
+  const handleTotalDogsClick = () => {
+    setModalTitle(`Total chiens (${stats.total})`);
+    setModalItems(dogs);
+    setModalType('dogs');
+    setShowModal(true);
+  };
+
+  const handleAvailableDogsClick = () => {
+    const availableDogs = dogs.filter(d => d.adoption_status === 'available' && !d.foster_family_contact_id);
+    setModalTitle(`Chiens disponibles (${availableDogs.length})`);
+    setModalItems(availableDogs);
+    setModalType('dogs');
+    setShowModal(true);
+  };
+
+  const handleInFosterClick = () => {
+    const inFosterDogs = dogs.filter(d => d.foster_family_contact_id);
+    setModalTitle(`Chiens en famille d'accueil (${inFosterDogs.length})`);
+    setModalItems(inFosterDogs);
+    setModalType('dogs');
+    setShowModal(true);
+  };
+
+  const handlePendingClick = () => {
+    const pendingDogs = dogs.filter(d => d.adoption_status === 'pending');
+    setModalTitle(`Chiens en cours d'adoption (${pendingDogs.length})`);
+    setModalItems(pendingDogs);
+    setModalType('dogs');
+    setShowModal(true);
+  };
+
+  const handleApplicationsClick = () => {
+    // Pour les candidatures, navigation directe vers la page dédiée
+    navigate('/pro/applications');
+  };
+
   const handleFACardClick = () => {
-    setShowFAModal(true);
+    setModalTitle(`Familles d'accueil (${stats.totalFosterFamilies})`);
+    setModalItems(fosterFamilies);
+    setModalType('contacts');
+    setShowModal(true);
   };
 
   const stats = {
@@ -227,10 +277,13 @@ const ProDashboard = () => {
             </div>
           </div>
 
-          {/* Grille de cartes - MAINTENANT 6 CARTES avec FA */}
+          {/* TOUTES LES CARTES SONT MAINTENANT CLIQUABLES */}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
-            {/* Total chiens */}
-            <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 border border-blue-200">
+            {/* Total chiens - CLIQUABLE */}
+            <button
+              onClick={handleTotalDogsClick}
+              className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 border border-blue-200 hover:shadow-lg hover:scale-105 transition-all duration-200 cursor-pointer text-left"
+            >
               <div className="flex items-center justify-between mb-2">
                 <div className="p-2 bg-blue-500 rounded-lg">
                   <Heart size={20} className="text-white" />
@@ -239,10 +292,13 @@ const ProDashboard = () => {
               </div>
               <p className="text-2xl sm:text-3xl font-bold text-blue-900">{stats.total}</p>
               <p className="text-xs sm:text-sm text-blue-700">Total chiens</p>
-            </div>
+            </button>
 
-            {/* Disponibles */}
-            <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-4 border border-green-200">
+            {/* Disponibles - CLIQUABLE */}
+            <button
+              onClick={handleAvailableDogsClick}
+              className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-4 border border-green-200 hover:shadow-lg hover:scale-105 transition-all duration-200 cursor-pointer text-left"
+            >
               <div className="flex items-center justify-between mb-2">
                 <div className="p-2 bg-green-500 rounded-lg">
                   <Heart size={20} className="text-white" />
@@ -250,10 +306,13 @@ const ProDashboard = () => {
               </div>
               <p className="text-2xl sm:text-3xl font-bold text-green-900">{stats.available}</p>
               <p className="text-xs sm:text-sm text-green-700">Disponibles</p>
-            </div>
+            </button>
 
-            {/* En FA */}
-            <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-4 border border-purple-200">
+            {/* En FA - CLIQUABLE */}
+            <button
+              onClick={handleInFosterClick}
+              className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-4 border border-purple-200 hover:shadow-lg hover:scale-105 transition-all duration-200 cursor-pointer text-left"
+            >
               <div className="flex items-center justify-between mb-2">
                 <div className="p-2 bg-purple-500 rounded-lg">
                   <Home size={20} className="text-white" />
@@ -261,10 +320,13 @@ const ProDashboard = () => {
               </div>
               <p className="text-2xl sm:text-3xl font-bold text-purple-900">{stats.inFoster}</p>
               <p className="text-xs sm:text-sm text-purple-700">En FA</p>
-            </div>
+            </button>
 
-            {/* En cours */}
-            <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-4 border border-orange-200">
+            {/* En cours - CLIQUABLE */}
+            <button
+              onClick={handlePendingClick}
+              className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-4 border border-orange-200 hover:shadow-lg hover:scale-105 transition-all duration-200 cursor-pointer text-left"
+            >
               <div className="flex items-center justify-between mb-2">
                 <div className="p-2 bg-orange-500 rounded-lg">
                   <Clock size={20} className="text-white" />
@@ -272,10 +334,13 @@ const ProDashboard = () => {
               </div>
               <p className="text-2xl sm:text-3xl font-bold text-orange-900">{stats.pending}</p>
               <p className="text-xs sm:text-sm text-orange-700">En cours</p>
-            </div>
+            </button>
 
-            {/* Candidatures */}
-            <div className="bg-gradient-to-br from-pink-50 to-pink-100 rounded-xl p-4 border border-pink-200">
+            {/* Candidatures - CLIQUABLE (navigation) */}
+            <button
+              onClick={handleApplicationsClick}
+              className="bg-gradient-to-br from-pink-50 to-pink-100 rounded-xl p-4 border border-pink-200 hover:shadow-lg hover:scale-105 transition-all duration-200 cursor-pointer text-left"
+            >
               <div className="flex items-center justify-between mb-2">
                 <div className="p-2 bg-pink-500 rounded-lg">
                   <Users size={20} className="text-white" />
@@ -283,9 +348,9 @@ const ProDashboard = () => {
               </div>
               <p className="text-2xl sm:text-3xl font-bold text-pink-900">{stats.applications}</p>
               <p className="text-xs sm:text-sm text-pink-700">Candidatures</p>
-            </div>
+            </button>
 
-            {/* NOUVELLE CARTE : Familles d'accueil - CLIQUABLE */}
+            {/* Familles d'accueil - CLIQUABLE */}
             <button
               onClick={handleFACardClick}
               className="bg-gradient-to-br from-teal-50 to-teal-100 rounded-xl p-4 border border-teal-200 hover:shadow-lg hover:scale-105 transition-all duration-200 cursor-pointer text-left"
@@ -534,13 +599,13 @@ const ProDashboard = () => {
         </div>
       </main>
 
-      {/* Modal Familles d'accueil */}
+      {/* Modal pour afficher les listes */}
       <ContactListModal
-        isOpen={showFAModal}
-        onClose={() => setShowFAModal(false)}
-        title={`Familles d'accueil (${stats.totalFosterFamilies})`}
-        items={fosterFamilies}
-        type="contacts"
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        title={modalTitle}
+        items={modalItems}
+        type={modalType}
       />
     </div>
   );
