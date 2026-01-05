@@ -26,9 +26,9 @@ import Contact from './pages/Contact';
 // Landing Page
 import LandingPage from './pages/LandingPage';
 
-// Pages Adoption
-import AdoptionPage from './pages/adoption';
-import AdoptionDetail from './pages/adoption/AdoptionDetail';
+// Pages Adoption - NOUVELLES VERSIONS
+import PublicAdoptionPage from './pages/PublicAdoptionPage';
+import PublicDogDetail from './pages/PublicDogDetail';
 
 // Route hybride /chien/:id
 import HybridDogProfile from './pages/chien/HybridDogProfile';
@@ -92,8 +92,8 @@ const Routes = () => {
         
         <Route path="/notifications" element={<Notifications />} />
         
-        <Route path="/adoption" element={<AdoptionPage />} />
-        <Route path="/adoption/:dogId" element={<AdoptionDetail />} />
+        <Route path="/adoption" element={<PublicAdoptionPage />} />
+        <Route path="/adoption/:dogId" element={<PublicDogDetail />} />
         
         {/* Routes Professionnelles */}
         <Route path="/pro/register" element={<ProRegistration />} />
