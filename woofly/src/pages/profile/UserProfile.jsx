@@ -1,455 +1,402 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { supabase } from '../../lib/supabase';
-import { useAuth } from '../../contexts/AuthContext';
-import { Heart, MessageCircle, Share2, User, MapPin, Calendar, Edit, Settings, ArrowLeft } from 'lucide-react';
-import TabNavigation from '../../components/TabNavigation';
-import Footer from '../../components/Footer';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import { supabase } from '../lib/supabase';
+import Icon from '../components/AppIcon';
+import Footer from '../components/Footer';
+import SubscriptionBadge from '../components/SubscriptionBadge';
 
 const UserProfile = () => {
-  const { userId } = useParams();
-  const { user } = useAuth();
   const navigate = useNavigate();
+  const { user } = useAuth();
   
-  const [profile, setProfile] = useState(null);
-  const [posts, setPosts] = useState([]);
-  const [dogs, setDogs] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [isFollowing, setIsFollowing] = useState(false);
-  const [followLoading, setFollowLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState('posts'); // posts, chiens, stats
+  const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [subscriptionTier, setSubscriptionTier] = useState('free');
   
-  const isOwnProfile = user?.id === userId;
-  
+  const [formData, setFormData] = useState({
+    fullName: '',
+    email: '',
+    phone: '',
+    zipcode: '',
+    avatarUrl: ''
+  });
+
+  const [photoFile, setPhotoFile] = useState(null);
+  const [photoPreview, setPhotoPreview] = useState(null);
+
+  // Charger les données utilisateur
   useEffect(() => {
-    fetchProfileData();
-    fetchPosts();
-    fetchDogs();
-    checkIfFollowing();
-  }, [userId]);
-  
-  const fetchProfileData = async () => {
+    loadUserData();
+  }, [user]);
+
+  const loadUserData = async () => {
     try {
+      setLoading(true);
+
+      // Récupérer les données depuis user_profiles (pas users)
       const { data, error } = await supabase
         .from('user_profiles')
         .select('*')
-        .eq('id', userId)
+        .eq('user_id', user?.id)
         .single();
-      
-      if (error) throw error;
-      setProfile(data);
+
+      if (error && error.code !== 'PGRST116') throw error;
+
+      setFormData({
+        fullName: data?.full_name || user?.user_metadata?.full_name || '',
+        email: user?.email || '',
+        phone: data?.phone || user?.user_metadata?.phone || '',
+        zipcode: data?.location || user?.user_metadata?.location || '',
+        avatarUrl: data?.avatar_url || ''
+      });
+
+      setPhotoPreview(data?.avatar_url || null);
+      setSubscriptionTier(data?.subscription_tier || 'free');
     } catch (error) {
       console.error('Erreur chargement profil:', error);
-    }
-  };
-  
-  const fetchPosts = async () => {
-    setLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('forum_posts')
-        .select('*')
-        .eq('user_id', userId)
-        .eq('is_hidden', false)
-        .is('forum_id', null)
-        .order('created_at', { ascending: false });
-      
-      if (error) throw error;
-      
-      const postsWithImages = await Promise.all(
-        (data || []).map(async (post) => {
-          const { data: images } = await supabase
-            .from('forum_post_images')
-            .select('*')
-            .eq('post_id', post.id)
-            .order('display_order', { ascending: true });
-          
-          return {
-            ...post,
-            images: images || []
-          };
-        })
-      );
-      
-      setPosts(postsWithImages);
-    } catch (error) {
-      console.error('Erreur chargement posts:', error);
+      setFormData({
+        fullName: user?.user_metadata?.full_name || '',
+        email: user?.email || '',
+        phone: user?.user_metadata?.phone || '',
+        zipcode: user?.user_metadata?.location || '',
+        avatarUrl: ''
+      });
+      setSubscriptionTier('free');
     } finally {
       setLoading(false);
     }
   };
-  
-  const fetchDogs = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('dogs')
-        .select('*')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: true });
-      
-      if (error) throw error;
-      setDogs(data || []);
-    } catch (error) {
-      console.error('Erreur chargement chiens:', error);
-    }
+
+  const handleChange = (field, value) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
   };
-  
-  const checkIfFollowing = async () => {
-    if (!user?.id || isOwnProfile) return;
-    
-    try {
-      const { data } = await supabase
-        .from('user_follows')
-        .select('id')
-        .eq('follower_id', user.id)
-        .eq('following_id', userId)
-        .maybeSingle();
-      
-      setIsFollowing(!!data);
-    } catch (error) {
-      console.error('Erreur vérification follow:', error);
-    }
-  };
-  
-  const handleFollow = async () => {
-    if (!user?.id) {
-      navigate('/login');
+
+  // Gérer la sélection de photo
+  const handlePhotoChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Vérifier le type
+    if (!file.type.startsWith('image/')) {
+      alert('Veuillez sélectionner une image valide.');
       return;
     }
-    
-    setFollowLoading(true);
+
+    // Vérifier la taille (max 5 MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('L\'image ne doit pas dépasser 5 MB.');
+      return;
+    }
+
+    setPhotoFile(file);
+
+    // Créer une preview
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setPhotoPreview(e.target?.result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Supprimer la photo
+  const removePhoto = () => {
+    setPhotoFile(null);
+    setPhotoPreview(formData.avatarUrl || null);
+  };
+
+  // Upload de la photo vers Supabase Storage
+  const uploadPhoto = async () => {
+    if (!photoFile) return formData.avatarUrl;
+
     try {
-      if (isFollowing) {
-        await supabase
-          .from('user_follows')
-          .delete()
-          .eq('follower_id', user.id)
-          .eq('following_id', userId);
-        
-        setIsFollowing(false);
-      } else {
-        await supabase
-          .from('user_follows')
-          .insert({
-            follower_id: user.id,
-            following_id: userId
-          });
-        
-        setIsFollowing(true);
-      }
-      
-      fetchProfileData();
+      const fileExt = photoFile.name.split('.').pop();
+      const fileName = `${user?.id}/${Date.now()}.${fileExt}`;
+
+      const { data, error } = await supabase.storage
+        .from('user-avatars')
+        .upload(fileName, photoFile, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (error) throw error;
+
+      const { data: urlData } = supabase.storage
+        .from('user-avatars')
+        .getPublicUrl(fileName);
+
+      return urlData.publicUrl;
     } catch (error) {
-      console.error('Erreur follow:', error);
+      console.error('Erreur upload photo:', error);
+      alert('Erreur lors de l\'upload de la photo.');
+      return formData.avatarUrl;
+    }
+  };
+
+  // Sauvegarder le profil
+  const handleSave = async (e) => {
+    e.preventDefault();
+
+    // Validation
+    if (!formData.fullName.trim()) {
+      alert('Le nom complet est requis.');
+      return;
+    }
+
+    try {
+      setSaving(true);
+      setUploading(!!photoFile);
+
+      // Upload de la photo si présente
+      const avatarUrl = await uploadPhoto();
+
+      // Mettre à jour dans user_profiles (pas users)
+      const { error } = await supabase
+        .from('user_profiles')
+        .upsert({
+          user_id: user?.id,
+          full_name: formData.fullName.trim(),
+          phone: formData.phone.trim() || null,
+          location: formData.zipcode.trim() || null,
+          avatar_url: avatarUrl || null,
+          updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'user_id'
+        });
+
+      if (error) throw error;
+
+      // Mettre à jour les métadonnées auth (pour UserMenu)
+      const { error: authError } = await supabase.auth.updateUser({
+        data: {
+          full_name: formData.fullName.trim(),
+          avatar_url: avatarUrl || null
+        }
+      });
+
+      if (authError) throw authError;
+
+      alert('✅ Profil mis à jour avec succès !');
+      setPhotoFile(null);
+      
+      // Recharger les données
+      await loadUserData();
+    } catch (error) {
+      console.error('Erreur sauvegarde profil:', error);
+      alert('Erreur lors de la sauvegarde. Veuillez réessayer.');
     } finally {
-      setFollowLoading(false);
+      setSaving(false);
+      setUploading(false);
     }
   };
-  
-  const getUserAvatar = () => {
-    if (!profile?.avatar_url) return null;
-    
-    if (profile.avatar_url.startsWith('http')) {
-      return profile.avatar_url;
-    }
-    
-    const { data } = supabase.storage
-      .from('user-avatars')
-      .getPublicUrl(profile.avatar_url);
-    
-    return data.publicUrl;
-  };
-  
-  const getDogPhoto = (dog) => {
-    if (!dog.photo_url) return null;
-    
-    if (dog.photo_url.startsWith('http')) {
-      return dog.photo_url;
-    }
-    
-    const { data } = supabase.storage
-      .from('dog-photos')
-      .getPublicUrl(dog.photo_url);
-    
-    return data.publicUrl;
-  };
-  
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('fr-FR', { 
-      year: 'numeric', 
-      month: 'long' 
-    });
-  };
-  
-  if (!profile) {
+
+  // Initiales pour l'avatar par défaut
+  const initials = formData.fullName
+    .split(' ')
+    .map(n => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2) || 'U';
+
+  if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      <div className="min-h-screen bg-brand-bg flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Chargement du profil...</p>
+        </div>
       </div>
     );
   }
-  
-  const avatarUrl = getUserAvatar();
-  const displayName = profile.full_name || profile.email?.split('@')[0] || 'Utilisateur';
-  
+
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="sticky top-0 z-50 bg-card border-b border-border shadow-soft">
-        <div className="max-w-screen-xl mx-auto px-3 sm:px-4 py-3">
-          <div className="flex items-center gap-3 sm:gap-4">
-            <button
-              onClick={() => navigate(-1)}
-              className="p-2 hover:bg-muted rounded-full transition-smooth flex-shrink-0"
-            >
-              <ArrowLeft size={20} />
-            </button>
-            <div className="min-w-0 flex-1">
-              <h1 className="text-lg sm:text-xl font-heading font-semibold text-foreground truncate">
-                {displayName}
-              </h1>
-              <p className="text-xs text-muted-foreground">
-                {profile.posts_count || 0} posts
-              </p>
-            </div>
+    <div className="min-h-screen bg-brand-bg pb-20 pt-4 px-4">
+      <div className="max-w-2xl mx-auto">
+        {/* Header */}
+        <div className="flex items-center gap-4 mb-6">
+          <button
+            onClick={() => navigate(-1)}
+            className="p-2 hover:bg-muted rounded-full transition-smooth"
+          >
+            <Icon name="ArrowLeft" size={24} className="text-foreground" />
+          </button>
+          <div className="flex-1">
+            <h1 className="text-2xl font-heading font-bold text-foreground">
+              Mon profil
+            </h1>
+            <SubscriptionBadge tier={subscriptionTier} size="sm" />
           </div>
         </div>
+
+        {/* Formulaire */}
+        <form onSubmit={handleSave} className="space-y-6">
+          {/* Photo de profil */}
+          <div className="bg-card rounded-3xl p-6 shadow-soft border border-border">
+            <h2 className="text-lg font-semibold text-foreground mb-4">
+              Photo de profil
+            </h2>
+
+            <div className="flex flex-col sm:flex-row items-center gap-6">
+              {/* Avatar */}
+              <div className="relative">
+                {photoPreview ? (
+                  <img
+                    src={photoPreview}
+                    alt="Profil"
+                    className="w-32 h-32 rounded-full object-cover border-4 border-border"
+                  />
+                ) : (
+                  <div className="w-32 h-32 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-4xl font-bold border-4 border-border">
+                    {initials}
+                  </div>
+                )}
+
+                {/* Bouton supprimer */}
+                {photoFile && (
+                  <button
+                    type="button"
+                    onClick={removePhoto}
+                    className="absolute -top-2 -right-2 w-8 h-8 bg-destructive text-white rounded-full flex items-center justify-center hover:bg-destructive/90 transition-smooth"
+                  >
+                    <Icon name="X" size={16} />
+                  </button>
+                )}
+              </div>
+
+              {/* Upload */}
+              <div className="flex-1 text-center sm:text-left">
+                <label className="inline-block">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handlePhotoChange}
+                    className="hidden"
+                  />
+                  <div className="px-4 py-2 bg-primary text-primary-foreground rounded-xl cursor-pointer hover:bg-primary/90 transition-smooth inline-flex items-center gap-2">
+                    <Icon name="Upload" size={20} />
+                    <span className="font-medium">
+                      {photoFile ? 'Changer la photo' : 'Choisir une photo'}
+                    </span>
+                  </div>
+                </label>
+                <p className="text-xs text-muted-foreground mt-2">
+                  JPG, PNG ou GIF - Max 5 MB
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Informations personnelles */}
+          <div className="bg-card rounded-3xl p-6 shadow-soft border border-border">
+            <h2 className="text-lg font-semibold text-foreground mb-4">
+              Informations personnelles
+            </h2>
+
+            <div className="space-y-4">
+              {/* Nom complet */}
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1.5">
+                  Nom complet <span className="text-destructive">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={formData.fullName}
+                  onChange={(e) => handleChange('fullName', e.target.value)}
+                  placeholder="Jean Dupont"
+                  required
+                  className="w-full px-4 py-2.5 border border-border rounded-xl bg-background text-foreground placeholder-muted-foreground focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-smooth"
+                />
+              </div>
+
+              {/* Email (non modifiable) */}
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1.5">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  value={formData.email}
+                  disabled
+                  className="w-full px-4 py-2.5 border border-border rounded-xl bg-muted text-muted-foreground cursor-not-allowed"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  L'email ne peut pas être modifié
+                </p>
+              </div>
+
+              {/* Téléphone */}
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1.5">
+                  Téléphone
+                </label>
+                <input
+                  type="tel"
+                  value={formData.phone}
+                  onChange={(e) => handleChange('phone', e.target.value)}
+                  placeholder="06 12 34 56 78"
+                  className="w-full px-4 py-2.5 border border-border rounded-xl bg-background text-foreground placeholder-muted-foreground focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-smooth"
+                />
+              </div>
+
+              {/* Code postal */}
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1.5">
+                  Code postal
+                </label>
+                <input
+                  type="text"
+                  value={formData.zipcode}
+                  onChange={(e) => handleChange('zipcode', e.target.value)}
+                  placeholder="75001"
+                  pattern="[0-9]{5}"
+                  maxLength={5}
+                  className="w-full px-4 py-2.5 border border-border rounded-xl bg-background text-foreground placeholder-muted-foreground focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-smooth"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Pour trouver des services vétérinaires près de chez vous
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Boutons d'action */}
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={() => navigate(-1)}
+              className="flex-1 px-6 py-3 border border-border rounded-xl font-medium text-foreground hover:bg-muted transition-smooth"
+            >
+              Annuler
+            </button>
+            <button
+              type="submit"
+              disabled={saving}
+              className="flex-1 px-6 py-3 bg-primary text-primary-foreground rounded-xl font-medium hover:bg-primary/90 transition-smooth disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {uploading ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <span>Upload...</span>
+                </>
+              ) : saving ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <span>Sauvegarde...</span>
+                </>
+              ) : (
+                <>
+                  <Icon name="Check" size={20} />
+                  <span>Enregistrer</span>
+                </>
+              )}
+            </button>
+          </div>
+        </form>
       </div>
       
-      <TabNavigation />
-      
-      <main className="max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
-        {/* Profile Header */}
-        <div className="bg-card border border-border rounded-2xl p-4 md:p-6 mb-4 md:mb-6">
-          <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6">
-            {/* Avatar */}
-            <div className="w-full sm:w-auto flex justify-center sm:block">
-              {avatarUrl ? (
-                <img
-                  src={avatarUrl}
-                  alt={displayName}
-                  className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover border-4 border-border"
-                />
-              ) : (
-                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-2xl sm:text-3xl border-4 border-border">
-                  {displayName.charAt(0).toUpperCase()}
-                </div>
-              )}
-            </div>
-            
-            {/* Info */}
-            <div className="flex-1 w-full">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-3">
-                <div className="w-full sm:w-auto text-center sm:text-left">
-                  <h2 className="text-xl sm:text-2xl font-heading font-bold text-foreground">
-                    {displayName}
-                  </h2>
-                  <p className="text-muted-foreground text-sm">
-                    @{profile.email?.split('@')[0] || 'user'}
-                  </p>
-                </div>
-                
-                {isOwnProfile ? (
-                  <button
-                    onClick={() => navigate('/settings')}
-                    className="w-full sm:w-auto px-4 py-2 border border-border rounded-xl hover:bg-muted transition-smooth flex items-center justify-center gap-2 text-sm"
-                  >
-                    <Edit size={16} />
-                    Modifier le profil
-                  </button>
-                ) : (
-                  <button
-                    onClick={handleFollow}
-                    disabled={followLoading}
-                    className={`w-full sm:w-auto px-6 py-2 rounded-xl font-medium transition-smooth text-sm ${
-                      isFollowing
-                        ? 'bg-muted text-foreground hover:bg-muted/80'
-                        : 'bg-primary text-primary-foreground hover:bg-primary/90'
-                    }`}
-                  >
-                    {followLoading ? 'Chargement...' : isFollowing ? 'Suivi' : 'Suivre'}
-                  </button>
-                )}
-              </div>
-              
-              {/* Stats */}
-              <div className="flex justify-center sm:justify-start gap-6 sm:gap-8 mb-4">
-                <div className="text-center">
-                  <div className="text-lg sm:text-xl font-bold text-foreground">
-                    {profile.posts_count || 0}
-                  </div>
-                  <div className="text-xs text-muted-foreground">Posts</div>
-                </div>
-                
-                <div className="text-center">
-                  <div className="text-lg sm:text-xl font-bold text-foreground">
-                    {profile.followers_count || 0}
-                  </div>
-                  <div className="text-xs text-muted-foreground">Followers</div>
-                </div>
-                
-                <div className="text-center">
-                  <div className="text-lg sm:text-xl font-bold text-foreground">
-                    {profile.following_count || 0}
-                  </div>
-                  <div className="text-xs text-muted-foreground">Suivis</div>
-                </div>
-              </div>
-              
-              {/* Bio */}
-              {profile.bio && (
-                <p className="text-foreground mb-3 text-sm sm:text-base text-center sm:text-left">{profile.bio}</p>
-              )}
-              
-              {/* Membre depuis */}
-              <div className="flex items-center justify-center sm:justify-start gap-2 text-muted-foreground text-xs sm:text-sm">
-                <Calendar size={14} />
-                Membre depuis {formatDate(profile.created_at)}
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        {/* Tabs */}
-        <div className="bg-card border border-border rounded-2xl mb-4 md:mb-6">
-          <div className="flex border-b border-border">
-            <button
-              onClick={() => setActiveTab('posts')}
-              className={`flex-1 px-3 py-3 text-sm font-medium transition-smooth ${
-                activeTab === 'posts'
-                  ? 'text-primary border-b-2 border-primary'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              Posts ({posts.length})
-            </button>
-            
-            <button
-              onClick={() => setActiveTab('chiens')}
-              className={`flex-1 px-3 py-3 text-sm font-medium transition-smooth ${
-                activeTab === 'chiens'
-                  ? 'text-primary border-b-2 border-primary'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              Chiens ({dogs.length})
-            </button>
-          </div>
-          
-          {/* Tab Content */}
-          <div className="p-3 sm:p-4 md:p-6">
-            {activeTab === 'posts' && (
-              <div>
-                {loading ? (
-                  <div className="flex justify-center py-12">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-                  </div>
-                ) : posts.length > 0 ? (
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3 md:gap-4">
-                    {posts.map((post) => (
-                      <div
-                        key={post.id}
-                        onClick={() => navigate(`/social-feed?post=${post.id}`)}
-                        className="bg-muted rounded-xl overflow-hidden cursor-pointer hover:opacity-80 transition-smooth aspect-square relative group"
-                      >
-                        {post.images.length > 0 ? (
-                          <img
-                            src={post.images[0].image_url}
-                            alt={post.title || 'Post'}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center p-2 sm:p-3 md:p-4 bg-gradient-to-br from-blue-50 to-purple-50">
-                            <p className="text-xs sm:text-sm text-foreground line-clamp-6">
-                              {post.content}
-                            </p>
-                          </div>
-                        )}
-                        
-                        {/* Overlay */}
-                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all flex items-center justify-center gap-3 sm:gap-4 opacity-0 group-hover:opacity-100">
-                          <div className="flex items-center gap-1 text-white">
-                            <Heart size={16} className="sm:w-5 sm:h-5" fill="white" />
-                            <span className="font-medium text-xs sm:text-base">{post.like_count || 0}</span>
-                          </div>
-                          <div className="flex items-center gap-1 text-white">
-                            <MessageCircle size={16} className="sm:w-5 sm:h-5" fill="white" />
-                            <span className="font-medium text-xs sm:text-base">{post.comment_count || 0}</span>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-12">
-                    <p className="text-muted-foreground mb-4 text-sm sm:text-base">
-                      {isOwnProfile ? 'Vous n\'avez pas encore publié de post' : 'Aucun post pour le moment'}
-                    </p>
-                    {isOwnProfile && (
-                      <button
-                        onClick={() => navigate('/social-feed')}
-                        className="px-4 sm:px-6 py-2 sm:py-3 bg-primary text-primary-foreground rounded-xl font-medium hover:bg-primary/90 transition-smooth text-sm sm:text-base"
-                      >
-                        Créer mon premier post
-                      </button>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
-            
-            {activeTab === 'chiens' && (
-              <div>
-                {dogs.length > 0 ? (
-                  <div className="grid grid-cols-1 gap-3 sm:gap-4">
-                    {dogs.map((dog) => {
-                      const dogPhoto = getDogPhoto(dog);
-                      
-                      return (
-                        <div key={dog.id} className="bg-muted rounded-xl p-3 sm:p-4 flex items-start gap-3 sm:gap-4">
-                          {dogPhoto ? (
-                            <img
-                              src={dogPhoto}
-                              alt={dog.name}
-                              className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover flex-shrink-0"
-                            />
-                          ) : (
-                            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-orange-400 to-pink-600 flex items-center justify-center text-white font-bold text-xl sm:text-2xl flex-shrink-0">
-                              {dog.name?.charAt(0).toUpperCase()}
-                            </div>
-                          )}
-                          
-                          <div className="flex-1 min-w-0">
-                            <h3 className="font-bold text-base sm:text-lg text-foreground mb-1 truncate">
-                              {dog.name}
-                            </h3>
-                            <p className="text-sm text-muted-foreground mb-2 truncate">
-                              {dog.breed}
-                            </p>
-                            {dog.birth_date && (
-                              <p className="text-xs text-muted-foreground">
-                                {new Date().getFullYear() - new Date(dog.birth_date).getFullYear()} ans
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <div className="text-center py-12">
-                    <p className="text-muted-foreground text-sm sm:text-base">
-                      {isOwnProfile ? 'Vous n\'avez pas encore ajouté de chien' : 'Aucun chien enregistré'}
-                    </p>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-      </main>
-      
+      {/* Footer */}
       <Footer />
     </div>
   );
