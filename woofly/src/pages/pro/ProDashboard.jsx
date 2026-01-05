@@ -73,19 +73,28 @@ const ProDashboard = () => {
 
   const fetchApplications = async (proAccountId) => {
     try {
+      // CORRECTION : Utiliser les vrais noms de foreign keys
       const { data, error } = await supabase
         .from('adoption_applications')
         .select(`
           *,
-          dog:dogs(id, name, breed, photo_url),
-          applicant:user_profiles(id, full_name, email)
+          dogs!adoption_applications_dog_id_fkey(id, name, breed, photo_url),
+          user_profiles!adoption_applications_user_id_fkey(id, full_name, email)
         `)
         .eq('professional_account_id', proAccountId)
         .eq('status', 'pending')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setApplications(data || []);
+      
+      // Reformater pour garder les mêmes noms que l'ancien code
+      const formattedData = data?.map(app => ({
+        ...app,
+        dog: app.dogs,
+        applicant: app.user_profiles
+      })) || [];
+      
+      setApplications(formattedData);
     } catch (error) {
       console.error('Erreur chargement candidatures:', error);
     }
