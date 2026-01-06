@@ -6,8 +6,8 @@ import {
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
-import TabNavigation from '../../components/TabNavigation';
-import TabNavigationPro from '../../components/TabNavigationPro';
+import UserMenu from '../../components/UserMenu';
+import UserMenuPro from '../../components/UserMenuPro';
 import Footer from '../../components/Footer';
 import SubscriptionBadge from '../../components/SubscriptionBadge';
 
@@ -179,21 +179,27 @@ const Settings = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {isProAccount ? <TabNavigationPro /> : <TabNavigation />}
-
-      <main className="main-content flex-1 pb-20">
-        <div className="max-w-2xl mx-auto px-4 py-4 space-y-6">
+      {/* Header avec UserMenu */}
+      <header className="sticky top-0 z-50 bg-card border-b border-border shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 py-3 sm:py-4 flex items-center justify-between">
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-smooth py-2 min-h-[44px]"
+          >
+            <ChevronLeft size={20} />
+            <span className="text-base font-medium">Retour</span>
+          </button>
           
-          {/* Header */}
-          <div className="mb-6 px-2">
-            <button
-              onClick={() => navigate(-1)}
-              className="flex items-center gap-2 text-muted-foreground hover:text-foreground mb-4 transition-smooth py-2"
-            >
-              <ChevronLeft size={20} />
-              <span className="text-base">Retour</span>
-            </button>
-            <h1 className="text-2xl font-heading font-bold text-foreground">
+          {isProAccount ? <UserMenuPro /> : <UserMenu />}
+        </div>
+      </header>
+
+      <main className="flex-1">
+        <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
+          
+          {/* Header page */}
+          <div className="mb-6">
+            <h1 className="text-2xl sm:text-3xl font-heading font-bold text-foreground">
               Paramètres
             </h1>
             <p className="text-muted-foreground mt-2">
