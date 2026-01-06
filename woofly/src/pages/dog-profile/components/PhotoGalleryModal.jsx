@@ -5,6 +5,7 @@ import Button from '../../../components/ui/Button';
 const PhotoGalleryModal = ({ isOpen, onClose, photos, onAddPhoto, currentProfilePhotoUrl, onSetProfilePhoto }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [selectedPhoto, setSelectedPhoto] = useState(null);
+  const [imageErrors, setImageErrors] = useState({});
 
   if (!isOpen) return null;
 
@@ -39,7 +40,7 @@ const PhotoGalleryModal = ({ isOpen, onClose, photos, onAddPhoto, currentProfile
     document.getElementById('photo-upload-input').click();
   };
 
-  // ✅ NOUVEAU : Définir une photo comme photo de profil
+  // Définir une photo comme photo de profil
   const handleSetAsProfilePhoto = async (photoUrl) => {
     if (onSetProfilePhoto) {
       await onSetProfilePhoto(photoUrl);
@@ -47,13 +48,43 @@ const PhotoGalleryModal = ({ isOpen, onClose, photos, onAddPhoto, currentProfile
     }
   };
 
-  // ✅ NOUVEAU : Vérifier si c'est la photo de profil actuelle
+  // Vérifier si c'est la photo de profil actuelle
   const isProfilePhoto = (photoUrl) => {
     return photoUrl === currentProfilePhotoUrl;
   };
 
+  // ✅ OPTIMISATION 1 : Fonction pour générer srcset Supabase
+  const getResponsiveImageUrl = (url, width) => {
+    if (!url) return '';
+    
+    // Si c'est une URL Supabase Storage
+    if (url.includes('supabase') && url.includes('storage')) {
+      // Ajouter des paramètres de transformation (si supporté par votre setup)
+      // Exemple: https://xxx.supabase.co/storage/v1/object/public/bucket/file.jpg
+      return `${url}?width=${width}&quality=80&format=webp`;
+    }
+    
+    return url;
+  };
+
+  // ✅ OPTIMISATION 2 : Générer srcset pour images responsives
+  const getSrcSet = (url) => {
+    if (!url) return '';
+    
+    return `
+      ${getResponsiveImageUrl(url, 400)} 400w,
+      ${getResponsiveImageUrl(url, 800)} 800w,
+      ${getResponsiveImageUrl(url, 1200)} 1200w
+    `.trim();
+  };
+
+  // ✅ OPTIMISATION 3 : Gérer les erreurs d'image
+  const handleImageError = (photoId) => {
+    setImageErrors(prev => ({ ...prev, [photoId]: true }));
+  };
+
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50">{/* ✅ z-index augmenté de 50 à 100 */}
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50">
       <div className="bg-card rounded-2xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
         <div className="bg-card border-b border-border p-6 flex items-center justify-between">
@@ -120,22 +151,35 @@ const PhotoGalleryModal = ({ isOpen, onClose, photos, onAddPhoto, currentProfile
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {photos.map((photo) => {
                 const isCurrentProfilePhoto = isProfilePhoto(photo.photo_url);
+                const hasError = imageErrors[photo.id];
                 
                 return (
                   <div
                     key={photo.id}
                     className="group relative aspect-square rounded-lg overflow-hidden bg-muted cursor-pointer hover:shadow-lg transition-smooth"
                   >
-                    {/* Image */}
-                    <img
-                      src={photo.photo_url}
-                      alt={photo.caption || 'Photo du chien'}
-                      className="w-full h-full object-cover"
-                      loading="lazy"
-                      onClick={() => setSelectedPhoto(photo)}
-                    />
+                    {/* ✅ OPTIMISATION 4 : Image responsive avec lazy loading */}
+                    {!hasError ? (
+                      <img
+                        src={getResponsiveImageUrl(photo.photo_url, 400)}
+                        srcSet={getSrcSet(photo.photo_url)}
+                        sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                        alt={photo.caption || 'Photo du chien'}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                        decoding="async"
+                        width="400"
+                        height="400"
+                        onError={() => handleImageError(photo.id)}
+                        onClick={() => setSelectedPhoto(photo)}
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-muted">
+                        <Icon name="ImageOff" size={40} color="var(--color-muted-foreground)" />
+                      </div>
+                    )}
                     
-                    {/* ✅ Badge "Photo de profil" */}
+                    {/* Badge "Photo de profil" */}
                     {isCurrentProfilePhoto && (
                       <div className="absolute top-2 right-2 bg-primary text-primary-foreground px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 shadow-lg">
                         <Icon name="Star" size={12} />
@@ -151,7 +195,7 @@ const PhotoGalleryModal = ({ isOpen, onClose, photos, onAddPhoto, currentProfile
                           {new Date(photo.created_at).toLocaleDateString('fr-FR')}
                         </p>
                         
-                        {/* ✅ Bouton "Définir comme photo de profil" */}
+                        {/* Bouton "Définir comme photo de profil" */}
                         {!isCurrentProfilePhoto && (
                           <button
                             onClick={(e) => {
@@ -189,7 +233,7 @@ const PhotoGalleryModal = ({ isOpen, onClose, photos, onAddPhoto, currentProfile
         </div>
       </div>
 
-      {/* ✅ Modal preview photo (optionnel) */}
+      {/* ✅ OPTIMISATION 5 : Modal preview avec image optimisée */}
       {selectedPhoto && (
         <div 
           className="fixed inset-0 z-[60] flex items-center justify-center bg-black/90 p-4"
@@ -203,9 +247,13 @@ const PhotoGalleryModal = ({ isOpen, onClose, photos, onAddPhoto, currentProfile
               <Icon name="X" size={32} />
             </button>
             <img
-              src={selectedPhoto.photo_url}
+              src={getResponsiveImageUrl(selectedPhoto.photo_url, 1200)}
+              srcSet={getSrcSet(selectedPhoto.photo_url)}
+              sizes="90vw"
               alt={selectedPhoto.caption || 'Photo du chien'}
               className="max-w-full max-h-[90vh] object-contain rounded-lg"
+              loading="eager"
+              decoding="async"
             />
           </div>
         </div>
