@@ -4,7 +4,6 @@ import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import TabNavigationPro from '../../components/TabNavigationPro';
 import UserMenuPro from '../../components/UserMenuPro';
-import VerifiedBadge from '../../components/VerifiedBadge';
 import ContactListModal from '../../components/ContactListModal';
 import { 
   Plus, Search, Heart, Users, CheckCircle, Clock, 
