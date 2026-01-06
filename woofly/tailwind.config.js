@@ -6,6 +6,14 @@ module.exports = {
     './src/**/*.{js,ts,jsx,tsx}',
   ],
   theme: {
+    screens: {
+      'xs': '475px', // Ajout breakpoint extra-small
+      'sm': '640px',
+      'md': '768px', 
+      'lg': '1024px',
+      'xl': '1280px',
+      '2xl': '1536px'
+    },
     extend: {
       colors: {
         border: 'var(--color-border)', // gray-200
@@ -70,6 +78,25 @@ module.exports = {
         // Garder mono seulement si vraiment utilisée pour du code
         // Sinon la supprimer complètement
         mono: ['ui-monospace', 'SFMono-Regular', 'monospace'],
+      },
+      
+      // ✅ AJOUT : Espacement responsive optimisé
+      spacing: {
+        '18': '4.5rem',
+        '88': '22rem',
+        '128': '32rem',
+      },
+      
+      // ✅ AJOUT : Conteneurs fluides
+      container: {
+        center: true,
+        padding: {
+          DEFAULT: '1rem',
+          sm: '2rem',
+          lg: '4rem',
+          xl: '5rem',
+          '2xl': '6rem',
+        },
       },
       
       boxShadow: {
