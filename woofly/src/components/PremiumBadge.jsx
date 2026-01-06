@@ -40,18 +40,20 @@ const PremiumBadge = ({ size = 'md', variant = 'default' }) => {
   // Badge complet
   return (
     <div className={`
-      inline-flex items-center font-medium rounded-full
-      bg-gradient-to-r from-yellow-400 to-yellow-500 
-      text-yellow-900 shadow-sm
+      inline-flex items-center font-bold rounded-full
+      bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-500 
+      text-yellow-950 shadow-md border border-yellow-300/50
+      animate-in fade-in zoom-in duration-300
       ${currentSize.container}
     `}>
       <Crown 
         size={currentSize.icon} 
-        className="fill-current" 
+        className="fill-yellow-900/20" 
       />
-      <span>Premium</span>
+      <span className="uppercase tracking-tight">Premium</span>
     </div>
   );
 };
 
 export default PremiumBadge;
+
