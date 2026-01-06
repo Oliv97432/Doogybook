@@ -59,12 +59,19 @@ module.exports = {
         md: 'calc(var(--radius) - 2px)', // 6px
         sm: 'calc(var(--radius) - 4px)', // 4px
       },
+      
+      // ✅ OPTIMISATION : Réduire de 4 à 2 fonts seulement !
       fontFamily: {
-        sans: ['Source Sans 3', 'sans-serif'],
-        heading: ['Inter', 'sans-serif'],
-        caption: ['Nunito Sans', 'sans-serif'],
-        mono: ['JetBrains Mono', 'monospace'],
+        // Inter pour TOUT (texte, headings, captions)
+        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        heading: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        caption: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        
+        // Garder mono seulement si vraiment utilisée pour du code
+        // Sinon la supprimer complètement
+        mono: ['ui-monospace', 'SFMono-Regular', 'monospace'],
       },
+      
       boxShadow: {
         soft: '0 1px 3px rgba(0, 0, 0, 0.1)',
         elevated: '0 4px 12px rgba(0, 0, 0, 0.08)',
