@@ -38,11 +38,6 @@ const UserMenu = ({ dogProfiles = [], currentDog, onDogChange }) => {
     }
   };
 
-  const handleProfile = () => {
-    navigate('/user-profile');
-    setIsOpen(false);
-  };
-
   const handleSettings = () => {
     navigate('/settings');
     setIsOpen(false);
@@ -54,9 +49,9 @@ const UserMenu = ({ dogProfiles = [], currentDog, onDogChange }) => {
     // Utiliser l'API Web Share si disponible (mobile)
     if (navigator.share) {
       navigator.share({
-        title: 'Woofly - Gestion de votre chien',
-        text: 'Découvrez Woofly, l\'application complète pour gérer la santé et le bien-être de votre chien !',
-        url: 'https://app.wooflyapp.com'
+        title: 'Doogybook - Gestion de votre chien',
+        text: 'Découvrez Doogybook, l\'application complète pour gérer la santé et le bien-être de votre chien !',
+        url: 'https://www.doogybook.com'
       }).catch((error) => {
         console.log('Erreur partage:', error);
       });
@@ -87,7 +82,7 @@ const UserMenu = ({ dogProfiles = [], currentDog, onDogChange }) => {
   };
 
   const copyToClipboard = () => {
-    navigator.clipboard.writeText('https://app.wooflyapp.com');
+    navigator.clipboard.writeText('https://www.doogybook.com');
     alert('✅ Lien copié dans le presse-papier !');
     setShowShareModal(false);
   };
@@ -168,17 +163,6 @@ const UserMenu = ({ dogProfiles = [], currentDog, onDogChange }) => {
 
             {/* Menu items */}
             <div className="p-1 sm:p-2">
-              {/* Mon profil */}
-              <button
-                onClick={handleProfile}
-                className="w-full flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 sm:py-2.5 rounded-lg hover:bg-muted transition-smooth text-foreground"
-              >
-                <div className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center bg-blue-100 rounded-full flex-shrink-0">
-                  <Icon name="User" size={16} className="sm:w-4 sm:h-4 text-blue-600" />
-                </div>
-                <span className="text-sm font-medium">Mon profil</span>
-              </button>
-
               {/* Mes chiens (avec sous-menu) */}
               <div className="relative">
                 <button
@@ -278,7 +262,7 @@ const UserMenu = ({ dogProfiles = [], currentDog, onDogChange }) => {
 
             <div className="border-t border-border"></div>
 
-            {/* Offrir un café - NOUVEAU */}
+            {/* Offrir un café */}
             <div className="p-1 sm:p-2">
               <button
                 onClick={handleDonation}
@@ -315,7 +299,7 @@ const UserMenu = ({ dogProfiles = [], currentDog, onDogChange }) => {
           <div className="bg-card rounded-xl sm:rounded-2xl shadow-elevated max-w-sm sm:max-w-md w-full p-4 sm:p-6">
             <div className="flex items-center justify-between mb-3 sm:mb-4">
               <h3 className="text-base sm:text-lg font-heading font-semibold text-foreground">
-                Partager Woofly
+                Partager Doogybook
               </h3>
               <button
                 onClick={() => setShowShareModal(false)}
@@ -326,13 +310,13 @@ const UserMenu = ({ dogProfiles = [], currentDog, onDogChange }) => {
             </div>
 
             <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">
-              Partagez Woofly avec d'autres propriétaires de chiens !
+              Partagez Doogybook avec d'autres propriétaires de chiens !
             </p>
 
             <div className="flex items-center gap-2 p-2 sm:p-3 bg-muted rounded-lg sm:rounded-xl mb-3 sm:mb-4">
               <input
                 type="text"
-                value="https://app.wooflyapp.com"
+                value="https://www.doogybook.com"
                 readOnly
                 className="flex-1 bg-transparent text-xs sm:text-sm text-foreground outline-none"
               />
@@ -346,7 +330,7 @@ const UserMenu = ({ dogProfiles = [], currentDog, onDogChange }) => {
 
             <div className="flex gap-2">
               <a
-                href={`https://www.facebook.com/sharer/sharer.php?u=https://app.wooflyapp.com`}
+                href={`https://www.facebook.com/sharer/sharer.php?u=https://www.doogybook.com`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex-1 flex items-center justify-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 bg-[#1877F2] text-white rounded-lg sm:rounded-xl hover:bg-[#1877F2]/90 transition-smooth"
@@ -354,7 +338,7 @@ const UserMenu = ({ dogProfiles = [], currentDog, onDogChange }) => {
                 <span className="text-xs sm:text-sm font-medium">Facebook</span>
               </a>
               <a
-                href={`https://twitter.com/intent/tweet?text=Découvrez Woofly, l'application pour gérer votre chien !&url=https://app.wooflyapp.com`}
+                href={`https://twitter.com/intent/tweet?text=Découvrez Doogybook, l'application pour gérer votre chien !&url=https://www.doogybook.com`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex-1 flex items-center justify-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 bg-[#1DA1F2] text-white rounded-lg sm:rounded-xl hover:bg-[#1DA1F2]/90 transition-smooth"
@@ -366,7 +350,7 @@ const UserMenu = ({ dogProfiles = [], currentDog, onDogChange }) => {
         </div>
       )}
 
-      {/* Modal de don - NOUVEAU */}
+      {/* Modal de don */}
       <DonationModalUser
         isOpen={showDonationModal}
         onClose={() => setShowDonationModal(false)}
