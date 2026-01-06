@@ -5,6 +5,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import TabNavigationPro from '../../components/TabNavigationPro';
 import UserMenuPro from '../../components/UserMenuPro';
 import ContactListModal from '../../components/ContactListModal';
+import VerifiedBadge from '../../components/VerifiedBadge';
 import { 
   Plus, Search, Heart, Users, CheckCircle, Clock, 
   TrendingUp, Calendar, Home, AlertCircle
@@ -281,10 +282,10 @@ const ProDashboard = () => {
               <h1 className="text-2xl sm:text-3xl font-heading font-bold text-foreground mb-1">
                 {proAccount?.organization_name || 'Mon Refuge'}
               </h1>
-              <p className="text-sm text-muted-foreground flex items-center gap-2">
-                <CheckCircle size={16} className="text-green-500" />
-                Compte vérifié
-              </p>
+              <div className="flex items-center gap-2">
+                <VerifiedBadge size="sm" />
+                <span className="text-xs text-muted-foreground">Compte certifié par Doogybook</span>
+              </div>
             </div>
             <div className="flex items-center gap-2 sm:gap-3">
               <button
@@ -634,3 +635,4 @@ const ProDashboard = () => {
 };
 
 export default ProDashboard;
+
