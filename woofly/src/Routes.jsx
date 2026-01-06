@@ -39,6 +39,7 @@ import HybridDogProfile from './pages/chien/HybridDogProfile';
 // Pages Professionnelles
 import ProRegistration from './pages/pro/ProRegistration';
 import ProDashboard from './pages/pro/ProDashboard';
+import ProSettings from './pages/pro/ProSettings';
 import ProDogManagement from './pages/pro/ProDogManagement';
 import ProDogDetail from './pages/pro/ProDogDetail';
 import ProDogsList from './pages/pro/ProDogsList';
@@ -103,6 +104,7 @@ const Routes = () => {
         {/* Routes Professionnelles */}
         <Route path="/pro/register" element={<ProRegistration />} />
         <Route path="/pro/dashboard" element={<ProDashboard />} />
+        <Route path="/pro/settings" element={<ProSettings />} />
         <Route path="/pro/dogs" element={<ProDogManagement />} />
         <Route path="/pro/dogs/new" element={<ProDogManagement />} />
         <Route path="/pro/dogs/:dogId" element={<ProDogDetail />} />
