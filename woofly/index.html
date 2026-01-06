@@ -68,12 +68,43 @@
       })();
     </script>
     
-    <!-- ✅ OPTIMISATION 5 : AdSense avec defer au lieu de async -->
+    <!-- ✅ OPTIMISATION 10 : Scripts critiques avec defer -->
     <script defer src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6868379943051269" crossorigin="anonymous"></script>
+    
+    <!-- ✅ OPTIMISATION 11 : Service Worker pour PWA -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then((registration) => {
+              console.log('SW registered: ', registration);
+            })
+            .catch((registrationError) => {
+              console.log('SW registration failed: ', registrationError);
+            });
+        });
+      }
+    </script>
   
-    <!-- ✅ OPTIMISATION 6 : Scripts Rocket avec defer -->
-    <script type="module" defer src="https://static.rocket.new/rocket-web.js?_cfg=https%3A%2F%2FDoogybook5761back.builtwithrocket.new&_be=https%3A%2F%2Fapplication.rocket.new&_v=0.1.10"></script>
-    <script type="module" defer src="https://static.rocket.new/rocket-shot.js?v=0.0.1"></script>
+    <!-- ✅ OPTIMISATION 7 : Meta tags pour partage social -->
+    <meta property="og:title" content="Doogybook - Le réseau social des chiens" />
+    <meta property="og:description" content="Le réseau social qui connecte les propriétaires de chiens. Partagez, échangez et découvrez une communauté passionnée." />
+    <meta property="og:image" content="/og-image.jpg" />
+    <meta property="og:url" content="https://doogybook.com" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Doogybook - Le réseau social des chiens" />
+    <meta name="twitter:description" content="Le réseau social qui connecte les propriétaires de chiens." />
+    <meta name="twitter:image" content="/og-image.jpg" />
+    
+    <!-- ✅ OPTIMISATION 8 : Preload critiques -->
+    <link rel="preload" href="/src/index.jsx" as="script" />
+    <link rel="preload" href="/src/styles/tailwind.css" as="style" />
+    
+    <!-- ✅ OPTIMISATION 9 : Security headers -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+    <meta http-equiv="X-Frame-Options" content="DENY" />
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block" />
   </head>
   <body>
     <div id="root"></div>
