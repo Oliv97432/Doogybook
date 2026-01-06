@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
-import TabNavigation from '../../components/TabNavigation';
 import UserMenu from '../../components/UserMenu';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
@@ -284,10 +283,8 @@ const MultiProfileManagement = () => {
         </div>
       </div>
 
-      <TabNavigation />
-
-      {/* Main Content */}
-      <main className="main-content max-w-screen-xl mx-auto px-4 py-6">
+      {/* Main Content - TABNAV RETIRÉ */}
+      <main className="max-w-screen-xl mx-auto px-4 py-6">
         {filteredProfiles?.length === 0 && !searchQuery && !filterBreed ? (
           <EmptyState onAddDog={() => setIsAddModalOpen(true)} />
         ) : filteredProfiles?.length === 0 ? (
