@@ -224,7 +224,7 @@ const ClaimDogPage = () => {
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <div className="max-w-md w-full bg-white rounded-2xl sm:rounded-3xl shadow-lg p-6 sm:p-8 text-center">
           <div className="w-16 h-16 sm:w-20 sm:h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <AlertCircle className="text-red-600" size={32} className="sm:size-10" />
+            <AlertCircle className="text-red-600 size-8 sm:size-10" />
           </div>
           <h2 className="text-xl sm:text-2xl font-heading font-bold text-gray-900 mb-2 leading-tight">
             Oups !
@@ -246,7 +246,7 @@ const ClaimDogPage = () => {
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <div className="max-w-md w-full bg-white rounded-2xl sm:rounded-3xl shadow-lg p-6 sm:p-8 text-center">
           <div className="w-16 h-16 sm:w-20 sm:h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <CheckCircle className="text-green-600" size={32} className="sm:size-10" />
+            <CheckCircle className="text-green-600 size-8 sm:size-10" />
           </div>
           <h2 className="text-xl sm:text-2xl font-heading font-bold text-gray-900 mb-2 leading-tight">
             🎉 Félicitations !
@@ -298,7 +298,7 @@ const ClaimDogPage = () => {
           {/* Message */}
           <div className="bg-blue-50 border-l-4 border-blue-500 p-3 sm:p-4 rounded-r-xl mb-4 sm:mb-6">
             <div className="flex gap-3">
-              <Heart className="text-blue-600 flex-shrink-0" size={20} className="sm:size-6" />
+              <Heart className="text-blue-600 flex-shrink-0 size-5 sm:size-6" />
               <div className="text-xs sm:text-sm text-blue-900">
                 <p className="font-semibold mb-1">Un chien a été transféré pour vous !</p>
                 <p className="break-words">
