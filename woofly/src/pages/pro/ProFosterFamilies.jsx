@@ -45,17 +45,17 @@ const ProFosterFamilies = () => {
     }
   };
 
-  // ✅ VERSION ULTRA-OPTIMISÉE : 1 seule requête au lieu de 21 !
+  // ✅ TOUTES les familles avec status libre OU complet
   const fetchFosterFamilies = async (proAccountId) => {
     try {
-      // Récupérer TOUT depuis la view en une seule requête
+      // Récupérer TOUTES les familles (avec ou sans chiens)
       const { data: families, error } = await supabase
         .from('contacts_with_current_dogs')
         .select('*')
         .eq('professional_account_id', proAccountId)
         .in('type', ['foster_family', 'both'])
         .not('user_id', 'is', null)
-        .gt('current_dogs_count', 0); // Seulement les familles avec au moins 1 chien
+        .in('status', ['libre', 'complet']); // ✅ Filtrer sur le statut
 
       if (error) {
         console.error('Erreur contacts:', error);
@@ -74,6 +74,9 @@ const ProFosterFamilies = () => {
         email: family.email || '',
         phone: family.phone || '',
         created_at: family.created_at,
+        status: family.status, // ✅ Ajouter le statut
+        current_dogs_count: family.current_dogs_count || 0,
+        max_dogs: family.max_dogs || 1,
         // Transformer current_dogs (JSON) en array simple
         dogs: Array.isArray(family.current_dogs) 
           ? family.current_dogs.map(dog => ({
@@ -101,31 +104,44 @@ const ProFosterFamilies = () => {
 
     setAddingFamily(true);
     try {
+      // 1. Vérifier que l'utilisateur existe
       const { data: userProfile, error: findError } = await supabase
         .from('user_profiles')
-        .select('id, full_name, email')
+        .select('id, full_name, email, phone')
         .eq('email', newFamilyEmail.toLowerCase().trim())
-        .single();
+        .maybeSingle(); // ✅ maybeSingle au lieu de single
 
-      if (findError || !userProfile) {
+      if (findError) {
+        console.error('Erreur recherche user:', findError);
+        alert('Erreur lors de la recherche de l\'utilisateur');
+        return;
+      }
+
+      if (!userProfile) {
         alert('Aucun utilisateur trouvé avec cet email. La personne doit d\'abord créer un compte.');
         return;
       }
 
-      // Vérifier si déjà dans contacts
-      const { data: existingContact } = await supabase
-        .from('contacts')
+      // 2. Vérifier si déjà dans contacts (pas la view)
+      const { data: existingContact, error: checkError } = await supabase
+        .from('contacts') // ✅ Table directe
         .select('id')
         .eq('professional_account_id', proAccount.id)
         .eq('user_id', userProfile.id)
-        .single();
+        .maybeSingle(); // ✅ maybeSingle
+
+      if (checkError) {
+        console.error('Erreur vérification contact:', checkError);
+        alert('Erreur lors de la vérification');
+        return;
+      }
 
       if (existingContact) {
         alert('Cette famille d\'accueil est déjà enregistrée.');
         return;
       }
 
-      // Ajouter dans contacts (pas contacts_with_current_dogs qui est une view)
+      // 3. Ajouter dans contacts
       const { error: insertError } = await supabase
         .from('contacts')
         .insert({
@@ -133,10 +149,16 @@ const ProFosterFamilies = () => {
           user_id: userProfile.id,
           full_name: userProfile.full_name,
           email: userProfile.email,
-          type: 'foster_family'
+          phone: userProfile.phone || null,
+          type: 'foster_family',
+          status: 'libre' // ✅ Statut par défaut
         });
 
-      if (insertError) throw insertError;
+      if (insertError) {
+        console.error('Erreur insertion:', insertError);
+        alert('Erreur lors de l\'ajout de la famille d\'accueil');
+        return;
+      }
 
       alert(`${userProfile.full_name || userProfile.email} a été ajouté(e) comme famille d'accueil.`);
       
@@ -234,7 +256,7 @@ const ProFosterFamilies = () => {
               <p className="text-muted-foreground mb-6">
                 {searchTerm 
                   ? 'Essayez avec d\'autres mots-clés'
-                  : 'Les familles d\'accueil apparaîtront ici une fois qu\'un chien leur sera confié'
+                  : 'Les familles d\'accueil apparaîtront ici une fois ajoutées'
                 }
               </p>
               {!searchTerm && (
@@ -264,9 +286,22 @@ const ProFosterFamilies = () => {
                         <h3 className="font-bold text-lg truncate">
                           {family.full_name || 'Famille d\'accueil'}
                         </h3>
-                        <div className="flex items-center gap-1 text-white/80 text-xs">
-                          <Home size={12} />
-                          <span>{family.dogs.length} chien{family.dogs.length > 1 ? 's' : ''}</span>
+                        <div className="flex items-center gap-2 text-white/80 text-xs flex-wrap">
+                          <div className="flex items-center gap-1">
+                            <Home size={12} />
+                            <span>{family.current_dogs_count}/{family.max_dogs} chien{family.max_dogs > 1 ? 's' : ''}</span>
+                          </div>
+                          {/* ✅ Badge statut */}
+                          {family.status === 'libre' && (
+                            <span className="px-2 py-0.5 bg-green-500 text-white rounded-full text-[10px] font-medium">
+                              Disponible
+                            </span>
+                          )}
+                          {family.status === 'complet' && (
+                            <span className="px-2 py-0.5 bg-orange-500 text-white rounded-full text-[10px] font-medium">
+                              Complet
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -299,43 +334,54 @@ const ProFosterFamilies = () => {
                   </div>
 
                   {/* Dogs List */}
-                  <div className="px-4 pb-4">
-                    <p className="text-xs font-medium text-muted-foreground mb-2">
-                      Chiens accueillis :
-                    </p>
-                    <div className="space-y-2">
-                      {family.dogs.map((dog) => (
-                        <div
-                          key={dog.id}
-                          onClick={() => navigate(`/pro/dogs/${dog.id}`)}
-                          className="flex items-center gap-3 p-2 bg-muted rounded-lg hover:bg-muted/80 transition-smooth cursor-pointer"
-                        >
-                          <div className="w-10 h-10 rounded-lg overflow-hidden bg-gradient-to-br from-primary/10 to-primary/5 flex-shrink-0">
-                            {dog.photo_url ? (
-                              <img
-                                src={dog.photo_url}
-                                alt={dog.name}
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center text-lg font-bold text-primary/30">
-                                {dog.name?.charAt(0).toUpperCase()}
-                              </div>
-                            )}
+                  {family.dogs.length > 0 && (
+                    <div className="px-4 pb-4">
+                      <p className="text-xs font-medium text-muted-foreground mb-2">
+                        Chiens accueillis :
+                      </p>
+                      <div className="space-y-2">
+                        {family.dogs.map((dog) => (
+                          <div
+                            key={dog.id}
+                            onClick={() => navigate(`/pro/dogs/${dog.id}`)}
+                            className="flex items-center gap-3 p-2 bg-muted rounded-lg hover:bg-muted/80 transition-smooth cursor-pointer"
+                          >
+                            <div className="w-10 h-10 rounded-lg overflow-hidden bg-gradient-to-br from-primary/10 to-primary/5 flex-shrink-0">
+                              {dog.photo_url ? (
+                                <img
+                                  src={dog.photo_url}
+                                  alt={dog.name}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center text-lg font-bold text-primary/30">
+                                  {dog.name?.charAt(0).toUpperCase()}
+                                </div>
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium text-sm text-foreground truncate">
+                                {dog.name}
+                              </p>
+                              <p className="text-xs text-muted-foreground truncate">
+                                {dog.breed}
+                              </p>
+                            </div>
+                            <Dog size={16} className="text-muted-foreground flex-shrink-0" />
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="font-medium text-sm text-foreground truncate">
-                              {dog.name}
-                            </p>
-                            <p className="text-xs text-muted-foreground truncate">
-                              {dog.breed}
-                            </p>
-                          </div>
-                          <Dog size={16} className="text-muted-foreground flex-shrink-0" />
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  )}
+
+                  {/* No dogs message */}
+                  {family.dogs.length === 0 && (
+                    <div className="px-4 pb-4">
+                      <p className="text-xs text-muted-foreground text-center italic">
+                        Aucun chien actuellement accueilli
+                      </p>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
