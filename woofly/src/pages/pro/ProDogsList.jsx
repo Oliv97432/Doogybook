@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
-import TabNavigationPro from '../../components/TabNavigationPro';
+import ProSidebar from '../../components/pro/ProSidebar';
 import UserMenuPro from '../../components/UserMenuPro';
 import { 
   Search, Home, MapPin, Calendar, ArrowLeft, Heart,
@@ -185,7 +185,7 @@ const ProDogsList = () => {
         </div>
       </div>
 
-      <TabNavigationPro />
+      <ProSidebar />
 
       {/* Main content */}
       <main className="main-content flex-1">
