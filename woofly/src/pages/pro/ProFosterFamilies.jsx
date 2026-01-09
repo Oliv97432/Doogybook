@@ -45,17 +45,17 @@ const ProFosterFamilies = () => {
     }
   };
 
-  // ✅ TOUTES les familles avec status libre OU complet
+  // ✅ CORRECTION FINALE : status = 'active', calculer disponibilité
   const fetchFosterFamilies = async (proAccountId) => {
     try {
-      // Récupérer TOUTES les familles (avec ou sans chiens)
+      // Récupérer TOUTES les familles avec status = 'active'
       const { data: families, error } = await supabase
         .from('contacts_with_current_dogs')
         .select('*')
         .eq('professional_account_id', proAccountId)
         .in('type', ['foster_family', 'both'])
         .not('user_id', 'is', null)
-        .in('status', ['libre', 'complet']); // ✅ Filtrer sur le statut
+        .eq('status', 'active'); // ✅ Filtrer sur 'active'
 
       if (error) {
         console.error('Erreur contacts:', error);
@@ -68,25 +68,33 @@ const ProFosterFamilies = () => {
       }
 
       // Transformer le format pour correspondre à l'UI
-      const formattedFamilies = families.map(family => ({
-        id: family.user_id,
-        full_name: family.full_name,
-        email: family.email || '',
-        phone: family.phone || '',
-        created_at: family.created_at,
-        status: family.status, // ✅ Ajouter le statut
-        current_dogs_count: family.current_dogs_count || 0,
-        max_dogs: family.max_dogs || 1,
-        // Transformer current_dogs (JSON) en array simple
-        dogs: Array.isArray(family.current_dogs) 
-          ? family.current_dogs.map(dog => ({
-              id: dog.dog_id,
-              name: dog.dog_name,
-              breed: dog.dog_breed,
-              photo_url: dog.dog_photo_url
-            }))
-          : []
-      }));
+      const formattedFamilies = families.map(family => {
+        const currentCount = family.current_dogs_count || 0;
+        const maxCount = family.max_dogs || 1;
+        
+        // ✅ Calculer le statut dynamiquement
+        const availability = currentCount >= maxCount ? 'complet' : 'disponible';
+        
+        return {
+          id: family.user_id,
+          full_name: family.full_name,
+          email: family.email || '',
+          phone: family.phone || '',
+          created_at: family.created_at,
+          status: availability, // ✅ Statut calculé
+          current_dogs_count: currentCount,
+          max_dogs: maxCount,
+          // Transformer current_dogs (JSON) en array simple
+          dogs: Array.isArray(family.current_dogs) 
+            ? family.current_dogs.map(dog => ({
+                id: dog.dog_id,
+                name: dog.dog_name,
+                breed: dog.dog_breed,
+                photo_url: dog.dog_photo_url
+              }))
+            : []
+        };
+      });
 
       setFosterFamilies(formattedFamilies);
 
@@ -109,7 +117,7 @@ const ProFosterFamilies = () => {
         .from('user_profiles')
         .select('id, full_name, email, phone')
         .eq('email', newFamilyEmail.toLowerCase().trim())
-        .maybeSingle(); // ✅ maybeSingle au lieu de single
+        .maybeSingle();
 
       if (findError) {
         console.error('Erreur recherche user:', findError);
@@ -122,13 +130,13 @@ const ProFosterFamilies = () => {
         return;
       }
 
-      // 2. Vérifier si déjà dans contacts (pas la view)
+      // 2. Vérifier si déjà dans contacts
       const { data: existingContact, error: checkError } = await supabase
-        .from('contacts') // ✅ Table directe
+        .from('contacts')
         .select('id')
         .eq('professional_account_id', proAccount.id)
         .eq('user_id', userProfile.id)
-        .maybeSingle(); // ✅ maybeSingle
+        .maybeSingle();
 
       if (checkError) {
         console.error('Erreur vérification contact:', checkError);
@@ -151,7 +159,7 @@ const ProFosterFamilies = () => {
           email: userProfile.email,
           phone: userProfile.phone || null,
           type: 'foster_family',
-          status: 'libre' // ✅ Statut par défaut
+          status: 'active' // ✅ Statut 'active'
         });
 
       if (insertError) {
@@ -291,8 +299,8 @@ const ProFosterFamilies = () => {
                             <Home size={12} />
                             <span>{family.current_dogs_count}/{family.max_dogs} chien{family.max_dogs > 1 ? 's' : ''}</span>
                           </div>
-                          {/* ✅ Badge statut */}
-                          {family.status === 'libre' && (
+                          {/* ✅ Badge statut calculé */}
+                          {family.status === 'disponible' && (
                             <span className="px-2 py-0.5 bg-green-500 text-white rounded-full text-[10px] font-medium">
                               Disponible
                             </span>
