@@ -45,65 +45,47 @@ const ProFosterFamilies = () => {
     }
   };
 
-  // ✅ CORRECTION FINALE : Filtrer les user_id null
+  // ✅ VERSION ULTRA-OPTIMISÉE : 1 seule requête au lieu de 21 !
   const fetchFosterFamilies = async (proAccountId) => {
     try {
-      // 1. Récupérer les contacts de type "foster_family" ou "both"
-      const { data: contacts, error: contactsError } = await supabase
+      // Récupérer TOUT depuis la view en une seule requête
+      const { data: families, error } = await supabase
         .from('contacts_with_current_dogs')
-        .select('user_id, full_name, type')
+        .select('*')
         .eq('professional_account_id', proAccountId)
         .in('type', ['foster_family', 'both'])
-        .not('user_id', 'is', null); // ✅ FILTRER les user_id null
+        .not('user_id', 'is', null)
+        .gt('current_dogs_count', 0); // Seulement les familles avec au moins 1 chien
 
-      if (contactsError) {
-        console.error('Erreur contacts:', contactsError);
-        throw contactsError;
+      if (error) {
+        console.error('Erreur contacts:', error);
+        throw error;
       }
 
-      if (!contacts || contacts.length === 0) {
+      if (!families || families.length === 0) {
         setFosterFamilies([]);
         return;
       }
 
-      // 2. Pour chaque contact, récupérer les infos complètes + chiens
-      const familiesWithDogs = await Promise.all(
-        contacts.map(async (contact) => {
-          // Sécurité : vérifier que user_id existe
-          if (!contact.user_id) {
-            return null;
-          }
+      // Transformer le format pour correspondre à l'UI
+      const formattedFamilies = families.map(family => ({
+        id: family.user_id,
+        full_name: family.full_name,
+        email: family.email || '',
+        phone: family.phone || '',
+        created_at: family.created_at,
+        // Transformer current_dogs (JSON) en array simple
+        dogs: Array.isArray(family.current_dogs) 
+          ? family.current_dogs.map(dog => ({
+              id: dog.dog_id,
+              name: dog.dog_name,
+              breed: dog.dog_breed,
+              photo_url: dog.dog_photo_url
+            }))
+          : []
+      }));
 
-          // Récupérer les infos complètes depuis user_profiles
-          const { data: userProfile } = await supabase
-            .from('user_profiles')
-            .select('email, phone, created_at')
-            .eq('id', contact.user_id)
-            .single();
-
-          // Récupérer les chiens en FA
-          const { data: dogs } = await supabase
-            .from('dogs')
-            .select('id, name, breed, photo_url')
-            .eq('professional_account_id', proAccountId)
-            .eq('foster_family_user_id', contact.user_id);
-
-          return {
-            id: contact.user_id,
-            full_name: contact.full_name,
-            email: userProfile?.email || '',
-            phone: userProfile?.phone || '',
-            created_at: userProfile?.created_at || null,
-            dogs: dogs || []
-          };
-        })
-      );
-
-      // 3. Filtrer les familles valides qui ont au moins un chien
-      const activeFamilies = familiesWithDogs
-        .filter(family => family !== null && family.dogs.length > 0);
-      
-      setFosterFamilies(activeFamilies);
+      setFosterFamilies(formattedFamilies);
 
     } catch (error) {
       console.error('Erreur chargement familles:', error);
@@ -130,9 +112,9 @@ const ProFosterFamilies = () => {
         return;
       }
 
-      // Vérifier si déjà dans contacts_with_current_dogs
+      // Vérifier si déjà dans contacts
       const { data: existingContact } = await supabase
-        .from('contacts_with_current_dogs')
+        .from('contacts')
         .select('id')
         .eq('professional_account_id', proAccount.id)
         .eq('user_id', userProfile.id)
@@ -143,13 +125,14 @@ const ProFosterFamilies = () => {
         return;
       }
 
-      // Ajouter dans contacts_with_current_dogs
+      // Ajouter dans contacts (pas contacts_with_current_dogs qui est une view)
       const { error: insertError } = await supabase
-        .from('contacts_with_current_dogs')
+        .from('contacts')
         .insert({
           professional_account_id: proAccount.id,
           user_id: userProfile.id,
           full_name: userProfile.full_name,
+          email: userProfile.email,
           type: 'foster_family'
         });
 
