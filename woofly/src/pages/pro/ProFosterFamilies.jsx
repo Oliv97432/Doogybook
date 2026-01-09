@@ -45,51 +45,62 @@ const ProFosterFamilies = () => {
     }
   };
 
+  // ✅ CORRECTION : Utiliser contacts_with_current_dogs
   const fetchFosterFamilies = async (proAccountId) => {
     try {
-      const { data: dogsInFoster, error } = await supabase
-        .from('dogs')
-        .select(`
-          id,
-          name,
-          breed,
-          photo_url,
-          foster_family_user_id,
-          foster_family:user_profiles!dogs_foster_family_user_id_fkey(
-            id,
-            full_name,
-            email,
-            phone,
-            created_at
-          )
-        `)
+      // Récupérer les contacts de type "foster_family" ou "both"
+      const { data: contacts, error: contactsError } = await supabase
+        .from('contacts_with_current_dogs')
+        .select('*')
         .eq('professional_account_id', proAccountId)
-        .not('foster_family_user_id', 'is', null);
+        .in('type', ['foster_family', 'both']);
 
-      if (error) throw error;
+      if (contactsError) throw contactsError;
 
-      const familiesMap = new Map();
-      dogsInFoster?.forEach(dog => {
-        if (dog.foster_family) {
-          const familyId = dog.foster_family.id;
-          if (!familiesMap.has(familyId)) {
-            familiesMap.set(familyId, {
-              ...dog.foster_family,
+      if (!contacts || contacts.length === 0) {
+        setFosterFamilies([]);
+        return;
+      }
+
+      // Pour chaque contact, récupérer les chiens en FA
+      const familiesWithDogs = await Promise.all(
+        contacts.map(async (contact) => {
+          const { data: dogs, error: dogsError } = await supabase
+            .from('dogs')
+            .select('id, name, breed, photo_url')
+            .eq('professional_account_id', proAccountId)
+            .eq('foster_family_user_id', contact.user_id);
+
+          if (dogsError) {
+            console.error('Erreur chargement chiens:', dogsError);
+            return {
+              id: contact.user_id,
+              full_name: contact.full_name,
+              email: contact.email || '',
+              phone: contact.phone || '',
+              created_at: contact.created_at,
               dogs: []
-            });
+            };
           }
-          familiesMap.get(familyId).dogs.push({
-            id: dog.id,
-            name: dog.name,
-            breed: dog.breed,
-            photo_url: dog.photo_url
-          });
-        }
-      });
 
-      setFosterFamilies(Array.from(familiesMap.values()));
+          return {
+            id: contact.user_id,
+            full_name: contact.full_name,
+            email: contact.email || '',
+            phone: contact.phone || '',
+            created_at: contact.created_at,
+            dogs: dogs || []
+          };
+        })
+      );
+
+      // Filtrer les familles qui ont au moins un chien
+      const activeFamilies = familiesWithDogs.filter(family => family.dogs.length > 0);
+      setFosterFamilies(activeFamilies);
+
     } catch (error) {
       console.error('Erreur chargement familles:', error);
+      setFosterFamilies([]);
     }
   };
 
@@ -112,16 +123,39 @@ const ProFosterFamilies = () => {
         return;
       }
 
-      const isAlreadyFoster = fosterFamilies.some(f => f.id === userProfile.id);
-      if (isAlreadyFoster) {
+      // Vérifier si déjà dans contacts_with_current_dogs
+      const { data: existingContact } = await supabase
+        .from('contacts_with_current_dogs')
+        .select('id')
+        .eq('professional_account_id', proAccount.id)
+        .eq('user_id', userProfile.id)
+        .single();
+
+      if (existingContact) {
         alert('Cette famille d\'accueil est déjà enregistrée.');
         return;
       }
 
-      alert(`${userProfile.full_name || userProfile.email} peut maintenant être ajouté(e) comme famille d'accueil lors de la gestion d'un chien.`);
+      // Ajouter dans contacts_with_current_dogs
+      const { error: insertError } = await supabase
+        .from('contacts_with_current_dogs')
+        .insert({
+          professional_account_id: proAccount.id,
+          user_id: userProfile.id,
+          full_name: userProfile.full_name,
+          email: userProfile.email,
+          type: 'foster_family'
+        });
+
+      if (insertError) throw insertError;
+
+      alert(`${userProfile.full_name || userProfile.email} a été ajouté(e) comme famille d'accueil.`);
       
       setShowAddModal(false);
       setNewFamilyEmail('');
+      
+      // Recharger les familles
+      await fetchFosterFamilies(proAccount.id);
       
     } catch (error) {
       console.error('Erreur ajout famille:', error);
