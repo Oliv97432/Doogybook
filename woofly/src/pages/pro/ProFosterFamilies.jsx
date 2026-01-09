@@ -45,7 +45,7 @@ const ProFosterFamilies = () => {
     }
   };
 
-  // ✅ CORRECTION FINALE : Récupérer depuis contacts_with_current_dogs + user_profiles
+  // ✅ CORRECTION FINALE : Filtrer les user_id null
   const fetchFosterFamilies = async (proAccountId) => {
     try {
       // 1. Récupérer les contacts de type "foster_family" ou "both"
@@ -53,7 +53,8 @@ const ProFosterFamilies = () => {
         .from('contacts_with_current_dogs')
         .select('user_id, full_name, type')
         .eq('professional_account_id', proAccountId)
-        .in('type', ['foster_family', 'both']);
+        .in('type', ['foster_family', 'both'])
+        .not('user_id', 'is', null); // ✅ FILTRER les user_id null
 
       if (contactsError) {
         console.error('Erreur contacts:', contactsError);
@@ -68,6 +69,11 @@ const ProFosterFamilies = () => {
       // 2. Pour chaque contact, récupérer les infos complètes + chiens
       const familiesWithDogs = await Promise.all(
         contacts.map(async (contact) => {
+          // Sécurité : vérifier que user_id existe
+          if (!contact.user_id) {
+            return null;
+          }
+
           // Récupérer les infos complètes depuis user_profiles
           const { data: userProfile } = await supabase
             .from('user_profiles')
@@ -93,8 +99,10 @@ const ProFosterFamilies = () => {
         })
       );
 
-      // 3. Filtrer les familles qui ont au moins un chien
-      const activeFamilies = familiesWithDogs.filter(family => family.dogs.length > 0);
+      // 3. Filtrer les familles valides qui ont au moins un chien
+      const activeFamilies = familiesWithDogs
+        .filter(family => family !== null && family.dogs.length > 0);
+      
       setFosterFamilies(activeFamilies);
 
     } catch (error) {
