@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
-import TabNavigationPro from '../../components/TabNavigationPro';
 import UserMenuPro from '../../components/UserMenuPro';
 import Icon from '../../components/AppIcon';
 import VaccinationCard from '../dog-profile/components/VaccinationCard';
@@ -923,8 +922,6 @@ const ProDogDetail = () => {
           </div>
         </div>
       )}
-
-      <TabNavigationPro />
 
       <main className="main-content flex-1">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 py-6">
