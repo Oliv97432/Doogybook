@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
+import Header from '../components/Header';
+import TabNavigation from '../components/TabNavigation';
 import PremiumModal from '../components/PremiumModal';
 import RecipeGenerator from '../components/recipes/RecipeGenerator';
 import RecipeHistory from '../components/recipes/RecipeHistory';
@@ -46,51 +48,60 @@ const RecipesPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-gray-600">Chargement...</p>
+      <>
+        <Header />
+        <TabNavigation />
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-gray-600">Chargement...</p>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            🍽️ Recettes Personnalisées
-          </h1>
-          <p className="text-gray-600">
-            Créez des recettes équilibrées et sécurisées pour votre chien
-          </p>
-        </div>
-
-        {isPremium ? (
-          <>
-            {/* Générateur de recettes */}
-            <RecipeGenerator />
-            
-            {/* Historique */}
-            <div className="mt-8">
-              <RecipeHistory />
-            </div>
-          </>
-        ) : (
-          <div className="text-center py-12">
-            <p className="text-gray-500 mb-4">
-              Cette fonctionnalité est réservée aux membres Premium
+    <>
+      <Header />
+      <TabNavigation />
+      
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-4xl mx-auto px-4 py-8">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              🍽️ Recettes Personnalisées
+            </h1>
+            <p className="text-gray-600">
+              Créez des recettes équilibrées et sécurisées pour votre chien
             </p>
-            <button
-              onClick={() => setShowPremiumModal(true)}
-              className="px-6 py-3 bg-gradient-to-r from-primary to-purple-600 text-white rounded-xl font-bold hover:shadow-lg transition-all"
-            >
-              Découvrir Premium
-            </button>
           </div>
-        )}
+
+          {isPremium ? (
+            <>
+              {/* Générateur de recettes */}
+              <RecipeGenerator />
+              
+              {/* Historique */}
+              <div className="mt-8">
+                <RecipeHistory />
+              </div>
+            </>
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-gray-500 mb-4">
+                Cette fonctionnalité est réservée aux membres Premium
+              </p>
+              <button
+                onClick={() => setShowPremiumModal(true)}
+                className="px-6 py-3 bg-gradient-to-r from-primary to-purple-600 text-white rounded-xl font-bold hover:shadow-lg transition-all"
+              >
+                Découvrir Premium
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Premium Modal */}
@@ -99,7 +110,7 @@ const RecipesPage = () => {
         onClose={() => setShowPremiumModal(false)}
         reason="recipes"
       />
-    </div>
+    </>
   );
 };
 
