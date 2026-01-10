@@ -6,27 +6,28 @@ import { Heart, Calendar, Lock, ArrowRight } from 'lucide-react';
 
 const PublicAdoptionPage = () => {
   const navigate = useNavigate();
-  const { user } = useAuth(); // ✅ AJOUTÉ - Détecter si connecté
+  const { user } = useAuth();
   const [dogs, setDogs] = useState([]);
   const [totalDogs, setTotalDogs] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchPublicDogs();
-  }, [user]); // ✅ MODIFIÉ - Recharger si user change
+  }, [user]);
 
   const fetchPublicDogs = async () => {
     try {
-      // Récupérer le nombre total de chiens disponibles
+      // ✅ CORRIGÉ - Compter UNIQUEMENT les chiens des refuges
       const { count } = await supabase
         .from('dogs')
-        .select('*', { count: 'exact', head: true })
+        .select('*, user_profiles!inner(subscription_tier)', { count: 'exact', head: true })
         .eq('adoption_status', 'available')
-        .eq('is_published', true);
+        .eq('is_published', true)
+        .eq('user_profiles.subscription_tier', 'professional'); // ← FILTRE IMPORTANT
 
       setTotalDogs(count || 0);
 
-      // ✅ MODIFIÉ - Si connecté, charger TOUS les chiens, sinon limiter à 6
+      // ✅ CORRIGÉ - Charger UNIQUEMENT les chiens des refuges
       const query = supabase
         .from('dogs')
         .select(`
@@ -38,15 +39,18 @@ const PublicAdoptionPage = () => {
           photo_url,
           is_urgent,
           adoption_fee,
-          professional_accounts!dogs_professional_account_id_fkey(
-            organization_name
+          user_profiles!inner(
+            subscription_tier,
+            organization_name,
+            full_name
           )
         `)
         .eq('adoption_status', 'available')
         .eq('is_published', true)
+        .eq('user_profiles.subscription_tier', 'professional') // ← FILTRE CRUCIAL
         .order('created_at', { ascending: false });
 
-      // ✅ Limiter à 6 seulement si NON connecté
+      // Limiter à 6 seulement si NON connecté
       if (!user) {
         query.limit(6);
       }
@@ -58,7 +62,7 @@ const PublicAdoptionPage = () => {
       // Formater les données
       const formattedDogs = data?.map(dog => ({
         ...dog,
-        organization_name: dog.professional_accounts?.organization_name
+        organization_name: dog.user_profiles?.organization_name || dog.user_profiles?.full_name
       })) || [];
 
       setDogs(formattedDogs);
@@ -212,7 +216,7 @@ const PublicAdoptionPage = () => {
             </div>
           ))}
 
-          {/* ✅ MODIFIÉ - Carte Teaser visible UNIQUEMENT si NON connecté */}
+          {/* Carte Teaser visible UNIQUEMENT si NON connecté */}
           {!user && totalDogs > 6 && (
             <div className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-2xl border-2 border-dashed border-primary/30 p-8 flex flex-col items-center justify-center text-center hover:border-primary/50 transition-all duration-300">
               <div className="w-20 h-20 bg-primary/20 rounded-full flex items-center justify-center mb-4">
@@ -242,7 +246,7 @@ const PublicAdoptionPage = () => {
           )}
         </div>
 
-        {/* ✅ MODIFIÉ - Section CTA visible UNIQUEMENT si NON connecté */}
+        {/* Section CTA visible UNIQUEMENT si NON connecté */}
         {!user && (
           <div className="mt-16 bg-gradient-to-br from-primary/10 to-purple-100 rounded-3xl p-8 sm:p-12 text-center">
             <h2 className="text-3xl font-bold text-foreground mb-4">
