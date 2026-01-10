@@ -7,7 +7,7 @@ import {
   Dog, 
   Users, 
   Home,
-  List,  // ✅ AJOUTÉ
+  List,
   Settings, 
   LogOut, 
   ChevronDown,
@@ -87,7 +87,6 @@ const UserMenuPro = () => {
         setIsOpen(false);
       }
     },
-    // ✅ NOUVEAU : LISTE
     {
       icon: List,
       label: 'Liste',
