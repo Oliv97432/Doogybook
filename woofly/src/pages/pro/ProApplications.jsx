@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
+import UserMenuPro from '../../components/UserMenuPro'; // ✅ AJOUTÉ
 import { 
   Mail, Check, X, Clock, ArrowLeft, User, Phone, 
   MapPin, Home, Heart, AlertCircle, FileText
@@ -72,7 +73,6 @@ const ProApplications = () => {
 
       if (error) throw error;
       
-      // Rafraîchir la liste
       await fetchApplications(proAccount.id);
       setSelectedApp(null);
     } catch (error) {
@@ -126,8 +126,9 @@ const ProApplications = () => {
             <h1 className="text-lg sm:text-xl font-heading font-bold text-gray-900 truncate px-2">
               Candidature
             </h1>
-            <div className="min-w-[80px] flex justify-end">
+            <div className="flex items-center gap-2"> {/* ✅ MODIFIÉ */}
               {getStatusBadge(selectedApp.status)}
+              <UserMenuPro /> {/* ✅ AJOUTÉ */}
             </div>
           </div>
         </header>
@@ -320,7 +321,7 @@ const ProApplications = () => {
             <h1 className="text-lg sm:text-xl font-heading font-bold text-gray-900 truncate px-2">
               Candidatures
             </h1>
-            <div className="w-10 sm:w-20"></div>
+            <UserMenuPro /> {/* ✅ AJOUTÉ */}
           </div>
 
           {/* Filtres - Scroll horizontal sur mobile */}
