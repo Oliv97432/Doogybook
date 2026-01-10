@@ -33,6 +33,9 @@ import PublicDogDetail from './pages/PublicDogDetail';
 // Page Premium
 import PremiumPage from './pages/PremiumPage';
 
+// Page Recettes Premium ⭐ NOUVEAU
+import RecipesPage from './pages/RecipesPage';
+
 // Route hybride /chien/:id
 import HybridDogProfile from './pages/chien/HybridDogProfile';
 
@@ -101,6 +104,9 @@ const Routes = () => {
         
         <Route path="/premium" element={<PremiumPage />} />
         
+        {/* Route Recettes Premium ⭐ NOUVEAU */}
+        <Route path="/recipes" element={<RecipesPage />} />
+        
         {/* Routes Professionnelles */}
         <Route path="/pro/register" element={<ProRegistration />} />
         <Route path="/pro/dashboard" element={<ProDashboard />} />
@@ -133,4 +139,5 @@ const Routes = () => {
     </BrowserRouter>
   );
 };
+
 export default Routes;
