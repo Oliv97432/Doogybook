@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, Check, X, Crown, Dog, Camera, Users, BookOpen, Sparkles } from 'lucide-react';
+import { ChevronLeft, Check, X, Crown, Dog, Camera, Users, BookOpen, Sparkles, ChefHat } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import UserMenu from '../components/UserMenu';
@@ -49,6 +49,7 @@ const PremiumPage = () => {
         { icon: BookOpen, text: 'Conseils quotidiens', subtext: 'Tips pour votre chien', included: true },
         { icon: Dog, text: 'Chiens illimités', subtext: '', included: false },
         { icon: Camera, text: 'Photos illimitées', subtext: '', included: false },
+        { icon: ChefHat, text: 'Recettes personnalisées', subtext: '', included: false },
         { icon: Crown, text: 'Badge Premium', subtext: '', included: false },
         { icon: Sparkles, text: 'Fonctionnalités avancées', subtext: '', included: false }
       ],
@@ -68,6 +69,7 @@ const PremiumPage = () => {
       features: [
         { icon: Dog, text: 'Chiens illimités 🐕', subtext: 'Gérez autant de chiens que vous voulez', included: true },
         { icon: Camera, text: 'Photos illimitées 📸', subtext: 'Albums photo sans limite', included: true },
+        { icon: ChefHat, text: 'Recettes personnalisées 🍽️', subtext: 'Créez des recettes sur mesure', included: true },
         { icon: Crown, text: 'Badge Premium 👑', subtext: 'Visible sur votre profil et vos posts', included: true },
         { icon: Users, text: 'Communauté', subtext: 'Accès complet aux forums', included: true },
         { icon: BookOpen, text: 'Conseils quotidiens', subtext: 'Tips avancés', included: true },
@@ -120,7 +122,7 @@ const PremiumPage = () => {
               Profitez pleinement de Doogybook
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Chiens illimités, photos illimitées et bien plus encore
+              Chiens illimités, photos illimitées, recettes personnalisées et bien plus encore
             </p>
           </div>
 
