@@ -5,7 +5,9 @@ import IngredientSelector from './IngredientSelector';
 import RecipeResult from './RecipeResult';
 
 const RecipeGenerator = () => {
-  const [activeDog, setActiveDog] = useState(null);
+  const [allDogs, setAllDogs] = useState([]);
+  const [selectedDogId, setSelectedDogId] = useState('');
+  const [selectedDog, setSelectedDog] = useState(null);
   const [weight, setWeight] = useState('');
   const [selectedIngredients, setSelectedIngredients] = useState({
     protein: null,
@@ -15,60 +17,65 @@ const RecipeGenerator = () => {
   });
   const [generatedRecipe, setGeneratedRecipe] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [loadingDog, setLoadingDog] = useState(true);
+  const [loadingDogs, setLoadingDogs] = useState(true);
 
   useEffect(() => {
-    loadActiveDog();
+    loadAllDogs();
   }, []);
 
-  const loadActiveDog = async () => {
+  const loadAllDogs = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        setLoadingDog(false);
+        setLoadingDogs(false);
         return;
       }
 
-      // Récupérer le chien actif
+      // Récupérer TOUS les chiens de l'utilisateur
       const { data: dogs, error } = await supabase
         .from('dogs')
         .select('*')
         .eq('user_id', user.id)
-        .eq('is_active', true)
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Erreur chargement chien:', error);
-        setLoadingDog(false);
+        console.error('Erreur chargement chiens:', error);
+        setLoadingDogs(false);
         return;
       }
 
-      // Si pas de chien actif, prendre le premier chien
-      if (!dogs || dogs.length === 0) {
-        const { data: allDogs } = await supabase
-          .from('dogs')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false })
-          .limit(1);
-
-        if (allDogs && allDogs.length > 0) {
-          setActiveDog(allDogs[0]);
-          setWeight(allDogs[0].weight?.toString() || '');
-        }
-      } else {
-        setActiveDog(dogs[0]);
-        setWeight(dogs[0].weight?.toString() || '');
+      if (dogs && dogs.length > 0) {
+        setAllDogs(dogs);
+        
+        // Sélectionner automatiquement le chien actif ou le premier
+        const activeDog = dogs.find(dog => dog.is_active) || dogs[0];
+        setSelectedDogId(activeDog.id);
+        setSelectedDog(activeDog);
+        setWeight(activeDog.weight?.toString() || '');
       }
     } catch (error) {
-      console.error('Erreur chargement chien:', error);
+      console.error('Erreur chargement chiens:', error);
     } finally {
-      setLoadingDog(false);
+      setLoadingDogs(false);
+    }
+  };
+
+  const handleDogChange = (dogId) => {
+    setSelectedDogId(dogId);
+    const dog = allDogs.find(d => d.id === dogId);
+    if (dog) {
+      setSelectedDog(dog);
+      setWeight(dog.weight?.toString() || '');
     }
   };
 
   const generateRecipe = async () => {
     // Validation
+    if (!selectedDog) {
+      alert('Veuillez sélectionner un chien');
+      return;
+    }
+
     if (!weight || weight <= 0) {
       alert('Veuillez entrer un poids valide');
       return;
@@ -118,7 +125,7 @@ const RecipeGenerator = () => {
       });
 
       // Générer le titre et l'objectif
-      const title = generateTitle(selectedIngredients.protein, activeDog?.name);
+      const title = generateTitle(selectedIngredients.protein, selectedDog?.name);
       const objective = generateObjective(selectedIngredients);
 
       // Générer les instructions
@@ -135,7 +142,7 @@ const RecipeGenerator = () => {
       const recipe = {
         title,
         objective,
-        dogName: activeDog?.name || 'votre chien',
+        dogName: selectedDog?.name || 'votre chien',
         weight: parseFloat(weight),
         ingredients: selectedIngredients,
         quantities: {
@@ -319,38 +326,54 @@ const RecipeGenerator = () => {
           Créer une recette
         </h2>
 
+        {/* Sélecteur de chien */}
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Pour quel chien ?
+            Pour quel chien ? *
           </label>
-          {loadingDog ? (
+          {loadingDogs ? (
             <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
               <span className="text-gray-600">Chargement...</span>
             </div>
-          ) : (
-            <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
-              {activeDog ? (
-                <>
-                  {activeDog.profile_image_url && (
-                    <img 
-                      src={activeDog.profile_image_url} 
-                      alt={activeDog.name}
-                      className="w-12 h-12 rounded-full object-cover"
-                    />
-                  )}
-                  <div>
-                    <p className="font-bold text-gray-900">{activeDog.name}</p>
-                    <p className="text-sm text-gray-600">{activeDog.breed}</p>
-                  </div>
-                </>
-              ) : (
-                <p className="text-gray-600">Aucun chien trouvé. Créez d'abord un profil de chien.</p>
-              )}
+          ) : allDogs.length === 0 ? (
+            <div className="p-3 bg-gray-50 rounded-xl">
+              <p className="text-gray-600">Aucun chien trouvé. Créez d'abord un profil de chien.</p>
             </div>
+          ) : (
+            <select
+              value={selectedDogId}
+              onChange={(e) => handleDogChange(e.target.value)}
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-white"
+            >
+              <option value="">Sélectionnez un chien</option>
+              {allDogs.map((dog) => (
+                <option key={dog.id} value={dog.id}>
+                  {dog.name} - {dog.breed}
+                </option>
+              ))}
+            </select>
           )}
         </div>
 
+        {/* Affichage du chien sélectionné */}
+        {selectedDog && (
+          <div className="mb-4 flex items-center gap-3 p-3 bg-blue-50 rounded-xl border border-blue-200">
+            {selectedDog.profile_image_url && (
+              <img 
+                src={selectedDog.profile_image_url} 
+                alt={selectedDog.name}
+                className="w-12 h-12 rounded-full object-cover"
+              />
+            )}
+            <div>
+              <p className="font-bold text-gray-900">{selectedDog.name}</p>
+              <p className="text-sm text-gray-600">{selectedDog.breed}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Poids */}
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Poids du chien (kg) *
@@ -364,6 +387,9 @@ const RecipeGenerator = () => {
             max="100"
             className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent"
           />
+          <p className="text-xs text-gray-500 mt-1">
+            💡 Le poids sera utilisé pour calculer les quantités (25g/kg)
+          </p>
         </div>
       </div>
 
@@ -376,7 +402,7 @@ const RecipeGenerator = () => {
       {/* Bouton génération */}
       <button
         onClick={generateRecipe}
-        disabled={loading || !weight || !selectedIngredients.protein || !activeDog}
+        disabled={loading || !weight || !selectedIngredients.protein || !selectedDog}
         className="w-full px-6 py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl font-bold text-lg hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
       >
         {loading ? (
@@ -396,7 +422,7 @@ const RecipeGenerator = () => {
       {generatedRecipe && (
         <RecipeResult 
           recipe={generatedRecipe}
-          dogId={activeDog?.id}
+          dogId={selectedDog?.id}
           onSaved={() => {
             window.dispatchEvent(new Event('recipeCreated'));
           }}
