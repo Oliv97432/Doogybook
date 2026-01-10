@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 
 import TransferDogButton from '../../components/TransferDogButton';
+import UserMenuPro from '../../components/UserMenuPro';
 
 const ProDogManagement = () => {
   const { dogId } = useParams();
@@ -766,17 +767,21 @@ const ProDogManagement = () => {
               <ArrowLeft size={18} className="sm:size-5" />
               <span className="font-medium text-sm sm:text-base hidden xs:inline">Dashboard</span>
             </button>
-            <button
-              onClick={() => {
-                setShowForm(true);
-                navigate('/pro/dogs/new');
-              }}
-              className="px-3 sm:px-4 py-2 bg-blue-500 text-white rounded-xl font-medium hover:bg-blue-600 flex items-center gap-1 sm:gap-2 min-h-[44px] text-sm sm:text-base"
-            >
-              <Plus size={18} className="sm:size-5" />
-              <span className="hidden xs:inline">Ajouter un chien</span>
-              <span className="xs:hidden">Ajouter</span>
-            </button>
+            
+            <div className="flex items-center gap-2 sm:gap-3">
+              <button
+                onClick={() => {
+                  setShowForm(true);
+                  navigate('/pro/dogs/new');
+                }}
+                className="px-3 sm:px-4 py-2 bg-blue-500 text-white rounded-xl font-medium hover:bg-blue-600 flex items-center gap-1 sm:gap-2 min-h-[44px] text-sm sm:text-base"
+              >
+                <Plus size={18} className="sm:size-5" />
+                <span className="hidden xs:inline">Ajouter un chien</span>
+                <span className="xs:hidden">Ajouter</span>
+              </button>
+              <UserMenuPro />
+            </div>
           </div>
 
           <div className="flex flex-col xs:flex-row gap-3 sm:gap-4">
