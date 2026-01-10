@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   User, Crown, Trash2, ChevronLeft, Mail, Phone, 
-  MapPin, Save, AlertCircle, X
+  MapPin, Save, AlertCircle, X, Check
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
@@ -80,7 +80,6 @@ const Settings = () => {
         location: data?.location || user.user_metadata?.location || ''
       });
       
-      // Charger le subscription_tier
       setSubscriptionTier(data?.subscription_tier || 'free');
     } catch (err) {
       console.error('Erreur chargement profil:', err);
@@ -165,6 +164,9 @@ const Settings = () => {
       alert('❌ Erreur lors de la suppression du compte: ' + err.message);
     }
   };
+
+  // Vérifier si l'utilisateur est Premium ou Professional
+  const isPremiumUser = subscriptionTier === 'premium' || subscriptionTier === 'professional';
 
   if (checkingAccountType) {
     return (
@@ -338,28 +340,49 @@ const Settings = () => {
             </div>
           </section>
 
-          {/* Passer à Premium - VERSION CLIQUABLE */}
-          <section 
-            onClick={() => navigate('/premium')}
-            className="bg-gradient-to-br from-amber-50 to-yellow-50 rounded-xl border-2 border-amber-200 p-6 mx-4 cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02]"
-          >
-            <div className="flex items-center justify-between">
+          {/* Section Premium - CONDITIONNEL */}
+          {isPremiumUser ? (
+            // SI PREMIUM : Badge actif (vert)
+            <section className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border-2 border-green-200 p-6 mx-4">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-400 to-yellow-500 flex items-center justify-center flex-shrink-0 shadow-md">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center flex-shrink-0 shadow-md">
                   <Crown className="text-white" size={24} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-lg font-heading font-semibold text-amber-900 flex items-center gap-2">
-                    Passer à Premium
+                  <h3 className="text-lg font-heading font-semibold text-green-900 flex items-center gap-2">
+                    Compte Premium actif
+                    <Check size={20} className="text-green-600" />
                   </h3>
-                  <p className="text-sm text-amber-700 font-medium">
-                    Chiens et photos illimités • 3,99€/mois
+                  <p className="text-sm text-green-700 font-medium">
+                    Chiens illimités • Photos illimitées • Recettes personnalisées
                   </p>
                 </div>
               </div>
-              <ChevronLeft size={24} className="text-amber-600 flex-shrink-0 rotate-180" />
-            </div>
-          </section>
+            </section>
+          ) : (
+            // SI GRATUIT : Bouton Passer à Premium (jaune/ambre)
+            <section 
+              onClick={() => navigate('/premium')}
+              className="bg-gradient-to-br from-amber-50 to-yellow-50 rounded-xl border-2 border-amber-200 p-6 mx-4 cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02]"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-400 to-yellow-500 flex items-center justify-center flex-shrink-0 shadow-md">
+                    <Crown className="text-white" size={24} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-lg font-heading font-semibold text-amber-900 flex items-center gap-2">
+                      Passer à Premium
+                    </h3>
+                    <p className="text-sm text-amber-700 font-medium">
+                      Chiens et photos illimités • 3,99€/mois
+                    </p>
+                  </div>
+                </div>
+                <ChevronLeft size={24} className="text-amber-600 flex-shrink-0 rotate-180" />
+              </div>
+            </section>
+          )}
 
           {/* Supprimer compte */}
           <section className="bg-card rounded-xl border border-red-200 p-6 mx-4">
