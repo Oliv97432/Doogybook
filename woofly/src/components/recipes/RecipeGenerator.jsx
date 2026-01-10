@@ -11,10 +11,11 @@ const RecipeGenerator = () => {
     protein: null,
     carb: null,
     veggies: [],
-    fat: 'huile_colza' // Par défaut
+    fat: 'huile_colza'
   });
   const [generatedRecipe, setGeneratedRecipe] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [loadingDog, setLoadingDog] = useState(true);
 
   useEffect(() => {
     loadActiveDog();
@@ -23,21 +24,46 @@ const RecipeGenerator = () => {
   const loadActiveDog = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) {
+        setLoadingDog(false);
+        return;
+      }
 
-      const { data: dog } = await supabase
+      // Récupérer le chien actif
+      const { data: dogs, error } = await supabase
         .from('dogs')
         .select('*')
         .eq('user_id', user.id)
         .eq('is_active', true)
-        .single();
+        .order('created_at', { ascending: false });
 
-      if (dog) {
-        setActiveDog(dog);
-        setWeight(dog.weight || '');
+      if (error) {
+        console.error('Erreur chargement chien:', error);
+        setLoadingDog(false);
+        return;
+      }
+
+      // Si pas de chien actif, prendre le premier chien
+      if (!dogs || dogs.length === 0) {
+        const { data: allDogs } = await supabase
+          .from('dogs')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(1);
+
+        if (allDogs && allDogs.length > 0) {
+          setActiveDog(allDogs[0]);
+          setWeight(allDogs[0].weight?.toString() || '');
+        }
+      } else {
+        setActiveDog(dogs[0]);
+        setWeight(dogs[0].weight?.toString() || '');
       }
     } catch (error) {
       console.error('Erreur chargement chien:', error);
+    } finally {
+      setLoadingDog(false);
     }
   };
 
@@ -67,13 +93,13 @@ const RecipeGenerator = () => {
 
     try {
       // Calcul des quantités basées sur le poids
-      const totalGrams = Math.round(weight * 25); // Base : 25g par kg
+      const totalGrams = Math.round(weight * 25);
 
       // Proportions
-      const proteinGrams = Math.round(totalGrams * 0.55); // 55%
-      const carbGrams = selectedIngredients.carb ? Math.round(totalGrams * 0.25) : 0; // 25% si présent
-      const veggiesGrams = Math.round(totalGrams * 0.15); // 15%
-      const fatGrams = Math.round(totalGrams * 0.02); // 2%
+      const proteinGrams = Math.round(totalGrams * 0.55);
+      const carbGrams = selectedIngredients.carb ? Math.round(totalGrams * 0.25) : 0;
+      const veggiesGrams = Math.round(totalGrams * 0.15);
+      const fatGrams = Math.round(totalGrams * 0.02);
 
       // Ajustement si saumon (réduire graisse)
       const adjustedFatGrams = selectedIngredients.protein === 'saumon' 
@@ -134,7 +160,6 @@ const RecipeGenerator = () => {
   };
 
   const calculateNutrition = ({ protein, proteinGrams, carb, carbGrams, veggies, veggiesGrams, fatGrams }) => {
-    // Valeurs nutritionnelles pour 100g
     const nutritionData = {
       proteins: {
         poulet: { calories: 165, protein: 31, fat: 3.6 },
@@ -189,7 +214,7 @@ const RecipeGenerator = () => {
     veggies.forEach(veg => {
       if (nutritionData.veggies[veg]) {
         const v = nutritionData.veggies[veg];
-        const vegGrams = veggiesGrams / veggies.length; // Répartir équitablement
+        const vegGrams = veggiesGrams / veggies.length;
         totalCalories += (vegGrams * v.calories) / 100;
         totalFiber += (vegGrams * v.fiber) / 100;
       }
@@ -298,25 +323,32 @@ const RecipeGenerator = () => {
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Pour quel chien ?
           </label>
-          <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
-            {activeDog ? (
-              <>
-                {activeDog.profile_image_url && (
-                  <img 
-                    src={activeDog.profile_image_url} 
-                    alt={activeDog.name}
-                    className="w-12 h-12 rounded-full object-cover"
-                  />
-                )}
-                <div>
-                  <p className="font-bold text-gray-900">{activeDog.name}</p>
-                  <p className="text-sm text-gray-600">{activeDog.breed}</p>
-                </div>
-              </>
-            ) : (
-              <p className="text-gray-600">Aucun chien actif</p>
-            )}
-          </div>
+          {loadingDog ? (
+            <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              <span className="text-gray-600">Chargement...</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+              {activeDog ? (
+                <>
+                  {activeDog.profile_image_url && (
+                    <img 
+                      src={activeDog.profile_image_url} 
+                      alt={activeDog.name}
+                      className="w-12 h-12 rounded-full object-cover"
+                    />
+                  )}
+                  <div>
+                    <p className="font-bold text-gray-900">{activeDog.name}</p>
+                    <p className="text-sm text-gray-600">{activeDog.breed}</p>
+                  </div>
+                </>
+              ) : (
+                <p className="text-gray-600">Aucun chien trouvé. Créez d'abord un profil de chien.</p>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="mb-4">
@@ -344,7 +376,7 @@ const RecipeGenerator = () => {
       {/* Bouton génération */}
       <button
         onClick={generateRecipe}
-        disabled={loading || !weight || !selectedIngredients.protein}
+        disabled={loading || !weight || !selectedIngredients.protein || !activeDog}
         className="w-full px-6 py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl font-bold text-lg hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
       >
         {loading ? (
@@ -366,7 +398,6 @@ const RecipeGenerator = () => {
           recipe={generatedRecipe}
           dogId={activeDog?.id}
           onSaved={() => {
-            // Rafraîchir l'historique
             window.dispatchEvent(new Event('recipeCreated'));
           }}
         />
