@@ -83,22 +83,22 @@ const ProDogManagement = () => {
   };
 
   const fetchDogs = async (proAccountId) => {
-  try {
-    const { data, error } = await supabase
-      .from('dogs')
-      .select('*')
-      .eq('professional_account_id', proAccountId)
-      // ✅ CHARGE TOUS LES CHIENS DU REFUGE
-      .order('created_at', { ascending: false });
+    try {
+      const { data, error } = await supabase
+        .from('dogs')
+        .select('*')
+        .eq('professional_account_id', proAccountId)
+        .neq('adoption_status', 'adopted')
+        .order('created_at', { ascending: false });
 
-    if (error) throw error;
-    setDogs(data || []);
-  } catch (error) {
-    console.error('Erreur chargement chiens:', error);
-  } finally {
-    setLoading(false);
-  }
-};
+      if (error) throw error;
+      setDogs(data || []);
+    } catch (error) {
+      console.error('Erreur chargement chiens:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -331,7 +331,20 @@ const ProDogManagement = () => {
   const filteredDogs = dogs.filter(dog => {
     const matchesSearch = dog.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          dog.breed.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = filterStatus === 'all' || dog.adoption_status === filterStatus;
+    
+    let matchesStatus = true;
+    
+    if (filterStatus === 'all') {
+      matchesStatus = true;
+    } else if (filterStatus === 'available') {
+      matchesStatus = !dog.foster_family_contact_id && 
+                     dog.adoption_status === 'available';
+    } else if (filterStatus === 'foster') {
+      matchesStatus = !!dog.foster_family_contact_id;
+    } else if (filterStatus === 'pending') {
+      matchesStatus = dog.adoption_status === 'pending';
+    }
+    
     return matchesSearch && matchesStatus;
   });
 
@@ -801,10 +814,9 @@ const ProDogManagement = () => {
               className="px-3 sm:px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base min-h-[44px]"
             >
               <option value="all">Tous</option>
-              <option value="foster">En FA</option>
               <option value="available">Disponibles</option>
+              <option value="foster">En FA</option>
               <option value="pending">En cours</option>
-              <option value="adopted">Adoptés</option>
             </select>
           </div>
         </div>
@@ -846,14 +858,13 @@ const ProDogManagement = () => {
                   <div className="absolute top-2 right-2 sm:top-3 sm:right-3">
                     <span className={`px-2 py-1 sm:px-3 sm:py-1 rounded-full text-xs font-bold flex items-center gap-1 ${
                       dog.foster_family_contact_id ? 'bg-purple-500 text-white' :
-                      dog.adoption_status === 'available' ? 'bg-green-500 text-white' :
                       dog.adoption_status === 'pending' ? 'bg-orange-500 text-white' :
-                      'bg-gray-500 text-white'
+                      'bg-green-500 text-white'
                     }`}>
                       {dog.foster_family_contact_id && <Home size={12} />}
                       {dog.foster_family_contact_id ? 'En FA' :
-                       dog.adoption_status === 'available' ? 'Disponible' :
-                       dog.adoption_status === 'pending' ? 'En cours' : 'Adopté'}
+                       dog.adoption_status === 'pending' ? 'En cours' : 
+                       'Disponible'}
                     </span>
                   </div>
                 </div>
