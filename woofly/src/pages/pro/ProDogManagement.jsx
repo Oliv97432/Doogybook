@@ -83,22 +83,22 @@ const ProDogManagement = () => {
   };
 
   const fetchDogs = async (proAccountId) => {
-    try {
-      const { data, error } = await supabase
-        .from('dogs')
-        .select('*')
-        .eq('professional_account_id', proAccountId)
-        .eq('is_for_adoption', true)
-        .order('created_at', { ascending: false });
+  try {
+    const { data, error } = await supabase
+      .from('dogs')
+      .select('*')
+      .eq('professional_account_id', proAccountId)
+      // ✅ CHARGE TOUS LES CHIENS DU REFUGE
+      .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      setDogs(data || []);
-    } catch (error) {
-      console.error('Erreur chargement chiens:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    if (error) throw error;
+    setDogs(data || []);
+  } catch (error) {
+    console.error('Erreur chargement chiens:', error);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
