@@ -14,18 +14,29 @@ const ProSidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   
-  // État de la sidebar sauvegardé dans localStorage
-  const [isOpen, setIsOpen] = useState(() => {
-    const saved = localStorage.getItem('pro-sidebar-open');
-    return saved ? JSON.parse(saved) : false; // Fermée par défaut
-  });
-
-  // Mobile drawer state
+  // ✅ FIX : Initialiser à false d'abord, puis charger de localStorage
+  const [isOpen, setIsOpen] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+
+  // ✅ Charger l'état depuis localStorage après le mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('pro-sidebar-open');
+      if (saved !== null) {
+        setIsOpen(JSON.parse(saved));
+      }
+    } catch (error) {
+      console.error('Erreur lecture localStorage:', error);
+    }
+  }, []);
 
   // Sauvegarder l'état
   useEffect(() => {
-    localStorage.setItem('pro-sidebar-open', JSON.stringify(isOpen));
+    try {
+      localStorage.setItem('pro-sidebar-open', JSON.stringify(isOpen));
+    } catch (error) {
+      console.error('Erreur sauvegarde localStorage:', error);
+    }
   }, [isOpen]);
 
   const navItems = [
@@ -63,7 +74,7 @@ const ProSidebar = () => {
 
   const handleNavigation = (path) => {
     navigate(path);
-    setIsMobileOpen(false); // Ferme le drawer mobile
+    setIsMobileOpen(false);
   };
 
   const toggleSidebar = () => {
@@ -80,7 +91,7 @@ const ProSidebar = () => {
         />
       )}
 
-      {/* Bouton hamburger mobile (visible seulement sur mobile) */}
+      {/* Bouton hamburger mobile */}
       <button
         onClick={() => setIsMobileOpen(true)}
         className="fixed top-4 left-4 z-50 lg:hidden p-2 bg-white rounded-lg shadow-lg hover:bg-gray-50"
@@ -97,7 +108,7 @@ const ProSidebar = () => {
           ${isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         `}
       >
-        {/* Header avec toggle */}
+        {/* Header */}
         <div className="h-16 flex items-center justify-between px-4 border-b border-gray-200">
           {isOpen && (
             <span className="font-bold text-lg text-gray-900">Menu</span>
@@ -108,7 +119,6 @@ const ProSidebar = () => {
           >
             {isOpen ? <ChevronLeft size={20} /> : <ChevronRight size={20} />}
           </button>
-          {/* Bouton fermer sur mobile */}
           <button
             onClick={() => setIsMobileOpen(false)}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors lg:hidden"
@@ -117,7 +127,7 @@ const ProSidebar = () => {
           </button>
         </div>
 
-        {/* Navigation items */}
+        {/* Navigation */}
         <nav className="p-2 space-y-1">
           {navItems.map((item) => {
             const Icon = item.icon;
@@ -152,7 +162,7 @@ const ProSidebar = () => {
                   )}
                 </button>
 
-                {/* Tooltip quand sidebar fermée */}
+                {/* Tooltip */}
                 {!isOpen && (
                   <div className="absolute left-full ml-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 whitespace-nowrap z-50">
                     {item.label}
@@ -165,7 +175,7 @@ const ProSidebar = () => {
         </nav>
       </aside>
 
-      {/* Spacer pour le contenu principal (desktop only) */}
+      {/* Spacer */}
       <div 
         className={`
           hidden lg:block
@@ -178,12 +188,3 @@ const ProSidebar = () => {
 };
 
 export default ProSidebar;
-```
-
----
-
-## 🔧 **INSTALLATION**
-
-**1. Crée le fichier :**
-```
-src/components/pro/ProSidebar.jsx
