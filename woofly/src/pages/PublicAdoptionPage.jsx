@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import { useAuth } from '../contexts/AuthContext';
 import { Heart, Calendar, Lock, ArrowRight } from 'lucide-react';
 
 const PublicAdoptionPage = () => {
   const navigate = useNavigate();
+  const { user } = useAuth(); // ✅ AJOUTÉ - Détecter si connecté
   const [dogs, setDogs] = useState([]);
   const [totalDogs, setTotalDogs] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchPublicDogs();
-  }, []);
+  }, [user]); // ✅ MODIFIÉ - Recharger si user change
 
   const fetchPublicDogs = async () => {
     try {
@@ -24,8 +26,8 @@ const PublicAdoptionPage = () => {
 
       setTotalDogs(count || 0);
 
-      // Récupérer les 6 premiers chiens (les 2 plus récents en priorité)
-      const { data, error } = await supabase
+      // ✅ MODIFIÉ - Si connecté, charger TOUS les chiens, sinon limiter à 6
+      const query = supabase
         .from('dogs')
         .select(`
           id,
@@ -42,8 +44,14 @@ const PublicAdoptionPage = () => {
         `)
         .eq('adoption_status', 'available')
         .eq('is_published', true)
-        .order('created_at', { ascending: false })
-        .limit(6);
+        .order('created_at', { ascending: false });
+
+      // ✅ Limiter à 6 seulement si NON connecté
+      if (!user) {
+        query.limit(6);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
 
@@ -108,7 +116,7 @@ const PublicAdoptionPage = () => {
 
         {/* Grille de chiens */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Les 5-6 chiens publics */}
+          {/* Tous les chiens */}
           {dogs.map((dog) => (
             <div
               key={dog.id}
@@ -204,8 +212,8 @@ const PublicAdoptionPage = () => {
             </div>
           ))}
 
-          {/* Carte Teaser "Découvrez les autres chiens" */}
-          {totalDogs > 6 && (
+          {/* ✅ MODIFIÉ - Carte Teaser visible UNIQUEMENT si NON connecté */}
+          {!user && totalDogs > 6 && (
             <div className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-2xl border-2 border-dashed border-primary/30 p-8 flex flex-col items-center justify-center text-center hover:border-primary/50 transition-all duration-300">
               <div className="w-20 h-20 bg-primary/20 rounded-full flex items-center justify-center mb-4">
                 <Lock size={40} className="text-primary" />
@@ -234,24 +242,26 @@ const PublicAdoptionPage = () => {
           )}
         </div>
 
-        {/* Section CTA bas de page */}
-        <div className="mt-16 bg-gradient-to-br from-primary/10 to-purple-100 rounded-3xl p-8 sm:p-12 text-center">
-          <h2 className="text-3xl font-bold text-foreground mb-4">
-            Prêt à adopter ?
-          </h2>
-          <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Créez votre compte gratuitement et accédez à tous nos chiens disponibles.
-            Trouvez votre compagnon idéal en quelques clics !
-          </p>
-          <button
-            onClick={() => navigate('/register')}
-            className="px-8 py-4 bg-primary text-primary-foreground rounded-xl font-bold text-lg hover:bg-primary/90 transition-smooth inline-flex items-center gap-3 shadow-lg"
-          >
-            <Heart size={24} />
-            <span>Créer mon compte</span>
-            <ArrowRight size={24} />
-          </button>
-        </div>
+        {/* ✅ MODIFIÉ - Section CTA visible UNIQUEMENT si NON connecté */}
+        {!user && (
+          <div className="mt-16 bg-gradient-to-br from-primary/10 to-purple-100 rounded-3xl p-8 sm:p-12 text-center">
+            <h2 className="text-3xl font-bold text-foreground mb-4">
+              Prêt à adopter ?
+            </h2>
+            <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
+              Créez votre compte gratuitement et accédez à tous nos chiens disponibles.
+              Trouvez votre compagnon idéal en quelques clics !
+            </p>
+            <button
+              onClick={() => navigate('/register')}
+              className="px-8 py-4 bg-primary text-primary-foreground rounded-xl font-bold text-lg hover:bg-primary/90 transition-smooth inline-flex items-center gap-3 shadow-lg"
+            >
+              <Heart size={24} />
+              <span>Créer mon compte</span>
+              <ArrowRight size={24} />
+            </button>
+          </div>
+        )}
       </main>
 
       {/* Footer */}
