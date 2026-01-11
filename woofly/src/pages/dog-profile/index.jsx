@@ -678,13 +678,14 @@ const DogProfile = () => {
       alert('❌ Erreur lors de l\'upload: ' + err.message);
     }
   };
-// Fonction pour enlever les accents
-const removeAccents = (str) => {
-  if (!str) return '';
-  return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-};
-  
-  // Export PDF du carnet de santé - PREMIUM (SANS EMOJIS)
+
+  // Fonction pour enlever les accents
+  const removeAccents = (str) => {
+    if (!str) return '';
+    return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  };
+
+  // Export PDF du carnet de santé - PREMIUM (SANS ACCENTS)
   const handleExportPDF = async () => {
     if (!isPremium) {
       setShowPremiumModal(true);
@@ -715,31 +716,31 @@ const removeAccents = (str) => {
 
       yPos = 60;
 
-      // Infos du chien
+      // Infos du chien (normaliser le texte)
       pdf.setTextColor(0, 0, 0);
       pdf.setFontSize(22);
       pdf.setFont('helvetica', 'bold');
-      pdf.text(currentProfile.name, margin, yPos);
+      pdf.text(removeAccents(currentProfile.name), margin, yPos);
       yPos += 10;
 
       pdf.setFontSize(11);
       pdf.setFont('helvetica', 'normal');
       pdf.setTextColor(100, 100, 100);
       const gender = currentProfile.gender === 'male' ? 'Male' : 'Femelle';
-      pdf.text(`${currentProfile.breed} - ${currentProfile.age} - ${gender}`, margin, yPos);
+      pdf.text(`${removeAccents(currentProfile.breed)} - ${removeAccents(currentProfile.age)} - ${gender}`, margin, yPos);
       yPos += 6;
       
       if (currentProfile.weight !== 'Non renseigne') {
-        pdf.text(`Poids: ${currentProfile.weight}`, margin, yPos);
+        pdf.text(`Poids: ${removeAccents(currentProfile.weight)}`, margin, yPos);
         yPos += 6;
       }
       
       if (currentProfile.microchip_number) {
-        pdf.text(`Puce: ${currentProfile.microchip_number}`, margin, yPos);
+        pdf.text(`Puce: ${removeAccents(currentProfile.microchip_number)}`, margin, yPos);
         yPos += 6;
       }
 
-      pdf.text(`Sterilisation: ${currentProfile.sterilized}`, margin, yPos);
+      pdf.text(`Sterilisation: ${removeAccents(currentProfile.sterilized)}`, margin, yPos);
       yPos += 15;
 
       // Section Vaccinations
@@ -767,7 +768,7 @@ const removeAccents = (str) => {
 
           pdf.setFont('helvetica', 'bold');
           pdf.setTextColor(0, 0, 0);
-          pdf.text(`- ${vac.name}`, margin + 5, yPos);
+          pdf.text(`- ${removeAccents(vac.name)}`, margin + 5, yPos);
           yPos += 5;
           
           pdf.setFont('helvetica', 'normal');
@@ -778,7 +779,7 @@ const removeAccents = (str) => {
           yPos += 5;
           
           if (vac.veterinarian) {
-            pdf.text(`  Veterinaire: ${vac.veterinarian}`, margin + 5, yPos);
+            pdf.text(`  Veterinaire: ${removeAccents(vac.veterinarian)}`, margin + 5, yPos);
             yPos += 5;
           }
           
@@ -819,7 +820,7 @@ const removeAccents = (str) => {
           
           pdf.setFont('helvetica', 'bold');
           pdf.setTextColor(0, 0, 0);
-          pdf.text(`- ${treat.product} (${typeLabel})`, margin + 5, yPos);
+          pdf.text(`- ${removeAccents(treat.product)} (${typeLabel})`, margin + 5, yPos);
           yPos += 5;
           
           pdf.setFont('helvetica', 'normal');
@@ -891,7 +892,7 @@ const removeAccents = (str) => {
         pdf.text('Allergies:', margin + 5, yPos);
         yPos += 5;
         pdf.setFont('helvetica', 'normal');
-        const allergiesText = pdf.splitTextToSize(healthNotes.allergies, pageWidth - margin * 2 - 10);
+        const allergiesText = pdf.splitTextToSize(removeAccents(healthNotes.allergies), pageWidth - margin * 2 - 10);
         pdf.text(allergiesText, margin + 5, yPos);
         yPos += (allergiesText.length * 5) + 5;
       }
@@ -901,7 +902,7 @@ const removeAccents = (str) => {
         pdf.text('Medicaments:', margin + 5, yPos);
         yPos += 5;
         pdf.setFont('helvetica', 'normal');
-        const medsText = pdf.splitTextToSize(healthNotes.medications, pageWidth - margin * 2 - 10);
+        const medsText = pdf.splitTextToSize(removeAccents(healthNotes.medications), pageWidth - margin * 2 - 10);
         pdf.text(medsText, margin + 5, yPos);
         yPos += (medsText.length * 5) + 5;
       }
@@ -911,12 +912,12 @@ const removeAccents = (str) => {
         pdf.text('Veterinaire:', margin + 5, yPos);
         yPos += 5;
         pdf.setFont('helvetica', 'normal');
-        pdf.text(healthNotes.veterinarian, margin + 5, yPos);
+        pdf.text(removeAccents(healthNotes.veterinarian), margin + 5, yPos);
         yPos += 5;
       }
 
       if (healthNotes.veterinarianPhone) {
-        pdf.text(`Telephone: ${healthNotes.veterinarianPhone}`, margin + 5, yPos);
+        pdf.text(`Telephone: ${removeAccents(healthNotes.veterinarianPhone)}`, margin + 5, yPos);
         yPos += 5;
       }
 
@@ -933,7 +934,7 @@ const removeAccents = (str) => {
       pdf.text(`Date: ${new Date().toLocaleDateString('fr-FR')}`, pageWidth - margin, pageHeight - 10, { align: 'right' });
 
       // Télécharger
-      const fileName = `carnet-sante-${currentProfile.name.toLowerCase().replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.pdf`;
+      const fileName = `carnet-sante-${removeAccents(currentProfile.name).toLowerCase().replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.pdf`;
       pdf.save(fileName);
 
       alert('Carnet de sante telecharge avec succes !');
