@@ -679,13 +679,36 @@ const DogProfile = () => {
     }
   };
 
-  // Fonction pour enlever les accents
+  // Fonction pour enlever les accents - AMÉLIORÉE
   const removeAccents = (str) => {
     if (!str) return '';
-    return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    
+    // Étape 1: Normalisation NFD pour séparer les accents
+    let normalized = str.normalize('NFD');
+    
+    // Étape 2: Supprimer les caractères diacritiques (accents)
+    normalized = normalized.replace(/[\u0300-\u036f]/g, '');
+    
+    // Étape 3: Remplacer les caractères spéciaux français
+    normalized = normalized
+      .replace(/œ/g, 'oe')
+      .replace(/æ/g, 'ae')
+      .replace(/Œ/g, 'OE')
+      .replace(/Æ/g, 'AE')
+      .replace(/[€£$¥]/g, '')  // Supprimer les symboles monétaires
+      .replace(/[«»]/g, '')     // Supprimer les guillemets français
+      .replace(/[^a-zA-Z0-9\s.,;:!?()\-'"\/&@#%+=_]/g, ' ');  // Garder les caractères alphanumériques et ponctuation basique
+    
+    // Étape 4: Remplacer les espaces multiples par un seul espace
+    normalized = normalized.replace(/\s+/g, ' ');
+    
+    // Étape 5: Nettoyer les espaces en début et fin
+    normalized = normalized.trim();
+    
+    return normalized;
   };
 
-  // Export PDF du carnet de santé - PREMIUM (SANS ACCENTS)
+  // Export PDF du carnet de santé - PREMIUM (AVEC FONCTION AMÉLIORÉE)
   const handleExportPDF = async () => {
     if (!isPremium) {
       setShowPremiumModal(true);
@@ -716,7 +739,7 @@ const DogProfile = () => {
 
       yPos = 60;
 
-      // Infos du chien (normaliser le texte)
+      // Infos du chien (avec fonction améliorée)
       pdf.setTextColor(0, 0, 0);
       pdf.setFontSize(22);
       pdf.setFont('helvetica', 'bold');
