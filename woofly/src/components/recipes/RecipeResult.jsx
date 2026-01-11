@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { supabase } from '../../lib/supabase';
-import { Save, Printer, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Save, Printer, AlertTriangle, CheckCircle, Download } from 'lucide-react';
+import jsPDF from 'jspdf';
 
 const RecipeResult = ({ recipe, dogId, onSaved }) => {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [generatingPDF, setGeneratingPDF] = useState(false);
 
   const ingredientNames = {
     proteins: {
@@ -82,6 +84,226 @@ const RecipeResult = ({ recipe, dogId, onSaved }) => {
 
   const handlePrint = () => {
     window.print();
+  };
+
+  const generatePDF = async () => {
+    setGeneratingPDF(true);
+
+    try {
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 20;
+      let yPos = margin;
+
+      // Header avec logo Woofly
+      pdf.setFillColor(59, 130, 246); // Bleu primary
+      pdf.rect(0, 0, pageWidth, 40, 'F');
+      
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFontSize(24);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('🐕 Woofly', margin, 20);
+      
+      pdf.setFontSize(12);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text('Recette personnalisée pour votre chien', margin, 30);
+
+      yPos = 50;
+
+      // Titre de la recette
+      pdf.setTextColor(0, 0, 0);
+      pdf.setFontSize(18);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text(recipe.title, margin, yPos);
+      yPos += 10;
+
+      // Infos chien
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'normal');
+      pdf.setTextColor(100, 100, 100);
+      pdf.text(`Pour ${recipe.dogName} | ${recipe.weight} kg | ${recipe.objective}`, margin, yPos);
+      yPos += 15;
+
+      // Ingrédients
+      pdf.setFontSize(14);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setTextColor(0, 0, 0);
+      pdf.text('Ingrédients', margin, yPos);
+      yPos += 8;
+
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'normal');
+
+      // Protéine
+      pdf.text(`${ingredientNames.proteins[recipe.ingredients.protein]}`, margin + 5, yPos);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text(`${recipe.quantities.protein}g`, pageWidth - margin - 20, yPos);
+      pdf.setFont('helvetica', 'normal');
+      yPos += 6;
+
+      // Glucides
+      if (recipe.ingredients.carb) {
+        pdf.text(`${ingredientNames.carbs[recipe.ingredients.carb]}`, margin + 5, yPos);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text(`${recipe.quantities.carb}g`, pageWidth - margin - 20, yPos);
+        pdf.setFont('helvetica', 'normal');
+        yPos += 6;
+      }
+
+      // Légumes
+      recipe.ingredients.veggies.forEach((veggie) => {
+        const veggieQty = Math.round(recipe.quantities.veggies / recipe.ingredients.veggies.length);
+        pdf.text(`${ingredientNames.veggies[veggie]}`, margin + 5, yPos);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text(`${veggieQty}g`, pageWidth - margin - 20, yPos);
+        pdf.setFont('helvetica', 'normal');
+        yPos += 6;
+      });
+
+      // Graisse
+      pdf.text(`${ingredientNames.fats[recipe.ingredients.fat]}`, margin + 5, yPos);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text(`${recipe.quantities.fat}g`, pageWidth - margin - 20, yPos);
+      pdf.setFont('helvetica', 'normal');
+      yPos += 6;
+
+      // Eau
+      pdf.text('Eau', margin + 5, yPos);
+      pdf.setTextColor(100, 100, 100);
+      pdf.text('Pour la cuisson', pageWidth - margin - 40, yPos);
+      pdf.setTextColor(0, 0, 0);
+      yPos += 12;
+
+      // Valeurs nutritionnelles
+      pdf.setFontSize(14);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Valeurs nutritionnelles', margin, yPos);
+      yPos += 8;
+
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'normal');
+      
+      const nutritionText = [
+        `Calories: ${recipe.nutrition.calories} kcal`,
+        `Protéines: ${recipe.nutrition.protein}g`,
+        `Glucides: ${recipe.nutrition.carbs}g`,
+        `Lipides: ${recipe.nutrition.fat}g`,
+        `Fibres: ${recipe.nutrition.fiber}g`
+      ];
+
+      nutritionText.forEach((text) => {
+        pdf.text(text, margin + 5, yPos);
+        yPos += 6;
+      });
+      yPos += 8;
+
+      // Instructions
+      pdf.setFontSize(14);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Préparation', margin, yPos);
+      yPos += 8;
+
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'normal');
+
+      recipe.instructions.forEach((instruction, index) => {
+        // Vérifier si on doit créer une nouvelle page
+        if (yPos > pageHeight - 40) {
+          pdf.addPage();
+          yPos = margin;
+        }
+
+        pdf.setFont('helvetica', 'bold');
+        pdf.text(`${index + 1}.`, margin, yPos);
+        pdf.setFont('helvetica', 'normal');
+        
+        // Texte multiligne si nécessaire
+        const splitText = pdf.splitTextToSize(instruction, pageWidth - margin * 2 - 10);
+        pdf.text(splitText, margin + 8, yPos);
+        yPos += (splitText.length * 5) + 3;
+      });
+      yPos += 8;
+
+      // Conseils
+      if (yPos > pageHeight - 60) {
+        pdf.addPage();
+        yPos = margin;
+      }
+
+      pdf.setFillColor(219, 234, 254); // Bleu clair
+      pdf.rect(margin - 5, yPos - 5, pageWidth - margin * 2 + 10, 35, 'F');
+
+      pdf.setFontSize(12);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setTextColor(30, 64, 175); // Bleu foncé
+      pdf.text('Conseils & astuces', margin, yPos + 3);
+      yPos += 8;
+
+      pdf.setFontSize(9);
+      pdf.setFont('helvetica', 'normal');
+      const tips = [
+        `Cette recette correspond à 2 repas pour un chien de ${recipe.weight}kg`,
+        'Conservez la moitié au réfrigérateur jusqu\'à 48h maximum',
+        'Congelez en portions individuelles pour une utilisation ultérieure',
+        `Fréquence recommandée : ${recipe.frequency}`
+      ];
+
+      tips.forEach((tip) => {
+        pdf.text(`• ${tip}`, margin + 3, yPos);
+        yPos += 5;
+      });
+      yPos += 10;
+
+      // Avertissement
+      if (yPos > pageHeight - 50) {
+        pdf.addPage();
+        yPos = margin;
+      }
+
+      pdf.setFillColor(254, 226, 226); // Rouge clair
+      pdf.rect(margin - 5, yPos - 5, pageWidth - margin * 2 + 10, 30, 'F');
+
+      pdf.setFontSize(12);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setTextColor(153, 27, 27); // Rouge foncé
+      pdf.text('Important', margin, yPos + 3);
+      yPos += 8;
+
+      pdf.setFontSize(9);
+      pdf.setFont('helvetica', 'normal');
+      const warnings = [
+        'Recette complémentaire - ne remplace pas une alimentation complète',
+        'Introduisez progressivement (25% nouveau, 75% ancien pendant 5-7 jours)',
+        'Surveillez les selles et le comportement de votre chien',
+        'En cas de doute, consultez votre vétérinaire'
+      ];
+
+      warnings.forEach((warning) => {
+        pdf.text(`• ${warning}`, margin + 3, yPos);
+        yPos += 5;
+      });
+
+      // Footer
+      pdf.setTextColor(150, 150, 150);
+      pdf.setFontSize(8);
+      pdf.text('Généré avec Woofly - www.doogybook.com', pageWidth / 2, pageHeight - 10, { align: 'center' });
+      pdf.text(`Date: ${new Date().toLocaleDateString('fr-FR')}`, pageWidth - margin, pageHeight - 10, { align: 'right' });
+
+      // Nom du fichier
+      const date = new Date().toISOString().split('T')[0];
+      const proteinName = recipe.ingredients.protein;
+      const dogName = recipe.dogName.toLowerCase().replace(/\s+/g, '-');
+      const fileName = `recette-${proteinName}-${dogName}-${date}.pdf`;
+
+      // Télécharger le PDF
+      pdf.save(fileName);
+    } catch (error) {
+      console.error('Erreur génération PDF:', error);
+      alert('Erreur lors de la génération du PDF');
+    } finally {
+      setGeneratingPDF(false);
+    }
   };
 
   return (
@@ -224,7 +446,7 @@ const RecipeResult = ({ recipe, dogId, onSaved }) => {
       </div>
 
       {/* Actions */}
-      <div className="flex gap-3">
+      <div className="flex flex-col sm:flex-row gap-3">
         <button
           onClick={handleSave}
           disabled={saving || saved}
@@ -244,11 +466,29 @@ const RecipeResult = ({ recipe, dogId, onSaved }) => {
         </button>
 
         <button
+          onClick={generatePDF}
+          disabled={generatingPDF}
+          className="flex-1 px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl font-bold hover:shadow-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+        >
+          {generatingPDF ? (
+            <>
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+              <span>Génération...</span>
+            </>
+          ) : (
+            <>
+              <Download size={20} />
+              <span>Télécharger PDF</span>
+            </>
+          )}
+        </button>
+
+        <button
           onClick={handlePrint}
           className="px-6 py-3 bg-gray-100 text-gray-700 rounded-xl font-bold hover:bg-gray-200 transition-all flex items-center justify-center gap-2"
         >
           <Printer size={20} />
-          <span>Imprimer</span>
+          <span className="hidden sm:inline">Imprimer</span>
         </button>
       </div>
     </div>
