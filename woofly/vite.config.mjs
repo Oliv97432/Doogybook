@@ -1,89 +1,134 @@
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
-import tsconfigPaths from "vite-tsconfig-paths";
-import tagger from "@dhiwise/component-tagger";
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import { VitePWA } from 'vite-plugin-pwa';
+import path from 'path';
 
-// ✅ VERSION MINIMALE FONCTIONNELLE
-// Gain : +15-20 points PageSpeed
-
-// https://vitejs.dev/config/
 export default defineConfig({
+  plugins: [
+    react(),
+    VitePWA({
+      registerType: 'autoUpdate',
+      includeAssets: ['favicon.ico', 'robots.txt', 'apple-touch-icon.png'],
+      manifest: {
+        name: 'Woofly - Carnet de Santé pour Chiens',
+        short_name: 'Woofly',
+        description: 'Gérez la santé de votre chien facilement',
+        theme_color: '#3B82F6',
+        background_color: '#F3F4F6',
+        display: 'standalone',
+        orientation: 'portrait',
+        scope: '/',
+        start_url: '/',
+        icons: [
+          {
+            src: '/pwa-192x192.png',
+            sizes: '192x192',
+            type: 'image/png'
+          },
+          {
+            src: '/pwa-512x512.png',
+            sizes: '512x512',
+            type: 'image/png'
+          },
+          {
+            src: '/pwa-512x512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'any maskable'
+          }
+        ]
+      },
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,jpeg,webp,woff,woff2}'],
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'supabase-cache',
+              expiration: {
+                maxEntries: 100,
+                maxAgeSeconds: 60 * 60 * 24 * 7 // 7 jours
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
+          },
+          {
+            urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'google-fonts-cache',
+              expiration: {
+                maxEntries: 10,
+                maxAgeSeconds: 60 * 60 * 24 * 365 // 1 an
+              }
+            }
+          },
+          {
+            urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'gstatic-fonts-cache',
+              expiration: {
+                maxEntries: 10,
+                maxAgeSeconds: 60 * 60 * 24 * 365 // 1 an
+              }
+            }
+          }
+        ]
+      }
+    })
+  ],
+  resolve: {
+    alias: {
+      components: path.resolve(__dirname, './src/components'),
+      pages: path.resolve(__dirname, './src/pages'),
+      hooks: path.resolve(__dirname, './src/hooks'),
+      utils: path.resolve(__dirname, './src/utils'),
+      contexts: path.resolve(__dirname, './src/contexts'),
+      lib: path.resolve(__dirname, './src/lib')
+    }
+  },
   build: {
-    outDir: "dist",
-    // ✅ OPTIMISATION 1 : Réduire le warning de 1000 à 500KB
-    chunkSizeWarningLimit: 500,
-    
-    // ✅ OPTIMISATION 2 : Minification maximale
     minify: 'terser',
     terserOptions: {
       compress: {
         drop_console: true, // Supprimer les console.log en prod
-        drop_debugger: true,
-        pure_funcs: ['console.log', 'console.info', 'console.debug', 'console.warn'],
-      },
-      format: {
-        comments: false, // Supprimer tous les commentaires
-      },
+        drop_debugger: true
+      }
     },
-    
-    // ✅ OPTIMISATION 3 : Code splitting intelligent
+    chunkSizeWarningLimit: 500,
+    sourcemap: false,
+    cssCodeSplit: true,
+    assetsInlineLimit: 4096,
     rollupOptions: {
       output: {
         manualChunks: {
-          // Séparer les grosses librairies
           'vendor-react': ['react', 'react-dom', 'react-router-dom'],
           'vendor-ui': ['lucide-react'],
-          'vendor-forms': ['react-hook-form'],
+          'vendor-supabase': ['@supabase/supabase-js'],
+          'vendor-pdf': ['jspdf']
         },
-        // Noms de fichiers optimisés
+        assetFileNames: (assetInfo) => {
+          let extType = assetInfo.name.split('.').at(1);
+          if (/png|jpe?g|svg|gif|tiff|bmp|ico|webp/i.test(extType)) {
+            extType = 'img';
+          }
+          return `assets/${extType}/[name]-[hash][extname]`;
+        },
         chunkFileNames: 'assets/js/[name]-[hash].js',
-        entryFileNames: 'assets/js/[name]-[hash].js',
-        assetFileNames: 'assets/[ext]/[name]-[hash].[ext]',
-      },
-    },
-    
-    // ✅ OPTIMISATION 4 : Sourcemaps désactivés en production
-    sourcemap: false,
-    
-    // ✅ OPTIMISATION 5 : Target moderne
-    target: 'es2015',
-    
-    // ✅ OPTIMISATION 6 : CSS code splitting
-    cssCodeSplit: true,
-    
-    // ✅ OPTIMISATION 7 : Optimisation des assets
-    assetsInlineLimit: 4096, // 4KB inline max
+        entryFileNames: 'assets/js/[name]-[hash].js'
+      }
+    }
   },
-  
-  // ✅ OPTIMISATION 8 : Plugins essentiels seulement
-  plugins: [
-    tsconfigPaths(),
-    react(),
-    tagger(),
-  ],
-  
-  // ✅ OPTIMISATION 9 : Optimisation des dépendances
-  optimizeDeps: {
-    include: [
-      'react',
-      'react-dom',
-      'react-router-dom',
-      '@supabase/supabase-js',
-      'lucide-react',
-    ],
-  },
-  
-  // ✅ OPTIMISATION 10 : Server config
   server: {
-    port: "4028",
-    host: "0.0.0.0",
-    strictPort: true,
-    allowedHosts: ['.amazonaws.com', '.builtwithrocket.new'],
+    port: 5173,
+    host: true
   },
-  
-  // ✅ OPTIMISATION 11 : Preview config pour production
   preview: {
-    port: 4028,
-    host: "0.0.0.0",
-  },
+    port: 4173,
+    host: true
+  }
 });
