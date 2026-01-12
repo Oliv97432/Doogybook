@@ -1,6 +1,6 @@
-// Service Worker pour Woofly PWA
-const CACHE_NAME = 'woofly-v1.0.0';
-const RUNTIME_CACHE = 'woofly-runtime-v1.0.0';
+// Service Worker pour Doogybook PWA
+const CACHE_NAME = 'doogybook-v1.0.0';
+const RUNTIME_CACHE = 'doogybook-runtime-v1.0.0';
 
 // Fichiers à mettre en cache lors de l'installation
 const PRECACHE_ASSETS = [
