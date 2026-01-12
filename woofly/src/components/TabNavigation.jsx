@@ -48,18 +48,19 @@ const TabNavigation = () => {
 
   return (
     <div className="sticky top-[73px] z-40 bg-white border-b border-gray-200 relative">
-      {/* Suppression de max-w-screen-xl pour permettre le scroll */}
       <div className="w-full relative">
         {/* Indicateur de scroll à droite - visible uniquement sur mobile */}
-        <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent pointer-events-none z-10 md:hidden" />
+        <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-white via-white/50 to-transparent pointer-events-none z-10 md:hidden" />
         
         <div 
-          className="flex overflow-x-auto overflow-y-hidden scrollbar-hide scroll-smooth px-2" 
+          className="flex overflow-x-scroll overflow-y-hidden px-2" 
           style={{ 
             WebkitOverflowScrolling: 'touch',
             scrollSnapType: 'x proximity',
-            msOverflowStyle: 'none',
-            scrollbarWidth: 'none'
+            msOverflowStyle: '-ms-autohiding-scrollbar',
+            scrollbarWidth: 'none',
+            touchAction: 'pan-x',
+            overscrollBehavior: 'contain'
           }}
         >
           {tabs.map((tab) => {
@@ -71,16 +72,19 @@ const TabNavigation = () => {
                 key={tab.path}
                 onClick={() => navigate(tab.path)}
                 className={`
-                  flex-shrink-0 flex items-center justify-center gap-2 py-4 px-3 sm:px-4
+                  flex-shrink-0 flex items-center justify-center gap-1.5 py-4 px-2.5 sm:px-4
                   font-medium text-xs sm:text-sm transition-all relative
                   ${active 
                     ? 'text-blue-600' 
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                   }
                 `}
-                style={{ scrollSnapAlign: 'start' }}
+                style={{ 
+                  scrollSnapAlign: 'start',
+                  minWidth: 'fit-content'
+                }}
               >
-                <Icon size={18} className="flex-shrink-0" />
+                <Icon size={16} className="flex-shrink-0" />
                 <span className="whitespace-nowrap text-xs sm:text-sm">{tab.label}</span>
                 
                 {/* Badge Premium */}
@@ -94,8 +98,8 @@ const TabNavigation = () => {
               </button>
             );
           })}
-          {/* Padding à droite pour faciliter le scroll jusqu'au bout */}
-          <div className="flex-shrink-0 w-8" />
+          {/* Large spacer pour s'assurer qu'on peut scroller jusqu'au bout */}
+          <div className="flex-shrink-0 w-16" />
         </div>
       </div>
     </div>
