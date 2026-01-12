@@ -42,51 +42,10 @@ export default defineConfig({
     },
     rollupOptions: {
       output: {
-        manualChunks: (id) => {
-          // Vendor chunks optimisés
-          if (id.includes('node_modules')) {
-            // PDF libraries - LAZY LOAD FORCÉ
-            if (id.includes('jspdf') || id.includes('html2canvas')) {
-              return 'vendor-pdf-lazy';
-            }
-            // Charts - LAZY LOAD
-            if (id.includes('recharts') || id.includes('d3')) {
-              return 'vendor-charts-lazy';
-            }
-            // React core - CRITICAL
-            if (id.includes('react/') || id.includes('react-dom/')) {
-              return 'vendor-react';
-            }
-            // Router - CRITICAL
-            if (id.includes('react-router')) {
-              return 'vendor-router';
-            }
-            // Supabase - CRITICAL
-            if (id.includes('@supabase')) {
-              return 'vendor-supabase';
-            }
-            // UI libraries - Splittées
-            if (id.includes('lucide-react')) {
-              return 'vendor-icons';
-            }
-            if (id.includes('framer-motion')) {
-              return 'vendor-animation';
-            }
-            // Form libraries
-            if (id.includes('react-hook-form')) {
-              return 'vendor-forms';
-            }
-            // Redux
-            if (id.includes('redux') || id.includes('@reduxjs')) {
-              return 'vendor-state';
-            }
-            // Date utilities
-            if (id.includes('date-fns')) {
-              return 'vendor-dates';
-            }
-            // Autres vendors
-            return 'vendor-misc';
-          }
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-ui': ['lucide-react', 'framer-motion'],
+          'vendor-supabase': ['@supabase/supabase-js']
         },
         assetFileNames: (assetInfo) => {
           let extType = assetInfo.name.split('.').at(1);
