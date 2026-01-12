@@ -41,29 +41,32 @@ export default defineConfig({
         manualChunks: (id) => {
           // Vendor chunks optimisés
           if (id.includes('node_modules')) {
-            // React core
-            if (id.includes('react') || id.includes('react-dom')) {
+            // PDF libraries - LAZY LOAD FORCÉ
+            if (id.includes('jspdf') || id.includes('html2canvas')) {
+              return 'vendor-pdf-lazy';
+            }
+            // Charts - LAZY LOAD
+            if (id.includes('recharts') || id.includes('d3')) {
+              return 'vendor-charts-lazy';
+            }
+            // React core - CRITICAL
+            if (id.includes('react/') || id.includes('react-dom/')) {
               return 'vendor-react';
             }
-            // Router
+            // Router - CRITICAL
             if (id.includes('react-router')) {
               return 'vendor-router';
             }
-            // UI libraries
-            if (id.includes('lucide-react') || id.includes('framer-motion')) {
-              return 'vendor-ui';
-            }
-            // Charts (lazy load)
-            if (id.includes('recharts') || id.includes('d3')) {
-              return 'vendor-charts';
-            }
-            // PDF (lazy load)
-            if (id.includes('jspdf') || id.includes('html2canvas')) {
-              return 'vendor-pdf';
-            }
-            // Supabase
+            // Supabase - CRITICAL
             if (id.includes('@supabase')) {
               return 'vendor-supabase';
+            }
+            // UI libraries - Splittées
+            if (id.includes('lucide-react')) {
+              return 'vendor-icons';
+            }
+            if (id.includes('framer-motion')) {
+              return 'vendor-animation';
             }
             // Form libraries
             if (id.includes('react-hook-form')) {
@@ -71,7 +74,7 @@ export default defineConfig({
             }
             // Redux
             if (id.includes('redux') || id.includes('@reduxjs')) {
-              return 'vendor-redux';
+              return 'vendor-state';
             }
             // Date utilities
             if (id.includes('date-fns')) {
