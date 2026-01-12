@@ -1,7 +1,7 @@
 {
-  "name": "Woofly - Carnet de Santé Digital pour Chiens",
-  "short_name": "Woofly",
-  "description": "Gérez facilement la santé de votre chien avec Woofly : vaccinations, traitements, poids, rappels automatiques et bien plus !",
+  "name": "Doogybook - Carnet de Santé Digital pour Chiens",
+  "short_name": "Doogybook",
+  "description": "Gérez facilement la santé de votre chien avec Doogybook : vaccinations, traitements, poids, rappels automatiques et bien plus !",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
