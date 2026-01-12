@@ -53,8 +53,8 @@ const DashboardRedirect = () => {
           // FALLBACK : Chercher par email dans professional_accounts
           const { data: proByEmail, error: proError2 } = await supabase
             .from('professional_accounts')
-            .select('id, is_active, user_id, contact_email')
-            .eq('contact_email', user.email)
+            .select('id, is_active, user_id, email')
+            .eq('email', user.email)
             .maybeSingle();
 
           console.log('DashboardRedirect: Pro account by email:', { proByEmail, proError2 });
