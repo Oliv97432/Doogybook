@@ -1166,11 +1166,7 @@ const DogProfile = () => {
             )}
           </button>
 
-          <UserMenu
-            dogProfiles={dogProfiles}
-            currentDog={currentProfile}
-            onDogChange={handleProfileChange}
-          />
+          <UserMenu />
         </div>
       </div>
 
