@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
+import OptimizedImage from '../components/OptimizedImage';
 import { 
   Heart, Stethoscope, Users, Calendar, ArrowRight,
   Check, Sparkles, Shield, MapPin
@@ -25,7 +26,7 @@ const LandingPage = () => {
     try {
       const { data, error } = await supabase
         .from('dogs')
-        .select('*')
+        .select('id, name, breed, birth_date, photo_url')
         .eq('is_for_adoption', true)
         .eq('adoption_status', 'available')
         .limit(3);
@@ -272,7 +273,7 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Section Adoption */}
+      {/* Section Adoption - OPTIMISÉE AVEC OPTIMIZEDIMAGE */}
       {featuredDogs.length > 0 && (
         <section className="py-8 sm:py-12 md:py-20 bg-gray-50">
           <div className="max-w-7xl mx-auto px-3 sm:px-4">
@@ -294,9 +295,11 @@ const LandingPage = () => {
                 >
                   <div className="aspect-square relative overflow-hidden">
                     {dog.photo_url ? (
-                      <img
+                      <OptimizedImage
                         src={dog.photo_url}
                         alt={dog.name}
+                        width={600}
+                        quality={80}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                     ) : (
