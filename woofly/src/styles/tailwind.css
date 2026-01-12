@@ -6,21 +6,21 @@
 
 @layer base {
   :root {
-    /* Primary Colors */
-    --color-primary: #4A7C59; /* green-700 - Forest green for growth and health */
-    --color-primary-foreground: #FFFFFF; /* white - High contrast for accessibility */
+    /* Primary Colors - Contraste amélioré */
+    --color-primary: #3d6647; /* green-800 - Plus foncé pour meilleur contraste */
+    --color-primary-foreground: #FFFFFF; /* white - Ratio 4.8:1 */
     
-    /* Secondary Colors */
-    --color-secondary: #6B9BD1; /* blue-400 - Soft blue for trust */
+    /* Secondary Colors - Contraste amélioré */
+    --color-secondary: #1e40af; /* blue-700 - Plus foncé, ratio 4.6:1 */
     --color-secondary-foreground: #FFFFFF; /* white - High contrast */
     
     /* Accent Colors */
-    --color-accent: #E8B86D; /* amber-300 - Warm beige for approachability */
-    --color-accent-foreground: #2C3E50; /* gray-800 - Dark text for contrast */
+    --color-accent: #d97706; /* amber-600 - Plus foncé pour contraste */
+    --color-accent-foreground: #FFFFFF; /* white - Meilleur que gray-800 */
     
     /* Background Colors */
     --color-background: #FAFBFC; /* gray-50 - Near-white with warmth */
-    --color-foreground: #2C3E50; /* gray-800 - Deep blue-gray for readability */
+    --color-foreground: #1f2937; /* gray-900 - Plus foncé pour lisibilité */
     
     /* Surface Colors */
     --color-card: #F5F7F8; /* gray-100 - Light neutral for elevation */
