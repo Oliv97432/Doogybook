@@ -28,14 +28,14 @@
     --color-popover: #FFFFFF; /* white - Clean popover background */
     --color-popover-foreground: #2C3E50; /* gray-800 - Readable text */
     
-    /* Muted Colors */
+    /* Muted Colors - Contraste amélioré */
     --color-muted: #F5F7F8; /* gray-100 - Subtle background variation */
-    --color-muted-foreground: #64748B; /* gray-500 - Medium gray for hierarchy */
+    --color-muted-foreground: #374151; /* gray-700 - Plus foncé pour lisibilité */
     
     /* Border & Input */
-    --color-border: #E2E8F0; /* gray-200 - Minimal borders */
-    --color-input: #E2E8F0; /* gray-200 - Form field borders */
-    --color-ring: #4A7C59; /* green-700 - Focus ring matches primary */
+    --color-border: #d1d5db; /* gray-300 - Plus visible */
+    --color-input: #d1d5db; /* gray-300 - Form field borders plus visibles */
+    --color-ring: #3d6647; /* green-800 - Focus ring matches primary */
     
     /* Status Colors */
     --color-success: #10B981; /* green-500 - Natural green for health milestones */
