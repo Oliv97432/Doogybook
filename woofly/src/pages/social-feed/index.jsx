@@ -230,6 +230,8 @@ const SocialFeed = () => {
 
   // Pull to refresh hook
   const { isPulling, pullDistance } = usePullToRefresh(handleRefresh);
+
+  const fetchUserStats = async () => {
     if (!user?.id) return;
     
     try {
