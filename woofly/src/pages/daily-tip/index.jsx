@@ -584,14 +584,6 @@ const DailyTip = () => {
             </div>
           </section>
 
-          {/* Publicité */}
-          <section className="bg-gray-100 rounded-lg p-4 sm:p-6 text-center border-2 border-dashed border-gray-300">
-            <p className="text-xs sm:text-sm text-gray-500 mb-2">Publicité</p>
-            <div className="bg-white h-24 sm:h-32 flex items-center justify-center rounded">
-              <p className="text-gray-400 text-sm sm:text-base">Espace réservé pour AdSense</p>
-            </div>
-          </section>
-
           {/* Section Vétérinaire */}
           <section className="space-y-4">
             <div className="flex items-center justify-between">
