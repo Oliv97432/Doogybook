@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
@@ -10,6 +10,43 @@ import {
 import UserMenu from '../../components/UserMenu';
 import Footer from '../../components/Footer';
 
+// ==========================================
+// 🎨 SKELETON SCREENS
+// ==========================================
+const StatCardSkeleton = () => (
+  <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 animate-pulse">
+    <div className="w-12 h-12 rounded-xl bg-gray-200 mb-4" />
+    <div className="h-8 bg-gray-200 rounded w-20 mb-1" />
+    <div className="h-4 bg-gray-200 rounded w-24 mb-2" />
+    <div className="h-3 bg-gray-200 rounded w-32" />
+  </div>
+);
+
+const ListItemSkeleton = () => (
+  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg animate-pulse">
+    <div className="w-10 h-10 rounded-full bg-gray-200" />
+    <div className="flex-1 space-y-2">
+      <div className="h-4 bg-gray-200 rounded w-3/4" />
+      <div className="h-3 bg-gray-200 rounded w-1/2" />
+    </div>
+  </div>
+);
+
+// ==========================================
+// 🎨 OPTIMIZED IMAGE HELPER
+// ==========================================
+const getOptimizedImageUrl = (url, width = 400, quality = 70) => {
+  if (!url) return null;
+  if (url.includes('supabase.co') && url.includes('storage/v1/object/public')) {
+    const separator = url.includes('?') ? '&' : '?';
+    return `${url}${separator}width=${width}&quality=${quality}&format=webp`;
+  }
+  return url;
+};
+
+// ==========================================
+// 🎨 MAIN COMPONENT
+// ==========================================
 const AdminDashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -35,7 +72,7 @@ const AdminDashboard = () => {
     avgDogsPerPro: 0
   });
   
-  // Activité récente
+  // Activité récente (limitée)
   const [recentUsers, setRecentUsers] = useState([]);
   const [recentPros, setRecentPros] = useState([]);
   const [recentDogs, setRecentDogs] = useState([]);
@@ -84,7 +121,6 @@ const AdminDashboard = () => {
         return;
       }
 
-      // Vérifier si is_admin existe et est true
       if (!profile.hasOwnProperty('is_admin')) {
         console.error('❌ Colonne is_admin n\'existe pas dans user_profiles !');
         setError('Configuration base de données incorrecte - Colonne is_admin manquante');
@@ -111,131 +147,143 @@ const AdminDashboard = () => {
   };
 
   const loadAllStats = async () => {
-    console.log('🔵 Chargement des stats...');
+    console.log('⚡ Chargement OPTIMISÉ des stats...');
+    const startTime = performance.now();
     
     try {
       const now = new Date();
-      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-      const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+      const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
 
-      // USERS
-      console.log('🔵 Chargement users...');
-      const { data: users, error: usersError } = await supabase
-        .from('user_profiles')
-        .select('*')
-        .order('created_at', { ascending: false });
+      // ⚡ PARALLEL QUERIES - Toutes en même temps !
+      const [
+        usersCount,
+        usersToday,
+        usersWeek,
+        usersMonth,
+        recentUsersData,
+        prosCount,
+        prosWeek,
+        pendingProsData,
+        topRefugesData,
+        dogsCount,
+        dogsWeek,
+        recentDogsData,
+        adoptedCount,
+        recentAdoptionsData
+      ] = await Promise.all([
+        // USERS - COUNT TOTAL
+        supabase.from('user_profiles').select('*', { count: 'exact', head: true }),
+        
+        // USERS - COUNT AUJOURD'HUI
+        supabase.from('user_profiles').select('*', { count: 'exact', head: true }).gte('created_at', today),
+        
+        // USERS - COUNT SEMAINE
+        supabase.from('user_profiles').select('*', { count: 'exact', head: true }).gte('created_at', weekAgo),
+        
+        // USERS - COUNT MOIS
+        supabase.from('user_profiles').select('*', { count: 'exact', head: true }).gte('created_at', monthAgo),
+        
+        // USERS - TOP 10 RÉCENTS (pour affichage)
+        supabase
+          .from('user_profiles')
+          .select('id, full_name, email, created_at')
+          .order('created_at', { ascending: false })
+          .limit(10),
+        
+        // PROS - COUNT TOTAL
+        supabase.from('professional_accounts').select('*', { count: 'exact', head: true }),
+        
+        // PROS - COUNT SEMAINE
+        supabase.from('professional_accounts').select('*', { count: 'exact', head: true }).gte('created_at', weekAgo),
+        
+        // PROS - EN ATTENTE (limité à 20)
+        supabase
+          .from('professional_accounts')
+          .select('id, organization_name, organization_type, email, phone, city, is_verified, created_at')
+          .eq('is_verified', false)
+          .order('created_at', { ascending: false })
+          .limit(20),
+        
+        // TOP 5 REFUGES - REQUÊTE AGRÉGÉE OPTIMISÉE
+        supabase
+          .from('professional_accounts')
+          .select(`
+            id,
+            organization_name,
+            city,
+            dogs:dogs(count)
+          `)
+          .order('created_at', { ascending: false })
+          .limit(100),
+        
+        // DOGS - COUNT TOTAL
+        supabase.from('dogs').select('*', { count: 'exact', head: true }),
+        
+        // DOGS - COUNT SEMAINE
+        supabase.from('dogs').select('*', { count: 'exact', head: true }).gte('created_at', weekAgo),
+        
+        // DOGS - TOP 10 RÉCENTS DISPONIBLES
+        supabase
+          .from('dogs')
+          .select('id, name, breed, photo_url, adoption_status, created_at')
+          .eq('is_for_adoption', true)
+          .order('created_at', { ascending: false })
+          .limit(10),
+        
+        // DOGS - COUNT ADOPTÉS
+        supabase.from('dogs').select('*', { count: 'exact', head: true }).eq('adoption_status', 'adopted'),
+        
+        // ADOPTIONS RÉCENTES - TOP 5
+        supabase
+          .from('dogs')
+          .select('id, name, breed, photo_url, created_at')
+          .eq('adoption_status', 'adopted')
+          .order('created_at', { ascending: false })
+          .limit(5)
+      ]);
 
-      if (usersError) {
-        console.error('❌ Erreur chargement users:', usersError);
-      } else {
-        console.log('✅ Users chargés:', users?.length || 0);
-      }
+      // CALCUL DES STATS
+      const totalUsers = usersCount.count || 0;
+      const totalPros = prosCount.count || 0;
+      const totalDogs = dogsCount.count || 0;
+      const totalAdoptions = adoptedCount.count || 0;
+      const pendingPros = pendingProsData.data?.length || 0;
+      const newUsersToday = usersToday.count || 0;
+      const newUsersWeek = usersWeek.count || 0;
+      const newUsersMonth = usersMonth.count || 0;
+      const newProsWeek = prosWeek.count || 0;
+      const newDogsWeek = dogsWeek.count || 0;
 
-      const totalUsers = users?.length || 0;
-      const newUsersToday = users?.filter(u => 
-        new Date(u.created_at) >= today
-      ).length || 0;
-      const newUsersWeek = users?.filter(u => 
-        new Date(u.created_at) >= weekAgo
-      ).length || 0;
-      const newUsersMonth = users?.filter(u => 
-        new Date(u.created_at) >= monthAgo
-      ).length || 0;
-
-      setRecentUsers(users?.slice(0, 10) || []);
-
-      // PROS
-      console.log('🔵 Chargement pros...');
-      const { data: pros, error: prosError } = await supabase
-        .from('professional_accounts')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (prosError) {
-        console.error('❌ Erreur chargement pros:', prosError);
-      } else {
-        console.log('✅ Pros chargés:', pros?.length || 0);
-      }
-
-      const totalPros = pros?.length || 0;
-      const pendingPros = pros?.filter(p => !p.is_verified).length || 0;
-      const newProsWeek = pros?.filter(p => 
-        new Date(p.created_at) >= weekAgo
-      ).length || 0;
-
-      setRecentPros(pros?.slice(0, 5) || []);
-
-      // Top refuges
-      console.log('🔵 Calcul top refuges...');
-      const prosWithDogs = await Promise.all(
-        (pros || []).map(async (pro) => {
-          const { data: dogs } = await supabase
-            .from('dogs')
-            .select('id')
-            .eq('professional_account_id', pro.id);
-          return { ...pro, dogCount: dogs?.length || 0 };
-        })
-      );
-      
-      const topRefuges = prosWithDogs
-        .sort((a, b) => b.dogCount - a.dogCount)
-        .slice(0, 5);
-      
-      setTopRefuges(topRefuges);
-      console.log('✅ Top refuges calculés:', topRefuges.length);
-
-      // DOGS - RÉCUPÉRER TOUS LES CHIENS
-      console.log('🔵 Chargement dogs...');
-      const { data: allDogs, error: dogsError } = await supabase
-        .from('dogs')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (dogsError) {
-        console.error('❌ Erreur chargement dogs:', dogsError);
-      } else {
-        console.log('✅ Dogs chargés:', allDogs?.length || 0);
-        console.log('🔵 Dogs adoptés:', allDogs?.filter(d => d.adoption_status === 'adopted').length || 0);
-      }
-
-      // Chiens à l'adoption (pour affichage récent)
-      const dogs = allDogs?.filter(d => d.is_for_adoption === true) || [];
-
-      // STATS sur TOUS les chiens
-      const totalDogs = allDogs?.length || 0;
-      const adoptedDogs = allDogs?.filter(d => d.adoption_status === 'adopted').length || 0;
-      const newDogsWeek = allDogs?.filter(d => 
-        new Date(d.created_at) >= weekAgo
-      ).length || 0;
-
-      setRecentDogs(dogs?.slice(0, 10) || []);
-
-      // Chiens récemment adoptés
-      const adoptedRecently = allDogs?.filter(d => 
-        d.adoption_status === 'adopted'
-      ).slice(0, 5) || [];
-      setRecentAdoptions(adoptedRecently);
-
-      // CALCULS MÉTRIQUES
+      // MÉTRIQUES CALCULÉES
       const conversionRate = totalUsers > 0 
         ? Math.round((totalPros / totalUsers) * 100) 
         : 0;
       
       const adoptionRate = totalDogs > 0 
-        ? Math.round((adoptedDogs / totalDogs) * 100) 
+        ? Math.round((totalAdoptions / totalDogs) * 100) 
         : 0;
       
       const avgDogsPerPro = totalPros > 0 
         ? Math.round(totalDogs / totalPros * 10) / 10 
         : 0;
 
+      // TOP REFUGES - Traiter les données agrégées
+      const processedTopRefuges = (topRefugesData.data || [])
+        .map(refuge => ({
+          ...refuge,
+          dogCount: refuge.dogs?.[0]?.count || 0
+        }))
+        .sort((a, b) => b.dogCount - a.dogCount)
+        .slice(0, 5);
+
       // UPDATE STATE
-      const newStats = {
+      setStats({
         totalUsers,
         totalPros,
         totalDogs,
-        totalAdoptions: adoptedDogs,
+        totalAdoptions,
         pendingPros,
         newUsersToday,
         newUsersWeek,
@@ -245,10 +293,16 @@ const AdminDashboard = () => {
         conversionRate,
         adoptionRate,
         avgDogsPerPro
-      };
+      });
 
-      console.log('✅ Stats calculées:', newStats);
-      setStats(newStats);
+      setRecentUsers(recentUsersData.data || []);
+      setRecentPros(pendingProsData.data || []);
+      setRecentDogs(recentDogsData.data || []);
+      setRecentAdoptions(recentAdoptionsData.data || []);
+      setTopRefuges(processedTopRefuges);
+
+      const endTime = performance.now();
+      console.log(`✅ Stats chargées en ${Math.round(endTime - startTime)}ms`);
 
     } catch (error) {
       console.error('❌ Erreur chargement stats:', error);
@@ -265,8 +319,7 @@ const AdminDashboard = () => {
     }
 
     try {
-      // ✅ DOUBLE VÉRIFICATION ADMIN CÔTÉ CLIENT
-      console.log('🔵 Vérification que l\'utilisateur est admin...');
+      // Double vérification admin
       const { data: profile, error: profileError } = await supabase
         .from('user_profiles')
         .select('is_admin')
@@ -279,9 +332,7 @@ const AdminDashboard = () => {
         return;
       }
 
-      console.log('✅ User confirmé admin, update du compte pro...');
-
-      // UPDATE du compte pro
+      // Update du compte pro
       const { data, error } = await supabase
         .from('professional_accounts')
         .update({ 
@@ -291,31 +342,22 @@ const AdminDashboard = () => {
         .eq('id', proId)
         .select();
 
-      console.log('🔵 Résultat update pro:', { data, error });
-
       if (error) {
         console.error('❌ Erreur update pro:', error);
         alert('❌ Erreur lors de la vérification: ' + error.message);
         return;
       }
 
-      console.log('✅ Compte vérifié avec succès !');
-      console.log('🔵 Data retournée:', data);
-      
-      // Vérifier si l'update a vraiment fonctionné
       if (data && data.length > 0) {
-        console.log('✅ Update confirmé dans la base !');
+        console.log('✅ Compte vérifié avec succès !');
         alert('✅ Compte vérifié ! La page va se recharger...');
         
-        // Fermer le modal
         setSelectedPro(null);
         
-        // Recharger la page après 1 seconde
         setTimeout(() => {
           window.location.reload();
         }, 1000);
       } else {
-        console.error('⚠️ Update exécuté mais pas de data retournée');
         alert('⚠️ Vérification effectuée mais impossible de confirmer. Rechargez la page manuellement.');
       }
     } catch (error) {
@@ -326,10 +368,38 @@ const AdminDashboard = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin h-12 w-12 border-4 border-red-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-          <p className="text-gray-600">Chargement du dashboard admin...</p>
+      <div className="min-h-screen bg-gray-50">
+        {/* Header Skeleton */}
+        <div className="sticky top-0 z-50 bg-gradient-to-r from-red-600 to-red-700 border-b border-red-800 shadow-lg">
+          <div className="max-w-7xl mx-auto px-4 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-white/20 rounded-xl animate-pulse" />
+                <div className="space-y-2">
+                  <div className="h-6 w-48 bg-white/20 rounded animate-pulse" />
+                  <div className="h-3 w-64 bg-white/10 rounded animate-pulse" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Content Skeleton */}
+        <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[...Array(4)].map((_, i) => (
+              <StatCardSkeleton key={i} />
+            ))}
+          </div>
+          
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+            <div className="h-6 w-48 bg-gray-200 rounded mb-4 animate-pulse" />
+            <div className="space-y-2">
+              {[...Array(5)].map((_, i) => (
+                <ListItemSkeleton key={i} />
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -385,7 +455,7 @@ const AdminDashboard = () => {
         {stats.pendingPros > 0 && (
           <div className="bg-orange-50 border-l-4 border-orange-500 p-6 rounded-r-xl">
             <div className="flex items-center gap-3">
-              <AlertCircle className="text-orange-600" size={24} />
+              <AlertCircle className="text-orange-600 flex-shrink-0" size={24} />
               <div className="flex-1">
                 <h3 className="font-semibold text-orange-900">
                   {stats.pendingPros} compte(s) professionnel(s) en attente de vérification
@@ -396,7 +466,7 @@ const AdminDashboard = () => {
               </div>
               <button
                 onClick={() => window.scrollTo({ top: 999999, behavior: 'smooth' })}
-                className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-smooth flex items-center gap-2"
+                className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-smooth flex items-center gap-2 flex-shrink-0"
               >
                 Voir <ArrowRight size={16} />
               </button>
@@ -508,15 +578,15 @@ const AdminDashboard = () => {
             </h3>
             <div className="space-y-3">
               {topRefuges.map((refuge, index) => (
-                <div key={refuge.id} className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center text-white font-bold text-lg">
+                <div key={refuge.id} className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-smooth">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
                     {index + 1}
                   </div>
-                  <div className="flex-1">
-                    <h4 className="font-semibold text-gray-900">{refuge.organization_name || 'N/A'}</h4>
-                    <p className="text-sm text-gray-600">{refuge.city || 'N/A'}</p>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-semibold text-gray-900 truncate">{refuge.organization_name || 'N/A'}</h4>
+                    <p className="text-sm text-gray-600 truncate">{refuge.city || 'N/A'}</p>
                   </div>
-                  <div className="text-right">
+                  <div className="text-right flex-shrink-0">
                     <div className="text-2xl font-bold text-gray-900">{refuge.dogCount}</div>
                     <div className="text-xs text-gray-600">chiens</div>
                   </div>
@@ -536,15 +606,15 @@ const AdminDashboard = () => {
             </h3>
             <div className="space-y-2">
               {recentUsers.slice(0, 5).map(user => (
-                <div key={user.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold">
+                <div key={user.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-smooth">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold flex-shrink-0">
                     {user.full_name?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-gray-900 truncate">{user.full_name || 'N/A'}</p>
                     <p className="text-xs text-gray-600 truncate">{user.email}</p>
                   </div>
-                  <div className="text-xs text-gray-500">
+                  <div className="text-xs text-gray-500 flex-shrink-0">
                     {new Date(user.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}
                   </div>
                 </div>
@@ -559,26 +629,7 @@ const AdminDashboard = () => {
             </h3>
             <div className="space-y-2">
               {recentDogs.slice(0, 5).map(dog => (
-                <div key={dog.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  {dog.photo_url ? (
-                    <img src={dog.photo_url} alt={dog.name} className="w-10 h-10 rounded-lg object-cover" />
-                  ) : (
-                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center text-white font-bold">
-                      {dog.name?.charAt(0).toUpperCase()}
-                    </div>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-gray-900 truncate">{dog.name}</p>
-                    <p className="text-xs text-gray-600 truncate">{dog.breed}</p>
-                  </div>
-                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                    dog.adoption_status === 'available' 
-                      ? 'bg-green-100 text-green-700' 
-                      : 'bg-gray-100 text-gray-700'
-                  }`}>
-                    {dog.adoption_status === 'available' ? 'Dispo' : 'Adopté'}
-                  </span>
-                </div>
+                <DogListItem key={dog.id} dog={dog} />
               ))}
             </div>
           </div>
@@ -586,14 +637,14 @@ const AdminDashboard = () => {
         </div>
 
         {/* Comptes Pro En Attente */}
-        {recentPros.filter(p => !p.is_verified).length > 0 && (
+        {recentPros.length > 0 && (
           <div className="bg-white rounded-2xl shadow-sm border border-orange-200 p-6">
             <h3 className="text-xl font-heading font-bold text-gray-900 mb-4 flex items-center gap-2">
               <Clock className="text-orange-600" size={24} />
               Comptes Professionnels En Attente ({stats.pendingPros})
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {recentPros.filter(p => !p.is_verified).map(pro => (
+              {recentPros.map(pro => (
                 <ProPendingCard
                   key={pro.id}
                   pro={pro}
@@ -622,10 +673,10 @@ const AdminDashboard = () => {
 };
 
 // ═══════════════════════════════════════════════════════════════════
-// COMPOSANTS
+// COMPOSANTS MEMOIZED
 // ═══════════════════════════════════════════════════════════════════
 
-const BigStatCard = ({ icon: Icon, label, value, change, color }) => {
+const BigStatCard = memo(({ icon: Icon, label, value, change, color }) => {
   const colors = {
     blue: 'from-blue-500 to-blue-600',
     green: 'from-green-500 to-green-600',
@@ -646,9 +697,11 @@ const BigStatCard = ({ icon: Icon, label, value, change, color }) => {
       </div>
     </div>
   );
-};
+});
 
-const MiniStatCard = ({ label, value, icon: Icon, color }) => {
+BigStatCard.displayName = 'BigStatCard';
+
+const MiniStatCard = memo(({ label, value, icon: Icon, color }) => {
   const colors = {
     blue: 'bg-blue-100 text-blue-600',
     green: 'bg-green-100 text-green-600',
@@ -658,7 +711,7 @@ const MiniStatCard = ({ label, value, icon: Icon, color }) => {
   return (
     <div className="bg-gray-50 rounded-lg p-4">
       <div className="flex items-center gap-3">
-        <div className={`w-10 h-10 rounded-lg ${colors[color]} flex items-center justify-center`}>
+        <div className={`w-10 h-10 rounded-lg ${colors[color]} flex items-center justify-center flex-shrink-0`}>
           <Icon size={20} />
         </div>
         <div>
@@ -668,9 +721,11 @@ const MiniStatCard = ({ label, value, icon: Icon, color }) => {
       </div>
     </div>
   );
-};
+});
 
-const MetricCard = ({ icon: Icon, label, value, description, color }) => {
+MiniStatCard.displayName = 'MiniStatCard';
+
+const MetricCard = memo(({ icon: Icon, label, value, description, color }) => {
   const colors = {
     blue: 'from-blue-500 to-blue-600',
     green: 'from-green-500 to-green-600',
@@ -687,28 +742,68 @@ const MetricCard = ({ icon: Icon, label, value, description, color }) => {
       <div className="text-xs text-gray-600">{description}</div>
     </div>
   );
-};
+});
 
-const ProPendingCard = ({ pro, onVerify, onViewDetails }) => {
+MetricCard.displayName = 'MetricCard';
+
+const DogListItem = memo(({ dog }) => {
+  const [imageLoaded, setImageLoaded] = useState(false);
+
+  return (
+    <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-smooth">
+      {dog.photo_url ? (
+        <div className="w-10 h-10 rounded-lg overflow-hidden bg-gray-200 flex-shrink-0">
+          {!imageLoaded && <div className="w-full h-full bg-gray-200 animate-pulse" />}
+          <img 
+            src={getOptimizedImageUrl(dog.photo_url, 100, 60)} 
+            alt={dog.name} 
+            loading="lazy"
+            onLoad={() => setImageLoaded(true)}
+            className={`w-full h-full object-cover ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+          />
+        </div>
+      ) : (
+        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center text-white font-bold flex-shrink-0">
+          {dog.name?.charAt(0).toUpperCase()}
+        </div>
+      )}
+      <div className="flex-1 min-w-0">
+        <p className="font-medium text-gray-900 truncate">{dog.name}</p>
+        <p className="text-xs text-gray-600 truncate">{dog.breed}</p>
+      </div>
+      <span className={`px-2 py-1 text-xs font-medium rounded-full flex-shrink-0 ${
+        dog.adoption_status === 'available' 
+          ? 'bg-green-100 text-green-700' 
+          : 'bg-gray-100 text-gray-700'
+      }`}>
+        {dog.adoption_status === 'available' ? 'Dispo' : 'Adopté'}
+      </span>
+    </div>
+  );
+});
+
+DogListItem.displayName = 'DogListItem';
+
+const ProPendingCard = memo(({ pro, onVerify, onViewDetails }) => {
   return (
     <div className="bg-orange-50 border border-orange-200 rounded-xl p-4">
       <div className="flex items-start justify-between mb-3">
-        <div>
-          <h4 className="font-semibold text-gray-900">{pro.organization_name || 'N/A'}</h4>
-          <p className="text-sm text-gray-600">{pro.organization_type || 'N/A'}</p>
+        <div className="flex-1 min-w-0">
+          <h4 className="font-semibold text-gray-900 truncate">{pro.organization_name || 'N/A'}</h4>
+          <p className="text-sm text-gray-600 truncate">{pro.organization_type || 'N/A'}</p>
         </div>
-        <span className="px-2 py-1 bg-orange-100 text-orange-700 text-xs font-medium rounded-full">
+        <span className="px-2 py-1 bg-orange-100 text-orange-700 text-xs font-medium rounded-full whitespace-nowrap ml-2">
           En attente
         </span>
       </div>
       <div className="space-y-1 mb-3 text-sm text-gray-600">
         <div className="flex items-center gap-2">
-          <Mail size={14} />
-          {pro.email || 'N/A'}
+          <Mail size={14} className="flex-shrink-0" />
+          <span className="truncate">{pro.email || 'N/A'}</span>
         </div>
         <div className="flex items-center gap-2">
-          <MapPin size={14} />
-          {pro.city || 'N/A'}
+          <MapPin size={14} className="flex-shrink-0" />
+          <span className="truncate">{pro.city || 'N/A'}</span>
         </div>
       </div>
       <div className="flex gap-2">
@@ -721,16 +816,18 @@ const ProPendingCard = ({ pro, onVerify, onViewDetails }) => {
         </button>
         <button
           onClick={onViewDetails}
-          className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-smooth"
+          className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-smooth flex-shrink-0"
         >
           <Eye size={16} />
         </button>
       </div>
     </div>
   );
-};
+});
 
-const ProDetailsModal = ({ pro, onClose, onVerify }) => {
+ProPendingCard.displayName = 'ProPendingCard';
+
+const ProDetailsModal = memo(({ pro, onClose, onVerify }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
       <div className="bg-white rounded-2xl shadow-xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
@@ -738,7 +835,7 @@ const ProDetailsModal = ({ pro, onClose, onVerify }) => {
           <h3 className="text-2xl font-heading font-bold text-gray-900">
             Détails du compte professionnel
           </h3>
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full">
+          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-smooth">
             <X size={20} />
           </button>
         </div>
@@ -788,6 +885,8 @@ const ProDetailsModal = ({ pro, onClose, onVerify }) => {
       </div>
     </div>
   );
-};
+});
+
+ProDetailsModal.displayName = 'ProDetailsModal';
 
 export default AdminDashboard;
