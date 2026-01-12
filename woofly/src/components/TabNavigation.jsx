@@ -48,8 +48,15 @@ const TabNavigation = () => {
 
   return (
     <div className="sticky top-[73px] z-40 bg-white border-b border-gray-200">
-      <div className="max-w-screen-xl mx-auto">
-        <div className="flex overflow-x-auto overflow-y-hidden scrollbar-hide scroll-smooth" style={{ WebkitOverflowScrolling: 'touch' }}>
+      {/* Suppression de max-w-screen-xl pour permettre le scroll */}
+      <div className="w-full">
+        <div 
+          className="flex overflow-x-auto overflow-y-hidden scrollbar-hide scroll-smooth px-2" 
+          style={{ 
+            WebkitOverflowScrolling: 'touch',
+            scrollSnapType: 'x proximity'
+          }}
+        >
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const active = isActive(tab.path);
@@ -66,6 +73,7 @@ const TabNavigation = () => {
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                   }
                 `}
+                style={{ scrollSnapAlign: 'start' }}
               >
                 <Icon size={20} />
                 <span className="whitespace-nowrap">{tab.label}</span>
@@ -81,6 +89,8 @@ const TabNavigation = () => {
               </button>
             );
           })}
+          {/* Padding à droite pour faciliter le scroll jusqu'au bout */}
+          <div className="flex-shrink-0 w-4" />
         </div>
       </div>
     </div>
