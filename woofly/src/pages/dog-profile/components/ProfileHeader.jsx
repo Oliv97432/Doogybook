@@ -302,26 +302,6 @@ export default function ProfileHeader({ profile, onEdit }) {
           )}
         </div>
       </div>
-
-      {/* Card 4 : Emplacement AdSense */}
-      <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-3xl shadow-sm p-6 border-2 border-dashed border-blue-200">
-        <div className="flex flex-col items-center justify-center h-full min-h-[200px]">
-          <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
-            <span className="text-3xl">📢</span>
-          </div>
-          <h3 className="font-bold text-lg text-gray-900 mb-2">
-            Espace publicitaire
-          </h3>
-          <p className="text-sm text-gray-600 text-center mb-4">
-            Ici sera affichée une publicité AdSense
-          </p>
-          <div className="bg-white/50 backdrop-blur-sm rounded-xl px-4 py-2 border border-blue-200">
-            <p className="text-xs font-mono text-gray-500">
-              300x250 • AdSense
-            </p>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
