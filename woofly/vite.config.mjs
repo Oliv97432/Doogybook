@@ -37,7 +37,7 @@ export default defineConfig({
     assetsInlineLimit: 4096,
     cssMinify: true,
     esbuild: {
-      drop: ['console', 'debugger'],
+      drop: ['debugger'],  // ✅ Garde console pour debugging
       legalComments: 'none'
     },
     rollupOptions: {
