@@ -327,7 +327,7 @@ const ProDashboard = () => {
       
       const { data: accountByUserId, error: error1 } = await supabase
         .from('professional_accounts')
-        .select('id, organization_name, account_type, is_verified, is_active, email, user_id')
+        .select('id, organization_name, organization_type, is_verified, is_active, email, user_id')
         .eq('user_id', user.id)
         .maybeSingle();
 
@@ -339,7 +339,7 @@ const ProDashboard = () => {
         // FALLBACK: Chercher par email
         const { data: accountByEmail, error: error2 } = await supabase
           .from('professional_accounts')
-          .select('id, organization_name, account_type, is_verified, is_active, email, user_id')
+          .select('id, organization_name, organization_type, is_verified, is_active, email, user_id')
           .eq('contact_email', user.email)
           .maybeSingle();
 
