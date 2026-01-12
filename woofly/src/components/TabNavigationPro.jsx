@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, Grid, List, Users, Send, PawPrint } from 'lucide-react';
+import { Home, Grid, List, Users, Send, Instagram } from 'lucide-react';
 
 const TabNavigationPro = () => {
   const navigate = useNavigate();
@@ -36,6 +36,12 @@ const TabNavigationPro = () => {
       icon: Send,
       label: 'Candidatures',
       matchPaths: ['/pro/applications']
+    },
+    {
+      path: '/pro/instagram-generator',
+      icon: Instagram,
+      label: 'Instagram',
+      matchPaths: ['/pro/instagram-generator']
     }
   ];
 
