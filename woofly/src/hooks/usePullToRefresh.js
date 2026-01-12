@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
 const usePullToRefresh = (onRefresh) => {
   const [isPulling, setIsPulling] = useState(false);
