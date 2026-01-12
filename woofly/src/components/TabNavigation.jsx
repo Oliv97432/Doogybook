@@ -49,7 +49,7 @@ const TabNavigation = () => {
   return (
     <div className="sticky top-[73px] z-40 bg-white border-b border-gray-200">
       <div className="max-w-screen-xl mx-auto">
-        <div className="flex overflow-x-auto scrollbar-hide">
+        <div className="flex overflow-x-auto overflow-y-hidden scrollbar-hide scroll-smooth" style={{ WebkitOverflowScrolling: 'touch' }}>
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const active = isActive(tab.path);
