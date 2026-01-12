@@ -4,11 +4,14 @@ import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 
 const DashboardRedirect = () => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [checking, setChecking] = useState(true);
 
   useEffect(() => {
+    // Attendre que le chargement d'auth soit terminé
+    if (loading) return;
+    
     const checkAccountType = async () => {
       if (!user) {
         navigate('/login');
@@ -50,7 +53,7 @@ const DashboardRedirect = () => {
     };
 
     checkAccountType();
-  }, [user, navigate]);
+  }, [user, loading, navigate]);
 
   if (checking) {
     return (
