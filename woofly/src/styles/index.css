@@ -79,16 +79,35 @@ body {
   display: none;
 }
 
-/* Amélioration du scroll horizontal sur mobile */
+/* Force le scroll horizontal sur mobile - IMPORTANT */
 @media (max-width: 768px) {
-  [class*="overflow-x-auto"] {
-    -webkit-overflow-scrolling: touch;
+  [class*="overflow-x-auto"],
+  [class*="overflow-x-scroll"] {
+    -webkit-overflow-scrolling: touch !important;
     scroll-behavior: smooth;
+    touch-action: pan-x !important;
+    overscroll-behavior-x: contain !important;
+  }
+  
+  /* Assure que le flex container permet le scroll */
+  .flex.overflow-x-auto,
+  .flex.overflow-x-scroll {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: scroll !important;
+    overflow-y: hidden !important;
   }
   
   /* Padding pour faciliter le scroll */
-  .flex.overflow-x-auto {
+  .flex.overflow-x-auto,
+  .flex.overflow-x-scroll {
     padding-left: 8px;
     padding-right: 8px;
+  }
+  
+  /* Force les enfants à ne pas rétrécir */
+  .flex.overflow-x-auto > *,
+  .flex.overflow-x-scroll > * {
+    flex-shrink: 0 !important;
   }
 }
