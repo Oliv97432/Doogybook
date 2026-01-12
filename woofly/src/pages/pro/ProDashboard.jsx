@@ -315,11 +315,16 @@ const ProDashboard = () => {
     try {
       const { data: account, error } = await supabase
         .from('professional_accounts')
-        .select('id, organization_name, account_type, is_verified')
+        .select('id, organization_name, account_type, is_verified, is_active')
         .eq('user_id', user.id)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Compte pro non trouvé:', error);
+        navigate('/pro/register');
+        return;
+      }
+      
       setProAccount(account);
       
       await Promise.all([
