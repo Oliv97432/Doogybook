@@ -17,7 +17,7 @@ export default defineConfig({
     }
   },
   build: {
-    minify: 'esbuild',  // ✅ CHANGÉ ICI : esbuild au lieu de terser
+    minify: 'esbuild',
     chunkSizeWarningLimit: 500,
     sourcemap: false,
     cssCodeSplit: true,
@@ -26,9 +26,10 @@ export default defineConfig({
       output: {
         manualChunks: {
           'vendor-react': ['react', 'react-dom', 'react-router-dom'],
-          'vendor-ui': ['lucide-react'],
+          'vendor-ui': ['lucide-react', 'framer-motion'],
           'vendor-supabase': ['@supabase/supabase-js'],
-          'vendor-pdf': ['jspdf']
+          'vendor-charts': ['recharts', 'd3'],
+          'vendor-pdf': ['jspdf', 'html2canvas']
         },
         assetFileNames: (assetInfo) => {
           let extType = assetInfo.name.split('.').at(1);
