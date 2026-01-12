@@ -5,14 +5,7 @@ import path from 'path';
 
 export default defineConfig({
   plugins: [
-    react({
-      // Optimisations React
-      babel: {
-        plugins: [
-          ['@babel/plugin-transform-react-jsx', { runtime: 'automatic' }]
-        ]
-      }
-    }),
+    react(),
     viteCompression({
       algorithm: 'gzip',
       ext: '.gz',
