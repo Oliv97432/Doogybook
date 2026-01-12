@@ -320,20 +320,47 @@ const ProDashboard = () => {
 
   const fetchProAccount = async () => {
     try {
-      console.log('ProDashboard: Fetching pro account for user:', user.id);
+      console.log('ProDashboard: Fetching pro account for user:', user.id, user.email);
       
-      const { data: account, error } = await supabase
+      // D'abord chercher par user_id
+      let account = null;
+      
+      const { data: accountByUserId, error: error1 } = await supabase
         .from('professional_accounts')
-        .select('id, organization_name, account_type, is_verified, is_active')
+        .select('id, organization_name, account_type, is_verified, is_active, contact_email, user_id')
         .eq('user_id', user.id)
-        .maybeSingle(); // Utiliser maybeSingle pour éviter les erreurs si pas de résultat
+        .maybeSingle();
 
-      console.log('ProDashboard: Pro account result:', { account, error });
+      console.log('ProDashboard: Account by user_id:', { accountByUserId, error1 });
 
-      if (error) {
-        console.error('ProDashboard: Erreur requête:', error);
-        navigate('/pro/register');
-        return;
+      if (accountByUserId) {
+        account = accountByUserId;
+      } else {
+        // FALLBACK: Chercher par email
+        const { data: accountByEmail, error: error2 } = await supabase
+          .from('professional_accounts')
+          .select('id, organization_name, account_type, is_verified, is_active, contact_email, user_id')
+          .eq('contact_email', user.email)
+          .maybeSingle();
+
+        console.log('ProDashboard: Account by email:', { accountByEmail, error2 });
+
+        if (accountByEmail) {
+          account = accountByEmail;
+          
+          // Mettre à jour le user_id si différent
+          if (accountByEmail.user_id !== user.id) {
+            console.log('ProDashboard: Updating user_id in professional_accounts');
+            const { error: updateError } = await supabase
+              .from('professional_accounts')
+              .update({ user_id: user.id })
+              .eq('id', accountByEmail.id);
+              
+            if (updateError) {
+              console.error('ProDashboard: Error updating user_id:', updateError);
+            }
+          }
+        }
       }
       
       if (!account) {
