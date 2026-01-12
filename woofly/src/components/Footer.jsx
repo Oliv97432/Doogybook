@@ -6,6 +6,18 @@ const Footer = () => {
   const location = useLocation();
   const currentYear = new Date().getFullYear();
 
+  // Pages où le footer mobile ne doit PAS s'afficher
+  const pagesWithoutFooter = [
+    '/recipes',
+    '/social-feed',
+    '/forum',
+    '/daily-tip',
+    '/dog-profile'
+  ];
+
+  // Vérifier si on est sur une page qui ne doit pas avoir de footer
+  const hideFooter = pagesWithoutFooter.some(page => location.pathname.includes(page));
+
   const navItems = [
     {
       path: '/dog-profile',
