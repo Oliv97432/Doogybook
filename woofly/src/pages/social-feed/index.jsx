@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { 
   Heart, MessageCircle, TrendingUp, Plus, Share2, Send, 
   Bell, Sparkles, Users as UsersIcon,
-  Hash, UserPlus, Settings as SettingsIcon, RefreshCw
+  Hash, UserPlus, Settings as SettingsIcon, RefreshCw, Loader2
 } from 'lucide-react';
 import { useNotifications } from '../../hooks/useNotifications';
 import useInfiniteScroll from '../../hooks/useInfiniteScroll';
