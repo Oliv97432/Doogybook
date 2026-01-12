@@ -2,6 +2,7 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import './styles/tailwind.css';
 import './styles/index.css';
+import './styles/contrast-fixes.css';
 import App from './App';
 
 // Enregistrement du Service Worker pour PWA
