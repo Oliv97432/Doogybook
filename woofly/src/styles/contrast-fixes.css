@@ -1,0 +1,73 @@
+/* Améliorations de contraste pour l'accessibilité */
+
+/* Boutons principaux - amélioration du contraste */
+.bg-blue-500 {
+  background-color: #2563eb !important; /* blue-600 plus foncé pour meilleur contraste */
+}
+
+.hover\:bg-blue-600:hover {
+  background-color: #1e40af !important; /* blue-700 encore plus foncé */
+}
+
+/* Boutons avec texte blanc - assurer contraste minimum 4.5:1 */
+.bg-blue-500.text-white,
+button.bg-blue-500 {
+  background-color: #1e40af !important; /* blue-700 - ratio 4.6:1 avec blanc */
+}
+
+/* Liens et textes - améliorer la lisibilité */
+.text-blue-500 {
+  color: #1e40af !important; /* blue-700 pour meilleur contraste sur fond clair */
+}
+
+.text-blue-600 {
+  color: #1e3a8a !important; /* blue-900 pour contraste optimal */
+}
+
+/* Arrière-plans et premiers plans */
+.bg-gray-100 {
+  background-color: #f3f4f6 !important;
+}
+
+.text-gray-600 {
+  color: #4b5563 !important; /* gray-700 pour meilleur contraste */
+}
+
+.text-gray-500 {
+  color: #374151 !important; /* gray-800 pour meilleur contraste */
+}
+
+/* Boutons d'action - contraste WCAG AA minimum */
+button:not(.bg-transparent):not(.bg-white) {
+  min-height: 44px; /* Taille minimum tactile */
+}
+
+button.text-white:not(.bg-transparent) {
+  background-color: #1e40af !important; /* Assure contraste 4.5:1 minimum */
+}
+
+button.text-white:not(.bg-transparent):hover {
+  background-color: #1e3a8a !important;
+}
+
+/* Correction spécifique pour les boutons "Voir le profil" */
+.py-2.bg-blue-500.text-white,
+button[class*="bg-blue-500"][class*="text-white"] {
+  background-color: #1d4ed8 !important; /* blue-700 */
+  color: #ffffff !important;
+  font-weight: 600 !important; /* Améliore la lisibilité */
+}
+
+/* Focus visible pour l'accessibilité clavier */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible {
+  outline: 3px solid #2563eb !important;
+  outline-offset: 2px !important;
+}
+
+/* Textes sur fonds colorés */
+.bg-gradient-to-r *,
+.bg-gradient-to-br * {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); /* Légère ombre pour meilleure lisibilité */
+}
