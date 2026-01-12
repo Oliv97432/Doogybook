@@ -41,34 +41,36 @@ const Footer = () => {
 
   return (
     <>
-      {/* Navigation mobile (bottom bar) - Visible uniquement sur mobile */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 md:hidden z-50">
-        <div className="flex items-center justify-around h-16 max-w-screen-xl mx-auto px-2">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={`flex flex-col items-center justify-center flex-1 h-full transition-colors ${
-                  item.isActive
-                    ? 'text-blue-600'
-                    : 'text-gray-600 hover:text-blue-500'
-                }`}
-              >
-                <Icon
-                  size={24}
-                  strokeWidth={item.isActive ? 2.5 : 2}
-                  className="mb-1"
-                />
-                <span className={`text-xs font-medium ${item.isActive ? 'font-semibold' : ''}`}>
-                  {item.label}
-                </span>
-              </Link>
-            );
-          })}
-        </div>
-      </nav>
+      {/* Navigation mobile (bottom bar) - Visible uniquement sur mobile ET sur certaines pages */}
+      {!hideFooter && (
+        <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 md:hidden z-50">
+          <div className="flex items-center justify-around h-16 max-w-screen-xl mx-auto px-2">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className={`flex flex-col items-center justify-center flex-1 h-full transition-colors ${
+                    item.isActive
+                      ? 'text-blue-600'
+                      : 'text-gray-600 hover:text-blue-500'
+                  }`}
+                >
+                  <Icon
+                    size={24}
+                    strokeWidth={item.isActive ? 2.5 : 2}
+                    className="mb-1"
+                  />
+                  <span className={`text-xs font-medium ${item.isActive ? 'font-semibold' : ''}`}>
+                    {item.label}
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
+        </nav>
+      )}
 
       {/* Footer informationnel (desktop) - Visible uniquement sur desktop */}
       <footer className="hidden md:block bg-gray-100 border-t border-gray-200 mt-auto py-8 px-4">
