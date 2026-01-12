@@ -1,82 +1,137 @@
-// Service Worker pour PWA et cache optimisé
-const CACHE_NAME = 'doogybook-v1';
-const urlsToCache = [
+// Service Worker pour Woofly PWA
+const CACHE_NAME = 'woofly-v1.0.0';
+const RUNTIME_CACHE = 'woofly-runtime-v1.0.0';
+
+// Fichiers à mettre en cache lors de l'installation
+const PRECACHE_ASSETS = [
   '/',
   '/index.html',
   '/manifest.json',
-  // Ajouter les assets critiques ici
+  '/icons/icon-192x192.png',
+  '/icons/icon-512x512.png'
 ];
 
-// Installation du service worker
+// Installation du Service Worker
 self.addEventListener('install', (event) => {
+  console.log('[SW] Installation...');
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(urlsToCache))
+      .then((cache) => {
+        console.log('[SW] Précache des assets');
+        return cache.addAll(PRECACHE_ASSETS);
+      })
+      .then(() => self.skipWaiting())
   );
 });
 
 // Activation et nettoyage des anciens caches
 self.addEventListener('activate', (event) => {
+  console.log('[SW] Activation...');
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
+        cacheNames
+          .filter((cacheName) => {
+            return cacheName !== CACHE_NAME && cacheName !== RUNTIME_CACHE;
+          })
+          .map((cacheName) => {
+            console.log('[SW] Suppression ancien cache:', cacheName);
             return caches.delete(cacheName);
-          }
-        })
+          })
       );
-    })
+    }).then(() => self.clients.claim())
   );
 });
 
-// Stratégie de cache : Network First pour les API, Cache First pour les assets
+// Stratégie de cache
 self.addEventListener('fetch', (event) => {
-  const request = event.request;
+  const { request } = event;
   const url = new URL(request.url);
 
-  // Stratégie différente selon le type de requête
-  if (url.origin === location.origin) {
-    // Requêtes same-origin : Cache First
+  // Ignorer les requêtes non-GET
+  if (request.method !== 'GET') {
+    return;
+  }
+
+  // Ignorer les requêtes Chrome extensions et autres protocoles
+  if (!url.protocol.startsWith('http')) {
+    return;
+  }
+
+  // Stratégie Network First pour Supabase API
+  if (url.hostname.includes('supabase.co')) {
     event.respondWith(
-      caches.match(request).then((response) => {
-        return response || fetch(request);
-      })
-    );
-  } else if (url.hostname.includes('supabase') || url.pathname.includes('/api/')) {
-    // API : Network First
-    event.respondWith(
-      fetch(request).catch(() => {
-        return caches.match(request);
-      })
-    );
-  } else if (request.url.includes('fonts.googleapis.com') || request.url.includes('fonts.gstatic.com')) {
-    // Fonts : Cache First avec longue durée
-    event.respondWith(
-      caches.match(request).then((response) => {
-        if (response) {
+      fetch(request)
+        .then((response) => {
+          // Clone la réponse
+          const responseClone = response.clone();
+          // Mise en cache si succès
+          if (response.status === 200) {
+            caches.open(RUNTIME_CACHE).then((cache) => {
+              cache.put(request, responseClone);
+            });
+          }
           return response;
+        })
+        .catch(() => {
+          // Fallback vers le cache en cas d'échec
+          return caches.match(request);
+        })
+    );
+    return;
+  }
+
+  // Stratégie Cache First pour les assets statiques
+  if (
+    request.destination === 'image' ||
+    request.destination === 'style' ||
+    request.destination === 'script' ||
+    request.destination === 'font'
+  ) {
+    event.respondWith(
+      caches.match(request).then((cachedResponse) => {
+        if (cachedResponse) {
+          return cachedResponse;
         }
         return fetch(request).then((response) => {
-          return caches.open(CACHE_NAME).then((cache) => {
-            cache.put(request, response.clone());
-            return response;
+          const responseClone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(request, responseClone);
           });
+          return response;
         });
       })
     );
-  } else {
-    // Autres ressources externes : Stale While Revalidate
-    event.respondWith(
-      caches.open(CACHE_NAME).then((cache) => {
-        return cache.match(request).then((response) => {
-          const fetchPromise = fetch(request).then((networkResponse) => {
-            cache.put(request, networkResponse.clone());
-            return networkResponse;
-          });
-          return response || fetchPromise;
+    return;
+  }
+
+  // Stratégie Network First pour le reste (HTML, navigation)
+  event.respondWith(
+    fetch(request)
+      .then((response) => {
+        const responseClone = response.clone();
+        caches.open(RUNTIME_CACHE).then((cache) => {
+          cache.put(request, responseClone);
+        });
+        return response;
+      })
+      .catch(() => {
+        return caches.match(request).then((cachedResponse) => {
+          if (cachedResponse) {
+            return cachedResponse;
+          }
+          // Page offline de fallback
+          if (request.destination === 'document') {
+            return caches.match('/');
+          }
         });
       })
-    );
+  );
+});
+
+// Gestion des messages du client
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
   }
 });
