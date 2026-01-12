@@ -422,56 +422,6 @@ const SocialFeed = () => {
     }
   };
   
-  const fetchPosts = async () => {
-    setLoading(true);
-    try {
-      let query = supabase
-        .from('forum_posts')
-        .select('*')
-        .is('forum_id', null)
-        .eq('is_hidden', false)
-        .order('created_at', { ascending: false })
-        .limit(50);
-      
-      if (feedType === 'following' && followedUsers.size > 0) {
-        query = query.in('user_id', Array.from(followedUsers));
-      }
-      
-      if (selectedTag !== 'all') {
-        query = query.contains('tags', [selectedTag]);
-      }
-      
-      const { data: postsData, error: postsError } = await query;
-      
-      if (postsError) throw postsError;
-      
-      const postsWithAuthors = await Promise.all(
-        (postsData || []).map(async (post) => {
-          try {
-            const { data } = await supabase
-              .from('user_profiles')
-              .select('*')
-              .eq('id', post.user_id)
-              .single();
-            
-            return {
-              ...post,
-              author: data
-            };
-          } catch (err) {
-            return post;
-          }
-        })
-      );
-      
-      setPosts(postsWithAuthors);
-    } catch (error) {
-      console.error('Erreur chargement posts:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-  
   const handleProfileChange = (profile) => {
     setCurrentProfile(profile);
     localStorage.setItem('currentDogProfile', JSON.stringify(profile));
