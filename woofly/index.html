@@ -2,103 +2,90 @@
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="/logo.png" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     
-    <!-- Viewport optimisé -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    
-    <title>Doogybook - Le réseau social des chiens</title>
-    <meta name="description" content="Doogybook - Le réseau social qui connecte les propriétaires de chiens. Partagez, échangez et découvrez une communauté passionnée." />
-    
-    <!-- ✅ OPTIMISATION 1 : DNS Prefetch pour domaines externes -->
-    <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
-    <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
-    <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
-    <link rel="dns-prefetch" href="https://static.rocket.new" />
-    <link rel="dns-prefetch" href="https://malcggmelsviujxawpwr.supabase.co" />
-    
-    <!-- ✅ OPTIMISATION 2 : Preconnect pour Google Fonts (CRITIQUE) -->
+    <!-- Preconnect critiques -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    
-    <!-- ✅ OPTIMISATION 3 : Preconnect Supabase (économise 320ms LCP) -->
     <link rel="preconnect" href="https://malcggmelsviujxawpwr.supabase.co" />
     
-    <!-- ✅ OPTIMISATION 4 : Charger SEULEMENT Inter (400,500,600,700) -->
-    <link 
-      rel="stylesheet" 
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
-      media="print" 
-      onload="this.media='all'"
-    />
-    <noscript>
-      <link 
-        rel="stylesheet" 
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
-      />
-    </noscript>
+    <!-- DNS Prefetch -->
+    <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
     
-    <!-- ✅ OPTIMISATION 5 : Preload de la font critique -->
-    <link 
-      rel="preload" 
-      as="style" 
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
-    />
+    <!-- Meta SEO -->
+    <title>Woofly - Carnet de Santé Digital pour Chiens</title>
+    <meta name="description" content="Gérez facilement la santé de votre chien avec Woofly : vaccinations, traitements, poids, rappels automatiques et bien plus !" />
+    <meta name="keywords" content="chien, santé, carnet, vaccination, vétérinaire, rappels, adoption" />
+    <meta name="author" content="Woofly" />
     
-    <!-- Script pour empêcher le zoom sur mobile -->
-    <script>
-      (function() {
-        // Empêcher le zoom avec plusieurs doigts
-        document.addEventListener('touchstart', function(e) {
-          if (e.touches.length > 1) {
-            e.preventDefault();
-          }
-        }, { passive: false });
-        // Empêcher le double-tap zoom
-        let lastTouchEnd = 0;
-        document.addEventListener('touchend', function(e) {
-          const now = Date.now();
-          if (now - lastTouchEnd <= 300) {
-            e.preventDefault();
-          }
-          lastTouchEnd = now;
-        }, { passive: false });
-        // Empêcher le zoom avec Ctrl+molette
-        document.addEventListener('wheel', function(e) {
-          if (e.ctrlKey) {
-            e.preventDefault();
-          }
-        }, { passive: false });
-      })();
-    </script>
-    
-    <!-- ✅ OPTIMISATION 6 : AdSense avec defer -->
-    <script defer src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6868379943051269" crossorigin="anonymous"></script>
-    
-    <!-- ✅ OPTIMISATION 7 : Scripts Rocket avec defer (non bloquants) -->
-    <script type="module" defer src="https://static.rocket.new/rocket-web.js?_cfg=https%3A%2F%2FDoogybook5761back.builtwithrocket.new&_be=https%3A%2F%2Fapplication.rocket.new&_v=0.1.10"></script>
-    <script type="module" defer src="https://static.rocket.new/rocket-shot.js?v=0.0.1"></script>
-    
-    <!-- ✅ OPTIMISATION 8 : Meta tags pour partage social -->
-    <meta property="og:title" content="Doogybook - Le réseau social des chiens" />
-    <meta property="og:description" content="Le réseau social qui connecte les propriétaires de chiens. Partagez, échangez et découvrez une communauté passionnée." />
-    <meta property="og:image" content="/og-image.jpg" />
-    <meta property="og:url" content="https://www.doogybook.com" />
+    <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Doogybook - Le réseau social des chiens" />
-    <meta name="twitter:description" content="Le réseau social qui connecte les propriétaires de chiens." />
-    <meta name="twitter:image" content="/og-image.jpg" />
+    <meta property="og:url" content="https://www.doogybook.com/" />
+    <meta property="og:title" content="Woofly - Carnet de Santé Digital pour Chiens" />
+    <meta property="og:description" content="Gérez facilement la santé de votre chien avec Woofly" />
+    <meta property="og:image" content="https://www.doogybook.com/og-image.jpg" />
     
-    <!-- ✅ OPTIMISATION 9 : Preload critiques -->
-    <link rel="preload" href="/src/index.jsx" as="script" />
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://www.doogybook.com/" />
+    <meta property="twitter:title" content="Woofly - Carnet de Santé Digital pour Chiens" />
+    <meta property="twitter:description" content="Gérez facilement la santé de votre chien avec Woofly" />
+    <meta property="twitter:image" content="https://www.doogybook.com/og-image.jpg" />
     
-    <!-- ✅ OPTIMISATION 10 : Security headers -->
+    <!-- PWA -->
+    <meta name="theme-color" content="#3B82F6" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.json" />
+    
+    <!-- Security -->
     <meta http-equiv="X-Content-Type-Options" content="nosniff" />
-    <meta http-equiv="X-XSS-Protection" content="1; mode=block" />
+    <meta name="referrer" content="origin-when-cross-origin" />
+    
+    <!-- Google Fonts - Optimisé -->
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" as="style" />
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
+    
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Woofly",
+      "description": "Carnet de santé digital pour chiens",
+      "url": "https://www.doogybook.com",
+      "applicationCategory": "HealthApplication",
+      "operatingSystem": "Any",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "EUR"
+      }
+    }
+    </script>
   </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="/src/index.jsx"></script>
+    <script type="module" src="/src/main.jsx"></script>
+    
+    <!-- Google AdSense - Chargé en différé -->
+    <script>
+      window.addEventListener('load', () => {
+        setTimeout(() => {
+          const script = document.createElement('script');
+          script.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6863746476845611';
+          script.async = true;
+          script.crossOrigin = 'anonymous';
+          document.head.appendChild(script);
+        }, 3000);
+      });
+    </script>
   </body>
 </html>
+```
+
+---
+
+## 📁 FICHIER 6 : `.npmrc`
+```
+legacy-peer-deps=true
