@@ -1,111 +1,101 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { getOptimizedImageUrl } from '../utils/imageOptimizer';
 
+/**
+ * 🖼️ Composant Image Optimisé
+ * - Lazy loading natif
+ * - Placeholder pendant chargement
+ * - Intersection Observer
+ * - Gestion erreurs
+ * - Support WebP
+ */
 const OptimizedImage = ({ 
   src, 
   alt, 
-  className = '', 
-  width, 
-  height, 
-  loading = 'lazy',
-  sizes = '(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw',
-  placeholder = 'blur',
+  className = '',
+  width = 800,
   quality = 75,
+  placeholder = true,
+  eager = false,
+  onLoad,
+  onError,
   ...props 
 }) => {
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [hasError, setHasError] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
+  const [isVisible, setIsVisible] = useState(eager);
   const imgRef = useRef(null);
 
+  // Intersection Observer pour lazy loading
   useEffect(() => {
-    const img = imgRef.current;
-    if (!img) return;
+    if (eager || !imgRef.current) return;
 
-    // Observer pour le chargement progressif
     const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            // Charger l'image quand elle devient visible
-            if (img.dataset.src) {
-              img.src = img.dataset.src;
-              img.removeAttribute('data-src');
-            }
-          }
-        });
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
       },
-      { rootMargin: '50px' } // Commencer à charger 50px avant
+      {
+        rootMargin: '50px', // Commence à charger 50px avant d'être visible
+        threshold: 0.01
+      }
     );
 
-    observer.observe(img);
+    observer.observe(imgRef.current);
 
-    return () => observer.disconnect();
-  }, []);
+    return () => {
+      if (imgRef.current) {
+        observer.unobserve(imgRef.current);
+      }
+    };
+  }, [eager]);
 
-  const handleLoad = () => {
-    setIsLoaded(true);
+  const handleLoad = (e) => {
+    setImageLoaded(true);
+    onLoad?.(e);
   };
 
-  const handleError = () => {
-    setHasError(true);
+  const handleError = (e) => {
+    setImageError(true);
+    console.error('Erreur chargement image:', src);
+    onError?.(e);
   };
 
-  // Générer un placeholder low-quality
-  const generatePlaceholder = (src) => {
-    if (!src || placeholder !== 'blur') return '';
-    
-    // Pour les images externes, on utilise un placeholder simple
-    return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2Y0ZjRmNCIvPjx0ZXh0IHg9IjUwIiB5PSI1NSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE0IiBmaWxsPSIjOTk5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5Mb2FkaW5nLi4uPC90ZXh0Pjwvc3ZnPg==';
-  };
-
-  if (hasError) {
-    return (
-      <div 
-        className={`bg-gray-200 flex items-center justify-center ${className}`}
-        style={{ width, height }}
-        {...props}
-      >
-        <span className="text-gray-500 text-sm">Image non disponible</span>
-      </div>
-    );
-  }
+  const optimizedSrc = getOptimizedImageUrl(src, { width, quality });
 
   return (
-    <div className={`relative overflow-hidden ${className}`} style={{ width, height }}>
-      {/* Placeholder */}
-      {!isLoaded && (
-        <div 
-          className="absolute inset-0 bg-gray-100 animate-pulse"
-          style={{ 
-            backgroundImage: `url(${generatePlaceholder(src)})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            filter: 'blur(20px)',
-            transform: 'scale(1.1)'
-          }}
+    <div ref={imgRef} className={`relative w-full h-full ${className}`}>
+      {/* Placeholder pendant chargement */}
+      {placeholder && !imageLoaded && !imageError && (
+        <div className="absolute inset-0 bg-gray-200 animate-pulse" />
+      )}
+
+      {/* Image principale */}
+      {isVisible && !imageError && (
+        <img
+          src={optimizedSrc}
+          alt={alt}
+          loading={eager ? 'eager' : 'lazy'}
+          decoding="async"
+          onLoad={handleLoad}
+          onError={handleError}
+          className={`w-full h-full object-cover transition-opacity duration-300 ${
+            imageLoaded ? 'opacity-100' : 'opacity-0'
+          }`}
+          {...props}
         />
       )}
-      
-      {/* Image optimisée */}
-      <img
-        ref={imgRef}
-        data-src={src}
-        alt={alt}
-        width={width}
-        height={height}
-        loading={loading}
-        sizes={sizes}
-        onLoad={handleLoad}
-        onError={handleError}
-        className={`transition-opacity duration-300 ${
-          isLoaded ? 'opacity-100' : 'opacity-0'
-        } w-full h-full object-cover`}
-        {...props}
-      />
-      
-      {/* Indicateur de chargement */}
-      {!isLoaded && (
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+
+      {/* Fallback en cas d'erreur */}
+      {imageError && (
+        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-blue-100 to-purple-100">
+          <div className="text-center">
+            <span className="text-4xl font-bold text-primary/30">
+              {alt?.charAt(0)?.toUpperCase() || '🐕'}
+            </span>
+          </div>
         </div>
       )}
     </div>
