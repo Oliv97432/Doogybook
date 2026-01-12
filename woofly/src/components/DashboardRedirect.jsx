@@ -26,7 +26,7 @@ const DashboardRedirect = () => {
           .from('user_profiles')
           .select('is_admin, email, id')
           .eq('email', user.email)
-          .single();
+          .maybeSingle();
 
         console.log('DashboardRedirect: Profile result:', { profile, profileError });
 
@@ -36,16 +36,44 @@ const DashboardRedirect = () => {
           return;
         }
 
-        // ÉTAPE 2 : Vérifier si l'utilisateur a un compte pro
-        const { data: proAccount, error: proError } = await supabase
+        // ÉTAPE 2 : Vérifier si l'utilisateur a un compte pro (par user_id)
+        let proAccount = null;
+        
+        const { data: proByUserId, error: proError1 } = await supabase
           .from('professional_accounts')
-          .select('id, is_active')
+          .select('id, is_active, user_id')
           .eq('user_id', user.id)
-          .maybeSingle(); // Utiliser maybeSingle au lieu de single pour éviter les erreurs
+          .maybeSingle();
 
-        console.log('DashboardRedirect: Pro account result:', { proAccount, proError });
+        console.log('DashboardRedirect: Pro account by user_id:', { proByUserId, proError1 });
 
-        // Si un compte pro existe (actif ou non), rediriger vers le dashboard pro
+        if (proByUserId) {
+          proAccount = proByUserId;
+        } else {
+          // FALLBACK : Chercher par email dans professional_accounts
+          const { data: proByEmail, error: proError2 } = await supabase
+            .from('professional_accounts')
+            .select('id, is_active, user_id, contact_email')
+            .eq('contact_email', user.email)
+            .maybeSingle();
+
+          console.log('DashboardRedirect: Pro account by email:', { proByEmail, proError2 });
+
+          if (proByEmail) {
+            proAccount = proByEmail;
+            
+            // Mettre à jour le user_id si différent
+            if (proByEmail.user_id !== user.id) {
+              console.log('DashboardRedirect: Updating user_id in professional_accounts');
+              await supabase
+                .from('professional_accounts')
+                .update({ user_id: user.id })
+                .eq('id', proByEmail.id);
+            }
+          }
+        }
+
+        // Si un compte pro existe, rediriger vers le dashboard pro
         if (proAccount) {
           console.log('DashboardRedirect: User has pro account, redirecting to pro dashboard');
           navigate('/pro/dashboard');
