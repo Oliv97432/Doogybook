@@ -35,7 +35,8 @@ const DashboardRedirect = () => {
           .eq('user_id', user.id)
           .single();
 
-        if (proAccount && proAccount.is_active) {
+        // Si un compte pro existe (actif ou non), rediriger vers le dashboard pro
+        if (proAccount) {
           navigate('/pro/dashboard');
         } else {
           navigate('/dog-profile');
