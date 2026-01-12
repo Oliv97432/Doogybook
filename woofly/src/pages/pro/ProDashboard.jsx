@@ -320,22 +320,29 @@ const ProDashboard = () => {
 
   const fetchProAccount = async () => {
     try {
-      console.log('Fetching pro account for user:', user.id);
+      console.log('ProDashboard: Fetching pro account for user:', user.id);
       
       const { data: account, error } = await supabase
         .from('professional_accounts')
         .select('id, organization_name, account_type, is_verified, is_active')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle(); // Utiliser maybeSingle pour éviter les erreurs si pas de résultat
 
-      console.log('Pro account result:', { account, error });
+      console.log('ProDashboard: Pro account result:', { account, error });
 
       if (error) {
-        console.error('Compte pro non trouvé:', error);
+        console.error('ProDashboard: Erreur requête:', error);
         navigate('/pro/register');
         return;
       }
       
+      if (!account) {
+        console.log('ProDashboard: Aucun compte pro trouvé, redirection vers register');
+        navigate('/pro/register');
+        return;
+      }
+      
+      console.log('ProDashboard: Compte pro trouvé:', account.organization_name);
       setProAccount(account);
       
       await Promise.all([
@@ -344,7 +351,7 @@ const ProDashboard = () => {
         fetchFosterFamilies(account.id)
       ]);
     } catch (error) {
-      console.error('Erreur:', error);
+      console.error('ProDashboard: Erreur générale:', error);
       navigate('/pro/register');
     } finally {
       setLoading(false);
