@@ -579,9 +579,35 @@ const SocialFeed = () => {
                 ))}
               </div>
               
+              {/* Pull to refresh indicator */}
+              {(isPulling || isRefreshing) && (
+                <div 
+                  className="flex justify-center items-center py-4 transition-all duration-200"
+                  style={{ 
+                    opacity: pullDistance > 0 ? Math.min(pullDistance / 80, 1) : 1,
+                    transform: `translateY(${Math.min(pullDistance / 2, 30)}px)`
+                  }}
+                >
+                  <div className="flex items-center gap-2 text-blue-500">
+                    <RefreshCw 
+                      size={20} 
+                      className={`${isRefreshing ? 'animate-spin' : ''}`}
+                      style={{ 
+                        transform: !isRefreshing ? `rotate(${pullDistance * 2}deg)` : 'none'
+                      }}
+                    />
+                    <span className="text-sm font-medium">
+                      {isRefreshing ? 'Actualisation...' : pullDistance > 80 ? 'Relâchez pour actualiser' : 'Tirez pour actualiser'}
+                    </span>
+                  </div>
+                </div>
+              )}
+              
               {loading ? (
-                <div className="flex justify-center py-12 sm:py-20">
-                  <div className="animate-spin h-8 w-8 sm:h-12 sm:w-12 border-4 border-blue-500 border-t-transparent rounded-full"></div>
+                <div className="space-y-3 sm:space-y-4">
+                  {[...Array(3)].map((_, i) => (
+                    <PostSkeleton key={i} />
+                  ))}
                 </div>
               ) : posts.length > 0 ? (
                 <div className="space-y-3 sm:space-y-4">
@@ -592,10 +618,25 @@ const SocialFeed = () => {
                       currentUserId={user?.id}
                       currentUserAvatar={userAvatar}
                       currentUserName={userName}
-                      onUpdate={fetchPosts}
+                      onUpdate={() => handleRefresh()}
                       isTopPost={false}
                     />
                   ))}
+                  
+                  {/* Infinite scroll trigger */}
+                  <div ref={loadMoreRef} className="py-4">
+                    {loadingMore && (
+                      <div className="flex justify-center items-center gap-2">
+                        <Loader2 size={24} className="animate-spin text-blue-500" />
+                        <span className="text-sm text-gray-600">Chargement...</span>
+                      </div>
+                    )}
+                    {!hasMore && posts.length > 0 && (
+                      <p className="text-center text-sm text-gray-500">
+                        Vous avez tout vu ! 🐕
+                      </p>
+                    )}
+                  </div>
                 </div>
               ) : (
                 <div className="bg-white rounded-3xl p-6 sm:p-12 text-center border border-gray-200">
