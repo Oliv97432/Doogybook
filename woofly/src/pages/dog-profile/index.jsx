@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
@@ -6,7 +6,6 @@ import TabNavigation from '../../components/TabNavigation';
 import UserMenu from '../../components/UserMenu';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
-import ProfileHeader from './components/ProfileHeader';
 import VaccinationCard from './components/VaccinationCard';
 import TreatmentCard from './components/TreatmentCard';
 import WeightChart from './components/WeightChart';
@@ -19,6 +18,94 @@ import PhotoGalleryModal from './components/PhotoGalleryModal';
 import Footer from '../../components/Footer';
 import PremiumModal from '../../components/PremiumModal';
 import jsPDF from 'jspdf';
+
+// ==========================================
+// 🎨 HELPER OPTIMISATION IMAGES
+// ==========================================
+const getOptimizedImageUrl = (url, width = 800, quality = 75) => {
+  if (!url) return null;
+  
+  if (url.includes('supabase.co') && url.includes('storage/v1/object/public')) {
+    const separator = url.includes('?') ? '&' : '?';
+    return `${url}${separator}width=${width}&quality=${quality}&format=webp`;
+  }
+  
+  return url;
+};
+
+// ==========================================
+// 🎨 OPTIMIZED IMAGE COMPONENT
+// ==========================================
+const OptimizedImage = memo(({ 
+  src, 
+  alt, 
+  width = 800, 
+  quality = 75, 
+  className = '',
+  eager = false 
+}) => {
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
+
+  return (
+    <div className="relative w-full h-full">
+      {!imageLoaded && !imageError && (
+        <div className="absolute inset-0 bg-gray-200 animate-pulse" />
+      )}
+      
+      {!imageError ? (
+        <img
+          src={getOptimizedImageUrl(src, width, quality)}
+          alt={alt}
+          loading={eager ? 'eager' : 'lazy'}
+          decoding="async"
+          onLoad={() => setImageLoaded(true)}
+          onError={() => setImageError(true)}
+          className={`${className} ${imageLoaded ? 'opacity-100' : 'opacity-0'} transition-opacity duration-300`}
+        />
+      ) : (
+        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-100 to-purple-100">
+          <span className="text-4xl font-bold text-primary/30">
+            {alt?.charAt(0).toUpperCase()}
+          </span>
+        </div>
+      )}
+    </div>
+  );
+});
+
+OptimizedImage.displayName = 'OptimizedImage';
+
+// ==========================================
+// 🎨 SKELETON SCREENS
+// ==========================================
+const ProfileSkeleton = () => (
+  <div className="animate-pulse">
+    <div className="h-40 bg-gray-200" />
+    <div className="max-w-7xl mx-auto px-4">
+      <div className="flex items-end gap-4 -mt-12 pb-4">
+        <div className="w-24 h-24 bg-gray-300 rounded-full" />
+        <div className="flex-1 space-y-2 pb-2">
+          <div className="h-6 bg-gray-300 rounded w-40" />
+          <div className="h-4 bg-gray-200 rounded w-64" />
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+const CardSkeleton = () => (
+  <div className="bg-card rounded-xl p-4 border border-border animate-pulse">
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <div className="h-5 bg-gray-200 rounded w-32" />
+        <div className="h-8 w-8 bg-gray-200 rounded-full" />
+      </div>
+      <div className="h-4 bg-gray-200 rounded w-full" />
+      <div className="h-4 bg-gray-200 rounded w-3/4" />
+    </div>
+  </div>
+);
 
 const DogProfile = () => {
   const navigate = useNavigate();
@@ -78,7 +165,7 @@ const DogProfile = () => {
     checkPremiumStatus();
   }, [user?.id]);
 
-  // Charger les chiens de l'utilisateur
+  // Charger les chiens de l'utilisateur - OPTIMISÉ
   useEffect(() => {
     if (!user?.id) return;
 
@@ -87,10 +174,11 @@ const DogProfile = () => {
       try {
         const { data, error } = await supabase
           .from('dogs')
-          .select('*')
+          .select('id, name, breed, birth_date, weight, gender, is_sterilized, photo_url, microchip_number, notes, cover_photo_url')
           .eq('user_id', user.id)
           .eq('is_active', true)
-          .order('created_at', { ascending: false });
+          .order('created_at', { ascending: false })
+          .limit(10);
 
         if (error) throw error;
 
@@ -134,7 +222,7 @@ const DogProfile = () => {
     fetchDogs();
   }, [user?.id]);
 
-  // Charger les vaccinations
+  // Charger les vaccinations - OPTIMISÉ
   useEffect(() => {
     if (!currentProfile?.id) return;
 
@@ -142,9 +230,10 @@ const DogProfile = () => {
       try {
         const { data, error } = await supabase
           .from('vaccinations')
-          .select('*')
+          .select('id, vaccine_name, vaccination_date, next_due_date, veterinarian, notes')
           .eq('dog_id', currentProfile.id)
-          .order('next_due_date', { ascending: true });
+          .order('next_due_date', { ascending: true })
+          .limit(50);
 
         if (error) throw error;
 
@@ -166,7 +255,7 @@ const DogProfile = () => {
     fetchVaccinations();
   }, [currentProfile?.id]);
 
-  // Charger les traitements
+  // Charger les traitements - OPTIMISÉ
   useEffect(() => {
     if (!currentProfile?.id) return;
 
@@ -174,9 +263,10 @@ const DogProfile = () => {
       try {
         const { data, error } = await supabase
           .from('treatments')
-          .select('*')
+          .select('id, product_name, treatment_date, next_due_date, notes, treatment_type')
           .eq('dog_id', currentProfile.id)
-          .order('next_due_date', { ascending: true });
+          .order('next_due_date', { ascending: true })
+          .limit(50);
 
         if (error) throw error;
 
@@ -198,7 +288,7 @@ const DogProfile = () => {
     fetchTreatments();
   }, [currentProfile?.id]);
 
-  // Charger le poids
+  // Charger le poids - OPTIMISÉ
   useEffect(() => {
     if (!currentProfile?.id) return;
 
@@ -206,9 +296,10 @@ const DogProfile = () => {
       try {
         const { data, error } = await supabase
           .from('weight_records')
-          .select('*')
+          .select('measurement_date, weight')
           .eq('dog_id', currentProfile.id)
-          .order('measurement_date', { ascending: true });
+          .order('measurement_date', { ascending: true })
+          .limit(100);
 
         if (error) throw error;
 
@@ -234,7 +325,7 @@ const DogProfile = () => {
       try {
         const { data, error } = await supabase
           .from('health_notes')
-          .select('*')
+          .select('description, tags, title')
           .eq('dog_id', currentProfile.id)
           .order('note_date', { ascending: false })
           .limit(1);
@@ -267,9 +358,10 @@ const DogProfile = () => {
       try {
         const { data, error } = await supabase
           .from('dog_photos')
-          .select('*')
+          .select('id, photo_url, created_at')
           .eq('dog_id', currentProfile.id)
-          .order('created_at', { ascending: false });
+          .order('created_at', { ascending: false })
+          .limit(50);
 
         if (error) throw error;
 
@@ -282,18 +374,19 @@ const DogProfile = () => {
     fetchPhotos();
   }, [currentProfile?.id]);
 
-  const openModal = (modalName, item = null) => {
+  // Handlers avec useCallback
+  const openModal = useCallback((modalName, item = null) => {
     setEditingItem(item);
-    setModals({ ...modals, [modalName]: true });
-  };
+    setModals(prev => ({ ...prev, [modalName]: true }));
+  }, []);
 
-  const closeModal = (modalName) => {
-    setModals({ ...modals, [modalName]: false });
+  const closeModal = useCallback((modalName) => {
+    setModals(prev => ({ ...prev, [modalName]: false }));
     setEditingItem(null);
-  };
+  }, []);
 
   // Sauvegarder vaccination
-  const handleSaveVaccination = async (data) => {
+  const handleSaveVaccination = useCallback(async (data) => {
     try {
       if (editingItem) {
         const { error } = await supabase
@@ -309,7 +402,7 @@ const DogProfile = () => {
 
         if (error) throw error;
 
-        setVaccinations(vaccinations.map(v => 
+        setVaccinations(prev => prev.map(v => 
           v.id === editingItem.id ? { ...data, id: v.id } : v
         ));
       } else {
@@ -328,7 +421,7 @@ const DogProfile = () => {
 
         if (error) throw error;
 
-        setVaccinations([...vaccinations, {
+        setVaccinations(prev => [...prev, {
           id: newVac.id,
           name: data.name,
           lastDate: new Date(data.lastDate).toLocaleDateString('fr-FR'),
@@ -343,9 +436,9 @@ const DogProfile = () => {
       console.error('Erreur sauvegarde vaccination:', err);
       alert('Erreur lors de la sauvegarde de la vaccination');
     }
-  };
+  }, [editingItem, currentProfile, closeModal]);
 
-  const handleDeleteVaccination = async (id) => {
+  const handleDeleteVaccination = useCallback(async (id) => {
     if (!window.confirm('Êtes-vous sûr de vouloir supprimer cette vaccination ?')) return;
 
     try {
@@ -356,15 +449,15 @@ const DogProfile = () => {
 
       if (error) throw error;
 
-      setVaccinations(vaccinations.filter(v => v.id !== id));
+      setVaccinations(prev => prev.filter(v => v.id !== id));
     } catch (err) {
       console.error('Erreur suppression vaccination:', err);
       alert('Erreur lors de la suppression');
     }
-  };
+  }, []);
 
   // Sauvegarder traitement
-  const handleSaveTreatment = async (data, type) => {
+  const handleSaveTreatment = useCallback(async (data, type) => {
     try {
       const treatmentType = type === 'vermifuge' ? 'worm' : 'flea';
 
@@ -382,7 +475,7 @@ const DogProfile = () => {
 
         if (error) throw error;
 
-        setTreatments(treatments.map(t => 
+        setTreatments(prev => prev.map(t => 
           t.id === editingItem.id ? { ...data, id: t.id, type: treatmentType } : t
         ));
       } else {
@@ -401,7 +494,7 @@ const DogProfile = () => {
 
         if (error) throw error;
 
-        setTreatments([...treatments, {
+        setTreatments(prev => [...prev, {
           id: newTreat.id,
           product: data.product,
           lastDate: new Date(data.lastDate).toLocaleDateString('fr-FR'),
@@ -416,9 +509,9 @@ const DogProfile = () => {
       console.error('Erreur sauvegarde traitement:', err);
       alert('Erreur lors de la sauvegarde du traitement');
     }
-  };
+  }, [editingItem, currentProfile, closeModal]);
 
-  const handleDeleteTreatment = async (id, type) => {
+  const handleDeleteTreatment = useCallback(async (id) => {
     if (!window.confirm('Êtes-vous sûr de vouloir supprimer ce traitement ?')) return;
 
     try {
@@ -429,15 +522,15 @@ const DogProfile = () => {
 
       if (error) throw error;
 
-      setTreatments(treatments.filter(t => t.id !== id));
+      setTreatments(prev => prev.filter(t => t.id !== id));
     } catch (err) {
       console.error('Erreur suppression traitement:', err);
       alert('Erreur lors de la suppression');
     }
-  };
+  }, []);
 
   // Sauvegarder poids
-  const handleSaveWeight = async (data) => {
+  const handleSaveWeight = useCallback(async (data) => {
     try {
       const { data: newWeight, error } = await supabase
         .from('weight_records')
@@ -451,7 +544,7 @@ const DogProfile = () => {
 
       if (error) throw error;
 
-      setWeightData([...weightData, {
+      setWeightData(prev => [...prev, {
         date: new Date(data.date).toLocaleDateString('fr-FR'),
         weight: parseFloat(data.weight)
       }]);
@@ -461,10 +554,10 @@ const DogProfile = () => {
       console.error('Erreur sauvegarde poids:', err);
       alert('Erreur lors de la sauvegarde du poids');
     }
-  };
+  }, [currentProfile, closeModal]);
 
   // Sauvegarder profil
-  const handleSaveProfile = async (data) => {
+  const handleSaveProfile = useCallback(async (data) => {
     try {
       const { error } = await supabase
         .from('dogs')
@@ -482,7 +575,7 @@ const DogProfile = () => {
       if (error) throw error;
 
       setCurrentProfile(data);
-      setDogProfiles(dogProfiles.map(dog => 
+      setDogProfiles(prev => prev.map(dog => 
         dog.id === currentProfile.id ? data : dog
       ));
 
@@ -491,10 +584,10 @@ const DogProfile = () => {
       console.error('Erreur sauvegarde profil:', err);
       alert('Erreur lors de la sauvegarde du profil');
     }
-  };
+  }, [currentProfile, closeModal]);
 
   // Définir une photo comme photo de profil
-  const handleSetProfilePhoto = async (photoUrl) => {
+  const handleSetProfilePhoto = useCallback(async (photoUrl) => {
     try {
       const { error } = await supabase
         .from('dogs')
@@ -503,31 +596,27 @@ const DogProfile = () => {
 
       if (error) throw error;
 
-      setCurrentProfile({
-        ...currentProfile,
+      setCurrentProfile(prev => ({
+        ...prev,
         image: photoUrl
-      });
+      }));
 
-      setDogProfiles(dogProfiles.map(dog => 
+      setDogProfiles(prev => prev.map(dog => 
         dog.id === currentProfile.id 
           ? { ...dog, image: photoUrl }
           : dog
       ));
-
     } catch (err) {
       console.error('Erreur mise à jour photo de profil:', err);
       alert('❌ Erreur lors de la mise à jour de la photo de profil');
     }
-  };
+  }, [currentProfile]);
 
-  // Upload cover photo pour le chien
-  const handleCoverPhotoUpload = async (e) => {
+  // Upload cover photo
+  const handleCoverPhotoUpload = useCallback(async (e) => {
     const file = e.target.files?.[0];
     
-    if (!file) {
-      console.log('Aucun fichier sélectionné');
-      return;
-    }
+    if (!file) return;
 
     if (!file.name || typeof file.name !== 'string') {
       alert('⚠️ Fichier invalide');
@@ -578,12 +667,12 @@ const DogProfile = () => {
 
       if (dbError) throw dbError;
 
-      setCurrentProfile({
-        ...currentProfile,
+      setCurrentProfile(prev => ({
+        ...prev,
         cover_photo_url: publicUrl
-      });
+      }));
 
-      setDogProfiles(dogProfiles.map(dog => 
+      setDogProfiles(prev => prev.map(dog => 
         dog.id === currentProfile.id 
           ? { ...dog, cover_photo_url: publicUrl }
           : dog
@@ -597,10 +686,10 @@ const DogProfile = () => {
     } finally {
       setIsUploadingCover(false);
     }
-  };
+  }, [user, currentProfile]);
 
-  // Upload photo fonctionnel avec gestion d'erreurs
-  const handleAddPhoto = async (file) => {
+  // Upload photo
+  const handleAddPhoto = useCallback(async (file) => {
     if (!file) {
       alert('⚠️ Aucun fichier sélectionné');
       return;
@@ -670,343 +759,331 @@ const DogProfile = () => {
         throw dbError;
       }
 
-      setPhotoGallery([newPhoto, ...photoGallery]);
+      setPhotoGallery(prev => [newPhoto, ...prev]);
       
       alert('✅ Photo ajoutée avec succès !');
     } catch (err) {
       console.error('Erreur upload photo:', err);
       alert('❌ Erreur lors de l\'upload: ' + err.message);
     }
-  };
+  }, [user, currentProfile]);
 
-  // Fonction pour enlever les accents - AMÉLIORÉE
+  // Fonction pour enlever les accents
   const removeAccents = (str) => {
     if (!str) return '';
     
-    // Étape 1: Normalisation NFD pour séparer les accents
     let normalized = str.normalize('NFD');
-    
-    // Étape 2: Supprimer les caractères diacritiques (accents)
     normalized = normalized.replace(/[\u0300-\u036f]/g, '');
-    
-    // Étape 3: Remplacer les caractères spéciaux français
     normalized = normalized
       .replace(/œ/g, 'oe')
       .replace(/æ/g, 'ae')
       .replace(/Œ/g, 'OE')
       .replace(/Æ/g, 'AE')
-      .replace(/[€£$¥]/g, '')  // Supprimer les symboles monétaires
-      .replace(/[«»]/g, '')     // Supprimer les guillemets français
-      .replace(/[^a-zA-Z0-9\s.,;:!?()\-'"\/&@#%+=_]/g, ' ');  // Garder les caractères alphanumériques et ponctuation basique
+      .replace(/[€£$¥]/g, '')
+      .replace(/[«»]/g, '')
+      .replace(/[^a-zA-Z0-9\s.,;:!?()\-'"\/&@#%+=_]/g, ' ');
     
-    // Étape 4: Remplacer les espaces multiples par un seul espace
     normalized = normalized.replace(/\s+/g, ' ');
-    
-    // Étape 5: Nettoyer les espaces en début et fin
     normalized = normalized.trim();
     
     return normalized;
   };
 
-  // Export PDF du carnet de santé - PREMIUM (VERSION ULTRA-SÉCURISÉE)
-const handleExportPDF = async () => {
-  console.log('🔍 VERSION PDF: 2025-01-11-FIX-ENCODING');
-  
-  if (!isPremium) {
-    setShowPremiumModal(true);
-    return;
-  }
+  // Export PDF - ULTRA-SÉCURISÉ
+  const handleExportPDF = useCallback(async () => {
+    if (!isPremium) {
+      setShowPremiumModal(true);
+      return;
+    }
 
-  setGeneratingPDF(true);
+    setGeneratingPDF(true);
 
-  try {
-    // Créer le PDF avec options d'encodage
-    const pdf = new jsPDF({
-      orientation: 'p',
-      unit: 'mm',
-      format: 'a4',
-      compress: true
-    });
-    
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const pageHeight = pdf.internal.pageSize.getHeight();
-    const margin = 20;
-    let yPos = margin;
+    try {
+      const pdf = new jsPDF({
+        orientation: 'p',
+        unit: 'mm',
+        format: 'a4',
+        compress: true
+      });
+      
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 20;
+      let yPos = margin;
 
-    // Fonction pour ajouter du texte de manière sûre
-    const safeText = (text, x, y, options = {}) => {
-      try {
-        // Nettoyer et convertir le texte
-        const cleanText = String(text || '')
-          .normalize('NFD')
-          .replace(/[\u0300-\u036f]/g, '')
-          .replace(/[^\x00-\x7F]/g, ''); // Garde uniquement ASCII
-        
-        pdf.text(cleanText, x, y, options);
-      } catch (error) {
-        console.error('Erreur ajout texte:', error);
-        pdf.text('Error', x, y, options);
+      const safeText = (text, x, y, options = {}) => {
+        try {
+          const cleanText = String(text || '')
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^\x00-\x7F]/g, '');
+          
+          pdf.text(cleanText, x, y, options);
+        } catch (error) {
+          console.error('Erreur ajout texte:', error);
+          pdf.text('Error', x, y, options);
+        }
+      };
+
+      // Header
+      pdf.setFillColor(59, 130, 246);
+      pdf.rect(0, 0, pageWidth, 50, 'F');
+      
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFontSize(28);
+      pdf.setFont('helvetica', 'bold');
+      safeText('WOOFLY', margin, 25);
+      
+      pdf.setFontSize(14);
+      pdf.setFont('helvetica', 'normal');
+      safeText('Carnet de Sante', margin, 38);
+
+      yPos = 60;
+
+      // Infos du chien
+      pdf.setTextColor(0, 0, 0);
+      pdf.setFontSize(22);
+      pdf.setFont('helvetica', 'bold');
+      safeText(currentProfile.name, margin, yPos);
+      yPos += 10;
+
+      pdf.setFontSize(11);
+      pdf.setFont('helvetica', 'normal');
+      pdf.setTextColor(100, 100, 100);
+      const gender = currentProfile.gender === 'male' ? 'Male' : 'Femelle';
+      safeText(`${currentProfile.breed} - ${currentProfile.age} - ${gender}`, margin, yPos);
+      yPos += 6;
+      
+      if (currentProfile.weight !== 'Non renseigne') {
+        safeText(`Poids: ${currentProfile.weight}`, margin, yPos);
+        yPos += 6;
       }
-    };
-
-    // Header bleu avec logo
-    pdf.setFillColor(59, 130, 246);
-    pdf.rect(0, 0, pageWidth, 50, 'F');
-    
-    pdf.setTextColor(255, 255, 255);
-    pdf.setFontSize(28);
-    pdf.setFont('helvetica', 'bold');
-    safeText('WOOFLY', margin, 25);
-    
-    pdf.setFontSize(14);
-    pdf.setFont('helvetica', 'normal');
-    safeText('Carnet de Sante', margin, 38);
-
-    yPos = 60;
-
-    // Infos du chien
-    pdf.setTextColor(0, 0, 0);
-    pdf.setFontSize(22);
-    pdf.setFont('helvetica', 'bold');
-    safeText(currentProfile.name, margin, yPos);
-    yPos += 10;
-
-    pdf.setFontSize(11);
-    pdf.setFont('helvetica', 'normal');
-    pdf.setTextColor(100, 100, 100);
-    const gender = currentProfile.gender === 'male' ? 'Male' : 'Femelle';
-    safeText(`${currentProfile.breed} - ${currentProfile.age} - ${gender}`, margin, yPos);
-    yPos += 6;
-    
-    if (currentProfile.weight !== 'Non renseigne') {
-      safeText(`Poids: ${currentProfile.weight}`, margin, yPos);
-      yPos += 6;
-    }
-    
-    if (currentProfile.microchip_number) {
-      safeText(`Puce: ${currentProfile.microchip_number}`, margin, yPos);
-      yPos += 6;
-    }
-
-    safeText(`Sterilisation: ${currentProfile.sterilized}`, margin, yPos);
-    yPos += 15;
-
-    // Section Vaccinations
-    pdf.setFontSize(16);
-    pdf.setFont('helvetica', 'bold');
-    pdf.setTextColor(0, 0, 0);
-    safeText('VACCINATIONS', margin, yPos);
-    yPos += 8;
-
-    if (vaccinations.length === 0) {
-      pdf.setFontSize(10);
-      pdf.setFont('helvetica', 'italic');
-      pdf.setTextColor(150, 150, 150);
-      safeText('Aucune vaccination enregistree', margin + 5, yPos);
-      yPos += 10;
-    } else {
-      pdf.setFontSize(10);
-      pdf.setFont('helvetica', 'normal');
       
-      vaccinations.forEach((vac) => {
-        if (yPos > pageHeight - 40) {
-          pdf.addPage();
-          yPos = margin;
-        }
+      if (currentProfile.microchip_number) {
+        safeText(`Puce: ${currentProfile.microchip_number}`, margin, yPos);
+        yPos += 6;
+      }
 
-        pdf.setFont('helvetica', 'bold');
-        pdf.setTextColor(0, 0, 0);
-        safeText(`- ${vac.name}`, margin + 5, yPos);
-        yPos += 5;
-        
+      safeText(`Sterilisation: ${currentProfile.sterilized}`, margin, yPos);
+      yPos += 15;
+
+      // Vaccinations
+      pdf.setFontSize(16);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setTextColor(0, 0, 0);
+      safeText('VACCINATIONS', margin, yPos);
+      yPos += 8;
+
+      if (vaccinations.length === 0) {
+        pdf.setFontSize(10);
+        pdf.setFont('helvetica', 'italic');
+        pdf.setTextColor(150, 150, 150);
+        safeText('Aucune vaccination enregistree', margin + 5, yPos);
+        yPos += 10;
+      } else {
+        pdf.setFontSize(10);
         pdf.setFont('helvetica', 'normal');
-        pdf.setTextColor(80, 80, 80);
-        safeText(`  Derniere date: ${vac.lastDate}`, margin + 5, yPos);
-        yPos += 5;
-        safeText(`  Prochaine date: ${vac.nextDate}`, margin + 5, yPos);
-        yPos += 5;
         
-        if (vac.veterinarian) {
-          safeText(`  Veterinaire: ${vac.veterinarian}`, margin + 5, yPos);
+        vaccinations.forEach((vac) => {
+          if (yPos > pageHeight - 40) {
+            pdf.addPage();
+            yPos = margin;
+          }
+
+          pdf.setFont('helvetica', 'bold');
+          pdf.setTextColor(0, 0, 0);
+          safeText(`- ${vac.name}`, margin + 5, yPos);
           yPos += 5;
-        }
+          
+          pdf.setFont('helvetica', 'normal');
+          pdf.setTextColor(80, 80, 80);
+          safeText(`  Derniere date: ${vac.lastDate}`, margin + 5, yPos);
+          yPos += 5;
+          safeText(`  Prochaine date: ${vac.nextDate}`, margin + 5, yPos);
+          yPos += 5;
+          
+          if (vac.veterinarian) {
+            safeText(`  Veterinaire: ${vac.veterinarian}`, margin + 5, yPos);
+            yPos += 5;
+          }
+          
+          yPos += 3;
+        });
+      }
+      yPos += 8;
+
+      // Traitements
+      if (yPos > pageHeight - 60) {
+        pdf.addPage();
+        yPos = margin;
+      }
+
+      pdf.setFontSize(16);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setTextColor(0, 0, 0);
+      safeText('TRAITEMENTS', margin, yPos);
+      yPos += 8;
+
+      if (treatments.length === 0) {
+        pdf.setFontSize(10);
+        pdf.setFont('helvetica', 'italic');
+        pdf.setTextColor(150, 150, 150);
+        safeText('Aucun traitement enregistre', margin + 5, yPos);
+        yPos += 10;
+      } else {
+        pdf.setFontSize(10);
+        pdf.setFont('helvetica', 'normal');
         
-        yPos += 3;
-      });
-    }
-    yPos += 8;
+        treatments.forEach((treat) => {
+          if (yPos > pageHeight - 40) {
+            pdf.addPage();
+            yPos = margin;
+          }
 
-    // Section Traitements
-    if (yPos > pageHeight - 60) {
-      pdf.addPage();
-      yPos = margin;
-    }
+          const typeLabel = treat.type === 'worm' ? 'Vermifuge' : 'Anti-puces/tiques';
+          
+          pdf.setFont('helvetica', 'bold');
+          pdf.setTextColor(0, 0, 0);
+          safeText(`- ${treat.product} (${typeLabel})`, margin + 5, yPos);
+          yPos += 5;
+          
+          pdf.setFont('helvetica', 'normal');
+          pdf.setTextColor(80, 80, 80);
+          safeText(`  Derniere date: ${treat.lastDate}`, margin + 5, yPos);
+          yPos += 5;
+          safeText(`  Prochaine date: ${treat.nextDate}`, margin + 5, yPos);
+          yPos += 8;
+        });
+      }
+      yPos += 8;
 
-    pdf.setFontSize(16);
-    pdf.setFont('helvetica', 'bold');
-    pdf.setTextColor(0, 0, 0);
-    safeText('TRAITEMENTS', margin, yPos);
-    yPos += 8;
+      // Poids
+      if (yPos > pageHeight - 60) {
+        pdf.addPage();
+        yPos = margin;
+      }
 
-    if (treatments.length === 0) {
-      pdf.setFontSize(10);
-      pdf.setFont('helvetica', 'italic');
-      pdf.setTextColor(150, 150, 150);
-      safeText('Aucun traitement enregistre', margin + 5, yPos);
-      yPos += 10;
-    } else {
-      pdf.setFontSize(10);
-      pdf.setFont('helvetica', 'normal');
-      
-      treatments.forEach((treat) => {
-        if (yPos > pageHeight - 40) {
-          pdf.addPage();
-          yPos = margin;
-        }
+      pdf.setFontSize(16);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setTextColor(0, 0, 0);
+      safeText('EVOLUTION DU POIDS', margin, yPos);
+      yPos += 8;
 
-        const typeLabel = treat.type === 'worm' ? 'Vermifuge' : 'Anti-puces/tiques';
-        
-        pdf.setFont('helvetica', 'bold');
-        pdf.setTextColor(0, 0, 0);
-        safeText(`- ${treat.product} (${typeLabel})`, margin + 5, yPos);
-        yPos += 5;
-        
+      if (weightData.length === 0) {
+        pdf.setFontSize(10);
+        pdf.setFont('helvetica', 'italic');
+        pdf.setTextColor(150, 150, 150);
+        safeText('Aucune pesee enregistree', margin + 5, yPos);
+        yPos += 10;
+      } else {
+        pdf.setFontSize(10);
         pdf.setFont('helvetica', 'normal');
         pdf.setTextColor(80, 80, 80);
-        safeText(`  Derniere date: ${treat.lastDate}`, margin + 5, yPos);
-        yPos += 5;
-        safeText(`  Prochaine date: ${treat.nextDate}`, margin + 5, yPos);
-        yPos += 8;
-      });
-    }
-    yPos += 8;
+        
+        const recentWeights = weightData.slice(-5);
+        recentWeights.forEach((weight) => {
+          safeText(`- ${weight.date}: ${weight.weight} kg`, margin + 5, yPos);
+          yPos += 5;
+        });
+        
+        if (weightData.length > 5) {
+          yPos += 3;
+          pdf.setFont('helvetica', 'italic');
+          safeText(`(${weightData.length - 5} autres pesees non affichees)`, margin + 5, yPos);
+        }
+      }
+      yPos += 12;
 
-    // Section Poids
-    if (yPos > pageHeight - 60) {
-      pdf.addPage();
-      yPos = margin;
-    }
+      // Notes médicales
+      if (yPos > pageHeight - 80) {
+        pdf.addPage();
+        yPos = margin;
+      }
 
-    pdf.setFontSize(16);
-    pdf.setFont('helvetica', 'bold');
-    pdf.setTextColor(0, 0, 0);
-    safeText('EVOLUTION DU POIDS', margin, yPos);
-    yPos += 8;
+      pdf.setFontSize(16);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setTextColor(0, 0, 0);
+      safeText('NOTES MEDICALES', margin, yPos);
+      yPos += 8;
 
-    if (weightData.length === 0) {
-      pdf.setFontSize(10);
-      pdf.setFont('helvetica', 'italic');
-      pdf.setTextColor(150, 150, 150);
-      safeText('Aucune pesee enregistree', margin + 5, yPos);
-      yPos += 10;
-    } else {
       pdf.setFontSize(10);
       pdf.setFont('helvetica', 'normal');
       pdf.setTextColor(80, 80, 80);
-      
-      const recentWeights = weightData.slice(-5);
-      recentWeights.forEach((weight) => {
-        safeText(`- ${weight.date}: ${weight.weight} kg`, margin + 5, yPos);
+
+      if (healthNotes.allergies) {
+        pdf.setFont('helvetica', 'bold');
+        safeText('Allergies:', margin + 5, yPos);
         yPos += 5;
-      });
-      
-      if (weightData.length > 5) {
-        yPos += 3;
-        pdf.setFont('helvetica', 'italic');
-        safeText(`(${weightData.length - 5} autres pesees non affichees)`, margin + 5, yPos);
+        pdf.setFont('helvetica', 'normal');
+        const allergiesText = pdf.splitTextToSize(removeAccents(healthNotes.allergies), pageWidth - margin * 2 - 10);
+        allergiesText.forEach(line => {
+          safeText(line, margin + 5, yPos);
+          yPos += 5;
+        });
+        yPos += 5;
       }
-    }
-    yPos += 12;
 
-    // Section Notes médicales
-    if (yPos > pageHeight - 80) {
-      pdf.addPage();
-      yPos = margin;
-    }
-
-    pdf.setFontSize(16);
-    pdf.setFont('helvetica', 'bold');
-    pdf.setTextColor(0, 0, 0);
-    safeText('NOTES MEDICALES', margin, yPos);
-    yPos += 8;
-
-    pdf.setFontSize(10);
-    pdf.setFont('helvetica', 'normal');
-    pdf.setTextColor(80, 80, 80);
-
-    if (healthNotes.allergies) {
-      pdf.setFont('helvetica', 'bold');
-      safeText('Allergies:', margin + 5, yPos);
-      yPos += 5;
-      pdf.setFont('helvetica', 'normal');
-      const allergiesText = pdf.splitTextToSize(removeAccents(healthNotes.allergies), pageWidth - margin * 2 - 10);
-      allergiesText.forEach(line => {
-        safeText(line, margin + 5, yPos);
+      if (healthNotes.medications) {
+        pdf.setFont('helvetica', 'bold');
+        safeText('Medicaments:', margin + 5, yPos);
         yPos += 5;
-      });
-      yPos += 5;
-    }
-
-    if (healthNotes.medications) {
-      pdf.setFont('helvetica', 'bold');
-      safeText('Medicaments:', margin + 5, yPos);
-      yPos += 5;
-      pdf.setFont('helvetica', 'normal');
-      const medsText = pdf.splitTextToSize(removeAccents(healthNotes.medications), pageWidth - margin * 2 - 10);
-      medsText.forEach(line => {
-        safeText(line, margin + 5, yPos);
+        pdf.setFont('helvetica', 'normal');
+        const medsText = pdf.splitTextToSize(removeAccents(healthNotes.medications), pageWidth - margin * 2 - 10);
+        medsText.forEach(line => {
+          safeText(line, margin + 5, yPos);
+          yPos += 5;
+        });
         yPos += 5;
-      });
-      yPos += 5;
-    }
+      }
 
-    if (healthNotes.veterinarian) {
-      pdf.setFont('helvetica', 'bold');
-      safeText('Veterinaire:', margin + 5, yPos);
-      yPos += 5;
-      pdf.setFont('helvetica', 'normal');
-      safeText(healthNotes.veterinarian, margin + 5, yPos);
-      yPos += 5;
-    }
+      if (healthNotes.veterinarian) {
+        pdf.setFont('helvetica', 'bold');
+        safeText('Veterinaire:', margin + 5, yPos);
+        yPos += 5;
+        pdf.setFont('helvetica', 'normal');
+        safeText(healthNotes.veterinarian, margin + 5, yPos);
+        yPos += 5;
+      }
 
-    if (healthNotes.veterinarianPhone) {
-      safeText(`Telephone: ${healthNotes.veterinarianPhone}`, margin + 5, yPos);
-      yPos += 5;
-    }
+      if (healthNotes.veterinarianPhone) {
+        safeText(`Telephone: ${healthNotes.veterinarianPhone}`, margin + 5, yPos);
+        yPos += 5;
+      }
 
-    if (!healthNotes.allergies && !healthNotes.medications && !healthNotes.veterinarian) {
-      pdf.setFont('helvetica', 'italic');
+      if (!healthNotes.allergies && !healthNotes.medications && !healthNotes.veterinarian) {
+        pdf.setFont('helvetica', 'italic');
+        pdf.setTextColor(150, 150, 150);
+        safeText('Aucune note medicale enregistree', margin + 5, yPos);
+      }
+
+      // Footer
       pdf.setTextColor(150, 150, 150);
-      safeText('Aucune note medicale enregistree', margin + 5, yPos);
+      pdf.setFontSize(8);
+      safeText('Genere avec Woofly - www.doogybook.com', pageWidth / 2, pageHeight - 10, { align: 'center' });
+      safeText(`Date: ${new Date().toLocaleDateString('fr-FR')}`, pageWidth - margin, pageHeight - 10, { align: 'right' });
+
+      // Télécharger
+      const cleanName = currentProfile.name
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, '-');
+      const fileName = `carnet-sante-${cleanName}-${new Date().toISOString().split('T')[0]}.pdf`;
+      
+      pdf.save(fileName);
+
+      alert('Carnet de sante telecharge avec succes !');
+    } catch (error) {
+      console.error('Erreur generation PDF:', error);
+      alert('Erreur lors de la generation du PDF: ' + error.message);
+    } finally {
+      setGeneratingPDF(false);
     }
+  }, [isPremium, currentProfile, vaccinations, treatments, weightData, healthNotes]);
 
-    // Footer
-    pdf.setTextColor(150, 150, 150);
-    pdf.setFontSize(8);
-    safeText('Genere avec Woofly - www.doogybook.com', pageWidth / 2, pageHeight - 10, { align: 'center' });
-    safeText(`Date: ${new Date().toLocaleDateString('fr-FR')}`, pageWidth - margin, pageHeight - 10, { align: 'right' });
-
-    // Télécharger
-    const cleanName = currentProfile.name
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .toLowerCase()
-      .replace(/[^a-z0-9]/g, '-');
-    const fileName = `carnet-sante-${cleanName}-${new Date().toISOString().split('T')[0]}.pdf`;
-    
-    pdf.save(fileName);
-
-    alert('Carnet de sante telecharge avec succes !');
-  } catch (error) {
-    console.error('Erreur generation PDF:', error);
-    alert('Erreur lors de la generation du PDF: ' + error.message);
-  } finally {
-    setGeneratingPDF(false);
-  }
-};
-  const handleProfileChange = (profile) => {
+  const handleProfileChange = useCallback((profile) => {
     setCurrentProfile(profile);
-  };
+  }, []);
 
   const tabs = [
     { id: 'vaccinations', label: 'Vaccinations', icon: 'Syringe' },
@@ -1016,16 +1093,15 @@ const handleExportPDF = async () => {
     { id: 'notes', label: 'Notes médicales', icon: 'FileText' }
   ];
 
-  // Filtrer les traitements par type
   const vermifuges = treatments.filter(t => t.type === 'worm');
   const fleaTreatments = treatments.filter(t => t.type === 'flea' || t.type === 'tick');
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-          <p className="mt-4 text-muted-foreground">Chargement du profil...</p>
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
+          <p className="text-muted-foreground">Chargement du profil...</p>
         </div>
       </div>
     );
@@ -1037,20 +1113,21 @@ const handleExportPDF = async () => {
         <TabNavigation />
         <div className="main-content">
           <div className="max-w-7xl mx-auto px-4 py-6">
-            <div className="text-center py-16">
+            <div className="text-center py-12 sm:py-16">
               <div className="inline-flex items-center justify-center w-16 h-16 bg-muted rounded-full mb-4">
                 <span className="text-3xl">🐕</span>
               </div>
               <h3 className="text-lg font-heading font-semibold text-foreground mb-2">
                 Aucun chien enregistré
               </h3>
-              <p className="text-muted-foreground text-sm mb-4">
+              <p className="text-sm sm:text-base text-muted-foreground mb-4">
                 Ajoutez votre premier chien pour commencer
               </p>
               <Button
                 variant="default"
                 size="sm"
                 onClick={() => navigate('/multi-profile-management')}
+                className="min-h-[44px]"
               >
                 Ajouter un chien
               </Button>
@@ -1063,28 +1140,28 @@ const handleExportPDF = async () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Header mobile optimisé avec bouton PDF */}
-      <div className="sticky top-0 z-50 bg-card border-b border-border shadow-soft px-4 py-3">
+      {/* Header sticky - OPTIMISÉ MOBILE */}
+      <div className="sticky top-0 z-50 bg-card border-b border-border shadow-soft px-3 sm:px-4 py-3">
         <div className="flex items-center justify-between gap-2">
-          <h1 className="text-xl font-heading font-semibold text-foreground truncate flex-1">
+          <h1 className="text-lg sm:text-xl font-heading font-semibold text-foreground truncate flex-1">
             {currentProfile.name}
           </h1>
           
-          {/* Bouton Export PDF - Desktop */}
+          {/* Bouton PDF Desktop */}
           <button
             onClick={handleExportPDF}
             disabled={generatingPDF}
-            className="hidden sm:flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg font-medium hover:shadow-lg transition-all disabled:opacity-50"
+            className="hidden sm:flex items-center gap-2 px-3 sm:px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg font-medium hover:shadow-lg transition-all disabled:opacity-50 min-h-[44px] text-sm"
           >
             {generatingPDF ? (
               <>
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                <span className="text-sm">Export...</span>
+                <span>Export...</span>
               </>
             ) : (
               <>
                 <Icon name="Download" size={16} />
-                <span className="text-sm">Carnet PDF</span>
+                <span>Carnet PDF</span>
               </>
             )}
           </button>
@@ -1097,16 +1174,17 @@ const handleExportPDF = async () => {
         </div>
       </div>
 
-      {/* Bandeau Cover Photo - mobile optimisé */}
+      {/* Cover Photo - OPTIMISÉ */}
       <div className="relative">
-        {/* Cover Photo */}
-        <div className="relative h-40 bg-gradient-to-br from-blue-500 to-purple-600 overflow-hidden">
+        <div className="relative h-32 sm:h-40 bg-gradient-to-br from-blue-500 to-purple-600 overflow-hidden">
           {currentProfile.cover_photo_url ? (
-            <img
+            <OptimizedImage
               src={currentProfile.cover_photo_url}
               alt={`Couverture de ${currentProfile.name}`}
+              width={1200}
+              quality={85}
+              eager
               className="w-full h-full object-cover"
-              style={{ objectPosition: 'center 30%' }}
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-white/30">
@@ -1117,10 +1195,10 @@ const handleExportPDF = async () => {
           {/* Bouton modifier cover */}
           <label 
             htmlFor="cover-photo-upload-input"
-            className="absolute bottom-3 right-3 z-10 bg-white/90 hover:bg-white px-3 py-2 rounded-lg cursor-pointer shadow-lg transition-smooth flex items-center gap-2"
+            className="absolute bottom-2 sm:bottom-3 right-2 sm:right-3 z-10 bg-white/90 hover:bg-white px-2.5 sm:px-3 py-2 rounded-lg cursor-pointer shadow-lg transition-smooth flex items-center gap-1.5 sm:gap-2 min-h-[44px]"
           >
             <Icon name="Camera" size={16} />
-            <span className="font-medium text-sm">
+            <span className="font-medium text-xs sm:text-sm">
               {isUploadingCover ? 'Upload...' : 'Modifier'}
             </span>
             <input
@@ -1134,48 +1212,45 @@ const handleExportPDF = async () => {
           </label>
         </div>
 
-        {/* Avatar + Infos chien */}
-        <div className="relative max-w-7xl mx-auto px-4">
-          <div className="flex items-end gap-4 -mt-12 pb-4">
-            {/* Avatar du chien */}
-            <div className="relative">
-              <div className="w-24 h-24 rounded-full border-4 border-card bg-gradient-to-br from-blue-500 to-purple-600 overflow-hidden shadow-xl">
-                {currentProfile.image ? (
-                  <img
-                    src={currentProfile.image}
-                    alt={currentProfile.name}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-white text-3xl font-bold">
-                    {currentProfile.name?.charAt(0).toUpperCase()}
-                  </div>
-                )}
+        {/* Avatar + Infos */}
+        <div className="relative max-w-7xl mx-auto px-3 sm:px-4">
+          <div className="flex items-end gap-3 sm:gap-4 -mt-10 sm:-mt-12 pb-3 sm:pb-4">
+            {/* Avatar */}
+            <div className="relative flex-shrink-0">
+              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 border-card bg-gradient-to-br from-blue-500 to-purple-600 overflow-hidden shadow-xl">
+                <OptimizedImage
+                  src={currentProfile.image}
+                  alt={currentProfile.name}
+                  width={200}
+                  quality={80}
+                  eager
+                  className="w-full h-full object-cover"
+                />
               </div>
               
-              {/* Bouton modifier photo profil */}
+              {/* Bouton modifier avatar */}
               <button
                 onClick={() => openModal('gallery')}
-                className="absolute bottom-0 right-0 bg-primary hover:bg-primary/90 text-white p-2 rounded-full cursor-pointer shadow-lg transition-smooth"
+                className="absolute bottom-0 right-0 bg-primary hover:bg-primary/90 text-white p-1.5 sm:p-2 rounded-full cursor-pointer shadow-lg transition-smooth min-w-[36px] min-h-[36px] flex items-center justify-center"
               >
-                <Icon name="Camera" size={16} />
+                <Icon name="Camera" size={14} className="sm:w-4 sm:h-4" />
               </button>
             </div>
 
             {/* Infos chien */}
-            <div className="flex-1 pb-1">
-              <h2 className="text-2xl font-heading font-bold text-foreground truncate">
+            <div className="flex-1 pb-1 min-w-0">
+              <h2 className="text-xl sm:text-2xl font-heading font-bold text-foreground truncate">
                 {currentProfile.name}
               </h2>
-              <div className="flex flex-wrap items-center gap-1.5 text-muted-foreground text-xs mt-1">
+              <div className="flex flex-wrap items-center gap-1 sm:gap-1.5 text-muted-foreground text-xs mt-1">
                 <span className="flex items-center gap-1">
                   <Icon name="Dog" size={12} />
-                  <span className="truncate max-w-[80px]">{currentProfile.breed}</span>
+                  <span className="truncate max-w-[100px] sm:max-w-none">{currentProfile.breed}</span>
                 </span>
                 <span className="text-gray-300">•</span>
                 <span className="flex items-center gap-1">
                   <Icon name="Calendar" size={12} />
-                  {currentProfile.age}
+                  <span className="whitespace-nowrap">{currentProfile.age}</span>
                 </span>
                 <span className="text-gray-300">•</span>
                 <span className="flex items-center gap-1">
@@ -1200,35 +1275,35 @@ const handleExportPDF = async () => {
       <TabNavigation />
       
       <main className="main-content flex-1 pb-20">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="mt-4">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 py-3 sm:py-4">
+          <div className="mt-3 sm:mt-4">
             <div className="bg-card rounded-lg shadow-soft overflow-hidden">
-              {/* Tabs mobile avec scroll */}
+              {/* Tabs - SCROLL HORIZONTAL MOBILE */}
               <div className="border-b border-border overflow-x-auto">
                 <div className="flex min-w-max px-2">
                   {tabs.map((tab) => (
                     <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id)}
-                      className={`flex items-center gap-2 px-4 py-3 font-medium transition-smooth border-b-2 text-sm ${
+                      className={`flex items-center gap-2 px-3 sm:px-4 py-3 font-medium transition-smooth border-b-2 text-xs sm:text-sm min-h-[44px] ${
                         activeTab === tab.id
                           ? 'border-primary text-primary'
                           : 'border-transparent text-muted-foreground hover:text-foreground'
                       }`}
                     >
-                      <Icon name={tab.icon} size={18} />
+                      <Icon name={tab.icon} size={16} className="sm:w-[18px] sm:h-[18px]" />
                       <span className="whitespace-nowrap">{tab.label}</span>
                     </button>
                   ))}
                 </div>
               </div>
 
-              <div className="p-4">
+              <div className="p-3 sm:p-4">
                 {activeTab === 'vaccinations' && (
                   <div className="space-y-4">
                     <div className="flex flex-col items-start justify-between gap-3 mb-4">
                       <div>
-                        <h3 className="text-lg font-heading font-semibold text-foreground mb-1">
+                        <h3 className="text-base sm:text-lg font-heading font-semibold text-foreground mb-1">
                           Vaccinations
                         </h3>
                         <p className="text-xs text-muted-foreground font-caption">
@@ -1241,7 +1316,7 @@ const handleExportPDF = async () => {
                         iconPosition="left"
                         onClick={() => openModal('vaccination')}
                         size="sm"
-                        className="w-full"
+                        className="w-full min-h-[44px]"
                       >
                         Ajouter une vaccination
                       </Button>
@@ -1252,7 +1327,7 @@ const handleExportPDF = async () => {
                         <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
                           <Icon name="Syringe" size={24} color="var(--color-muted-foreground)" />
                         </div>
-                        <p className="text-muted-foreground font-caption text-sm mb-4">
+                        <p className="text-sm text-muted-foreground font-caption mb-4">
                           Aucune vaccination enregistrée
                         </p>
                         <Button
@@ -1261,7 +1336,7 @@ const handleExportPDF = async () => {
                           iconPosition="left"
                           onClick={() => openModal('vaccination')}
                           size="sm"
-                          className="w-full"
+                          className="w-full min-h-[44px]"
                         >
                           Ajouter une vaccination
                         </Button>
@@ -1285,7 +1360,7 @@ const handleExportPDF = async () => {
                   <div className="space-y-4">
                     <div className="flex flex-col items-start justify-between gap-3 mb-4">
                       <div>
-                        <h3 className="text-lg font-heading font-semibold text-foreground mb-1">
+                        <h3 className="text-base sm:text-lg font-heading font-semibold text-foreground mb-1">
                           Vermifuge
                         </h3>
                         <p className="text-xs text-muted-foreground font-caption">
@@ -1298,7 +1373,7 @@ const handleExportPDF = async () => {
                         iconPosition="left"
                         onClick={() => openModal('vermifuge')}
                         size="sm"
-                        className="w-full"
+                        className="w-full min-h-[44px]"
                       >
                         Ajouter un traitement
                       </Button>
@@ -1309,7 +1384,7 @@ const handleExportPDF = async () => {
                         <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
                           <Icon name="Pill" size={24} color="var(--color-muted-foreground)" />
                         </div>
-                        <p className="text-muted-foreground font-caption text-sm mb-4">
+                        <p className="text-sm text-muted-foreground font-caption mb-4">
                           Aucun traitement vermifuge enregistré
                         </p>
                         <Button
@@ -1318,7 +1393,7 @@ const handleExportPDF = async () => {
                           iconPosition="left"
                           onClick={() => openModal('vermifuge')}
                           size="sm"
-                          className="w-full"
+                          className="w-full min-h-[44px]"
                         >
                           Ajouter un traitement
                         </Button>
@@ -1331,7 +1406,7 @@ const handleExportPDF = async () => {
                             treatment={treatment}
                             type="vermifuge"
                             onEdit={(item) => openModal('vermifuge', item)}
-                            onDelete={(id) => handleDeleteTreatment(id, 'vermifuge')}
+                            onDelete={(id) => handleDeleteTreatment(id)}
                           />
                         ))}
                       </div>
@@ -1343,7 +1418,7 @@ const handleExportPDF = async () => {
                   <div className="space-y-4">
                     <div className="flex flex-col items-start justify-between gap-3 mb-4">
                       <div>
-                        <h3 className="text-lg font-heading font-semibold text-foreground mb-1">
+                        <h3 className="text-base sm:text-lg font-heading font-semibold text-foreground mb-1">
                           Anti-puces et tiques
                         </h3>
                         <p className="text-xs text-muted-foreground font-caption">
@@ -1356,7 +1431,7 @@ const handleExportPDF = async () => {
                         iconPosition="left"
                         onClick={() => openModal('flea')}
                         size="sm"
-                        className="w-full"
+                        className="w-full min-h-[44px]"
                       >
                         Ajouter un traitement
                       </Button>
@@ -1367,7 +1442,7 @@ const handleExportPDF = async () => {
                         <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
                           <Icon name="Bug" size={24} color="var(--color-muted-foreground)" />
                         </div>
-                        <p className="text-muted-foreground font-caption text-sm mb-4">
+                        <p className="text-sm text-muted-foreground font-caption mb-4">
                           Aucun traitement anti-puces enregistré
                         </p>
                         <Button
@@ -1376,7 +1451,7 @@ const handleExportPDF = async () => {
                           iconPosition="left"
                           onClick={() => openModal('flea')}
                           size="sm"
-                          className="w-full"
+                          className="w-full min-h-[44px]"
                         >
                           Ajouter un traitement
                         </Button>
@@ -1389,7 +1464,7 @@ const handleExportPDF = async () => {
                             treatment={treatment}
                             type="flea"
                             onEdit={(item) => openModal('flea', item)}
-                            onDelete={(id) => handleDeleteTreatment(id, 'flea')}
+                            onDelete={(id) => handleDeleteTreatment(id)}
                           />
                         ))}
                       </div>
@@ -1416,19 +1491,20 @@ const handleExportPDF = async () => {
         </div>
       </main>
 
-      {/* Bouton flottant Export PDF sur mobile */}
+      {/* Bouton PDF flottant mobile */}
       <button
         onClick={handleExportPDF}
         disabled={generatingPDF}
-        className="sm:hidden fixed bottom-20 right-4 z-40 w-14 h-14 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-full shadow-lg flex items-center justify-center disabled:opacity-50"
+        className="sm:hidden fixed bottom-20 right-3 sm:right-4 z-40 w-14 h-14 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-full shadow-lg flex items-center justify-center disabled:opacity-50"
       >
         {generatingPDF ? (
           <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
         ) : (
-          <Icon name="Download" size={24} />
+          <Icon name="Download" size={22} />
         )}
       </button>
 
+      {/* Modals */}
       <AddVaccinationModal
         isOpen={modals.vaccination}
         onClose={() => closeModal('vaccination')}
@@ -1474,7 +1550,6 @@ const handleExportPDF = async () => {
         onSetProfilePhoto={handleSetProfilePhoto}
       />
 
-      {/* Modal Premium */}
       <PremiumModal
         isOpen={showPremiumModal}
         onClose={() => setShowPremiumModal(false)}
