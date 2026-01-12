@@ -38,10 +38,10 @@ const TabNavigationPro = () => {
       matchPaths: ['/pro/applications']
     },
     {
-      path: '/pro/instagram-generator',
+      path: '/pro/instagram',
       icon: Instagram,
       label: 'Instagram',
-      matchPaths: ['/pro/instagram-generator']
+      matchPaths: ['/pro/instagram']
     }
   ];
 
