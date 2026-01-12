@@ -19,6 +19,8 @@ const DashboardRedirect = () => {
       }
 
       try {
+        console.log('DashboardRedirect: Checking account for user:', user.id, user.email);
+        
         // ÉTAPE 1 : Vérifier si l'utilisateur est admin PAR EMAIL
         const { data: profile, error: profileError } = await supabase
           .from('user_profiles')
@@ -26,7 +28,10 @@ const DashboardRedirect = () => {
           .eq('email', user.email)
           .single();
 
+        console.log('DashboardRedirect: Profile result:', { profile, profileError });
+
         if (profile && profile.is_admin === true) {
+          console.log('DashboardRedirect: User is admin, redirecting to admin dashboard');
           navigate('/admin/dashboard');
           return;
         }
@@ -36,15 +41,20 @@ const DashboardRedirect = () => {
           .from('professional_accounts')
           .select('id, is_active')
           .eq('user_id', user.id)
-          .single();
+          .maybeSingle(); // Utiliser maybeSingle au lieu de single pour éviter les erreurs
+
+        console.log('DashboardRedirect: Pro account result:', { proAccount, proError });
 
         // Si un compte pro existe (actif ou non), rediriger vers le dashboard pro
         if (proAccount) {
+          console.log('DashboardRedirect: User has pro account, redirecting to pro dashboard');
           navigate('/pro/dashboard');
         } else {
+          console.log('DashboardRedirect: Regular user, redirecting to dog-profile');
           navigate('/dog-profile');
         }
       } catch (error) {
+        console.error('DashboardRedirect: Error checking account:', error);
         // En cas d'erreur → Dashboard User
         navigate('/dog-profile');
       } finally {
