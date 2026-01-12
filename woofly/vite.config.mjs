@@ -43,12 +43,13 @@ export default defineConfig({
     }
   },
   server: {
-    port: 5173,
-    host: true
+    port: 3000,
+    host: '0.0.0.0',
+    strictPort: false
   },
   preview: {
-    port: 4173,
-    host: true
+    port: 3000,
+    host: '0.0.0.0'
   }
 });
 
