@@ -36,6 +36,10 @@ export default defineConfig({
     cssCodeSplit: true,
     assetsInlineLimit: 4096,
     cssMinify: true,
+    esbuild: {
+      drop: ['console', 'debugger'],
+      legalComments: 'none'
+    },
     rollupOptions: {
       output: {
         manualChunks: (id) => {
