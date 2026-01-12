@@ -68,3 +68,27 @@ body {
     font-size: 16px;
   }
 }
+
+/* Scroll mobile optimisé */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Amélioration du scroll horizontal sur mobile */
+@media (max-width: 768px) {
+  [class*="overflow-x-auto"] {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+  
+  /* Padding pour faciliter le scroll */
+  .flex.overflow-x-auto {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+}
