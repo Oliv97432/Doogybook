@@ -33,11 +33,6 @@
     <meta property="twitter:description" content="Gérez facilement la santé de votre chien avec Woofly" />
     <meta property="twitter:image" content="https://www.doogybook.com/og-image.jpg" />
     
-    <!-- PWA -->
-    <meta name="theme-color" content="#3B82F6" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <link rel="manifest" href="/manifest.json" />
-    
     <!-- Security -->
     <meta http-equiv="X-Content-Type-Options" content="nosniff" />
     <meta name="referrer" content="origin-when-cross-origin" />
@@ -45,47 +40,9 @@
     <!-- Google Fonts - Optimisé -->
     <link rel="preload" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" as="style" />
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
-    
-    <!-- Structured Data -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebApplication",
-      "name": "Woofly",
-      "description": "Carnet de santé digital pour chiens",
-      "url": "https://www.doogybook.com",
-      "applicationCategory": "HealthApplication",
-      "operatingSystem": "Any",
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "EUR"
-      }
-    }
-    </script>
   </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-    
-    <!-- Google AdSense - Chargé en différé -->
-    <script>
-      window.addEventListener('load', () => {
-        setTimeout(() => {
-          const script = document.createElement('script');
-          script.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6863746476845611';
-          script.async = true;
-          script.crossOrigin = 'anonymous';
-          document.head.appendChild(script);
-        }, 3000);
-      });
-    </script>
+    <script type="module" src="./src/main.jsx"></script>
   </body>
 </html>
-```
-
----
-
-## 📁 FICHIER 6 : `.npmrc`
-```
-legacy-peer-deps=true
