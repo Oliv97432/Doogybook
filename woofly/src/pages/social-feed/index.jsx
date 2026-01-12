@@ -127,10 +127,109 @@ const SocialFeed = () => {
   }, [user?.id]);
   
   useEffect(() => {
-    fetchPosts();
+    // Reset and fetch when filters change
+    setPosts([]);
+    setPage(0);
+    setHasMore(true);
+    fetchPosts(0, true);
   }, [selectedTag, feedType, followedUsers]);
-  
-  const fetchUserStats = async () => {
+
+  // Fetch posts with pagination
+  const fetchPosts = useCallback(async (pageNum = 0, reset = false) => {
+    if (reset) {
+      setLoading(true);
+    } else {
+      setLoadingMore(true);
+    }
+    
+    try {
+      const from = pageNum * POSTS_PER_PAGE;
+      const to = from + POSTS_PER_PAGE - 1;
+      
+      let query = supabase
+        .from('forum_posts')
+        .select('*')
+        .is('forum_id', null)
+        .eq('is_hidden', false)
+        .order('created_at', { ascending: false })
+        .range(from, to);
+      
+      if (feedType === 'following' && followedUsers.size > 0) {
+        query = query.in('user_id', Array.from(followedUsers));
+      }
+      
+      if (selectedTag !== 'all') {
+        query = query.contains('tags', [selectedTag]);
+      }
+      
+      const { data: postsData, error: postsError } = await query;
+      
+      if (postsError) throw postsError;
+      
+      // Check if there are more posts
+      if (!postsData || postsData.length < POSTS_PER_PAGE) {
+        setHasMore(false);
+      }
+      
+      // Fetch authors for posts
+      const postsWithAuthors = await Promise.all(
+        (postsData || []).map(async (post) => {
+          try {
+            const { data } = await supabase
+              .from('user_profiles')
+              .select('*')
+              .eq('id', post.user_id)
+              .single();
+            
+            return {
+              ...post,
+              author: data
+            };
+          } catch (err) {
+            return post;
+          }
+        })
+      );
+      
+      if (reset) {
+        setPosts(postsWithAuthors);
+      } else {
+        setPosts(prev => [...prev, ...postsWithAuthors]);
+      }
+    } catch (error) {
+      console.error('Erreur chargement posts:', error);
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  }, [selectedTag, feedType, followedUsers]);
+
+  // Load more posts function for infinite scroll
+  const loadMorePosts = useCallback(() => {
+    if (!loadingMore && hasMore) {
+      const nextPage = page + 1;
+      setPage(nextPage);
+      fetchPosts(nextPage, false);
+    }
+  }, [loadingMore, hasMore, page, fetchPosts]);
+
+  // Infinite scroll hook
+  const loadMoreRef = useInfiniteScroll(loadMorePosts, loadingMore);
+
+  // Pull to refresh handler
+  const handleRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    setPosts([]);
+    setPage(0);
+    setHasMore(true);
+    await fetchPosts(0, true);
+    await fetchTopPosts();
+    await fetchTagStats();
+    setIsRefreshing(false);
+  }, [fetchPosts]);
+
+  // Pull to refresh hook
+  const { isPulling, pullDistance } = usePullToRefresh(handleRefresh);
     if (!user?.id) return;
     
     try {
