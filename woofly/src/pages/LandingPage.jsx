@@ -14,8 +14,9 @@ const LandingPage = () => {
   const [featuredDogs, setFeaturedDogs] = useState([]);
 
   useEffect(() => {
-    // Si l'utilisateur est déjà connecté, rediriger vers son dashboard
+    // Si l'utilisateur est déjà connecté, rediriger vers la bonne page
     if (user) {
+      // Utiliser DashboardRedirect qui gère admin/pro/user
       navigate('/dashboard');
     } else {
       fetchFeaturedDogs();
