@@ -289,7 +289,7 @@ ApplicationCard.displayName = 'ApplicationCard';
 // 🎨 MAIN COMPONENT
 // ==========================================
 const ProDashboard = () => {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [proAccount, setProAccount] = useState(null);
@@ -306,18 +306,29 @@ const ProDashboard = () => {
   const [modalType, setModalType] = useState('dogs');
 
   useEffect(() => {
-    if (user) {
-      fetchProAccount();
+    // Attendre que l'auth soit chargé
+    if (authLoading) return;
+    
+    // Si pas d'utilisateur, rediriger vers login
+    if (!user) {
+      navigate('/login');
+      return;
     }
-  }, [user]);
+    
+    fetchProAccount();
+  }, [user, authLoading]);
 
   const fetchProAccount = async () => {
     try {
+      console.log('Fetching pro account for user:', user.id);
+      
       const { data: account, error } = await supabase
         .from('professional_accounts')
         .select('id, organization_name, account_type, is_verified, is_active')
         .eq('user_id', user.id)
         .single();
+
+      console.log('Pro account result:', { account, error });
 
       if (error) {
         console.error('Compte pro non trouvé:', error);
