@@ -5,13 +5,19 @@ import { useAuth } from '../../contexts/AuthContext';
 import { 
   Heart, MessageCircle, TrendingUp, Plus, Share2, Send, 
   Bell, Sparkles, Users as UsersIcon,
-  Hash, UserPlus, Settings as SettingsIcon
+  Hash, UserPlus, Settings as SettingsIcon, RefreshCw
 } from 'lucide-react';
 import { useNotifications } from '../../hooks/useNotifications';
+import useInfiniteScroll from '../../hooks/useInfiniteScroll';
+import usePullToRefresh from '../../hooks/usePullToRefresh';
 import TabNavigation from '../../components/TabNavigation';
 import UserMenu from '../../components/UserMenu';
 import Footer from '../../components/Footer';
 import CreatePostModal from '../../components/CreatePostModal';
+import PostSkeleton from '../../components/PostSkeleton';
+import LazyImage from '../../components/LazyImage';
+
+const POSTS_PER_PAGE = 10;
 
 const SocialFeed = () => {
   const { user } = useAuth();
