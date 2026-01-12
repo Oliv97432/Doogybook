@@ -9,19 +9,33 @@ import {
 } from 'lucide-react';
 
 const LandingPage = () => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [featuredDogs, setFeaturedDogs] = useState([]);
 
   useEffect(() => {
+    // Attendre que le chargement d'auth soit terminé
+    if (loading) return;
+    
     // Si l'utilisateur est déjà connecté, rediriger vers la bonne page
     if (user) {
-      // Utiliser DashboardRedirect qui gère admin/pro/user
       navigate('/dashboard');
     } else {
       fetchFeaturedDogs();
     }
-  }, [user, navigate]);
+  }, [user, loading, navigate]);
+
+  // Afficher le loader pendant le chargement d'auth
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent mb-4"></div>
+          <p className="text-gray-600">Chargement...</p>
+        </div>
+      </div>
+    );
+  }
 
   const fetchFeaturedDogs = async () => {
     try {
