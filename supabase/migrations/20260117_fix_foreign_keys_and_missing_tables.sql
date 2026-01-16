@@ -165,18 +165,20 @@ CREATE TRIGGER on_placement_history_updated
     EXECUTE FUNCTION public.update_placement_history_updated_at();
 
 -- ============================================================================
--- 5. CREATE INITIAL PLACEMENT HISTORY FROM EXISTING DOGS
+-- 5. CREATE INITIAL PLACEMENT HISTORY FROM EXISTING DOGS (OPTIONAL)
 -- ============================================================================
 
--- Insert placement history for dogs currently in foster care
-INSERT INTO public.placement_history (dog_id, contact_id, professional_account_id, placement_type, status, start_date)
-SELECT
-    d.id as dog_id,
-    d.foster_family_contact_id as contact_id,
-    d.professional_account_id,
-    'foster' as placement_type,
-    'active' as status,
-    d.created_at as start_date
-FROM public.dogs d
-WHERE d.foster_family_contact_id IS NOT NULL
-ON CONFLICT DO NOTHING;
+-- Note: This section is commented out because it may fail if there are orphaned records.
+-- You can manually populate placement_history later if needed.
+
+-- INSERT INTO public.placement_history (dog_id, contact_id, professional_account_id, placement_type, status, start_date)
+-- SELECT
+--     d.id as dog_id,
+--     d.foster_family_contact_id as contact_id,
+--     d.professional_account_id,
+--     'foster' as placement_type,
+--     'active' as status,
+--     d.created_at as start_date
+-- FROM public.dogs d
+-- WHERE d.foster_family_contact_id IS NOT NULL
+-- ON CONFLICT DO NOTHING;
