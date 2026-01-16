@@ -154,7 +154,7 @@ SELECT
     d.professional_account_id,
     'foster' as placement_type,
     'active' as status,
-    COALESCE(d.foster_start_date, d.created_at) as start_date
+    d.created_at as start_date
 FROM public.dogs d
 WHERE d.foster_family_contact_id IS NOT NULL
 ON CONFLICT DO NOTHING;
