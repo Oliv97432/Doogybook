@@ -1,5 +1,5 @@
-import React, { useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { 
   ArrowLeft, Upload, Download, Copy, Instagram, Check,
@@ -9,6 +9,7 @@ import {
 const InstagramGenerator = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const fileInputRef = useRef(null);
   const canvasRef = useRef(null);
 
@@ -29,6 +30,26 @@ const InstagramGenerator = () => {
   const [generatedImage, setGeneratedImage] = useState(null);
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // Pré-remplir avec les données du chien si elles sont passées
+  useEffect(() => {
+    if (location.state?.dogData) {
+      const { name, breed, age, gender, description, photo } = location.state.dogData;
+
+      setFormData(prev => ({
+        ...prev,
+        dogName: name || '',
+        breed: breed || '',
+        age: age?.toString() || '',
+        story: description || ''
+      }));
+
+      // Pré-charger la photo si disponible
+      if (photo) {
+        setPhotoPreview(photo);
+      }
+    }
+  }, [location.state]);
 
   const locations = [
     'Paris', 'Lyon', 'Marseille', 'Toulouse', 'Nice', 
