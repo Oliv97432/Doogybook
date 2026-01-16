@@ -30,14 +30,22 @@ body {
   input, select, textarea {
     font-size: 16px !important;
   }
-  
+
   button, [role="button"], a[href] {
     min-height: 44px !important;
     min-width: 44px !important;
   }
-  
+
+  /* Pan-y par défaut pour éviter le zoom pinch, mais les containers avec overflow-x l'overrident */
   * {
     touch-action: pan-y;
+  }
+
+  /* Permettre le scroll horizontal dans les containers appropriés */
+  [class*="overflow-x-auto"],
+  [class*="overflow-x-scroll"],
+  nav * {
+    touch-action: pan-x pan-y;
   }
 }
 
@@ -88,23 +96,22 @@ body {
     touch-action: pan-x !important;
     overscroll-behavior-x: contain !important;
   }
-  
+
+  /* OVERRIDE pour le scroll horizontal dans les tabs */
+  nav [class*="overflow-x-auto"],
+  nav [class*="overflow-x-scroll"] {
+    touch-action: pan-x pan-y !important;
+  }
+
   /* Assure que le flex container permet le scroll */
   .flex.overflow-x-auto,
   .flex.overflow-x-scroll {
     display: flex !important;
     flex-wrap: nowrap !important;
-    overflow-x: scroll !important;
+    overflow-x: auto !important;
     overflow-y: hidden !important;
   }
-  
-  /* Padding pour faciliter le scroll */
-  .flex.overflow-x-auto,
-  .flex.overflow-x-scroll {
-    padding-left: 8px;
-    padding-right: 8px;
-  }
-  
+
   /* Force les enfants à ne pas rétrécir */
   .flex.overflow-x-auto > *,
   .flex.overflow-x-scroll > * {

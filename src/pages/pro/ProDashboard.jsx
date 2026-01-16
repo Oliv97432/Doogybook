@@ -6,9 +6,9 @@ import TabNavigationPro from '../../components/TabNavigationPro';
 import UserMenuPro from '../../components/UserMenuPro';
 import ContactListModal from '../../components/ContactListModal';
 import VerifiedBadge from '../../components/VerifiedBadge';
-import { 
-  Plus, Search, Heart, Users, CheckCircle, Clock, 
-  TrendingUp, Calendar, Home, AlertCircle
+import {
+  Plus, Search, Heart, Users, CheckCircle, Clock,
+  TrendingUp, Calendar, Home, AlertCircle, Camera
 } from 'lucide-react';
 
 // ==========================================
@@ -85,9 +85,14 @@ StatCard.displayName = 'StatCard';
 // ==========================================
 // 🎨 DOG CARD COMPONENT (MEMOIZED + OPTIMIZED)
 // ==========================================
-const DogCard = memo(({ dog, onClick }) => {
+const DogCard = memo(({ dog, onClick, onInstagramClick }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
-  
+
+  const handleInstagramClick = (e) => {
+    e.stopPropagation(); // Empêche le clic de déclencher onClick
+    onInstagramClick(dog);
+  };
+
   const getStatusBadge = () => {
     if (dog.foster_family_contact_id) {
       return {
@@ -203,20 +208,31 @@ const DogCard = memo(({ dog, onClick }) => {
         )}
 
         {/* Détails */}
-        <div className="flex items-center gap-3 text-xs text-muted-foreground">
-          {dog.gender && (
-            <div className="flex items-center gap-1">
-              <span>{dog.gender === 'male' ? '♂️' : '♀️'}</span>
-              <span className="hidden xs:inline">{dog.gender === 'male' ? 'Mâle' : 'Femelle'}</span>
-            </div>
-          )}
-          {age && (
-            <div className="flex items-center gap-1">
-              <Calendar size={14} />
-              <span>{age} an{age > 1 ? 's' : ''}</span>
-            </div>
-          )}
+        <div className="flex items-center justify-between gap-3 text-xs text-muted-foreground mb-3">
+          <div className="flex items-center gap-3">
+            {dog.gender && (
+              <div className="flex items-center gap-1">
+                <span>{dog.gender === 'male' ? '♂️' : '♀️'}</span>
+                <span className="hidden xs:inline">{dog.gender === 'male' ? 'Mâle' : 'Femelle'}</span>
+              </div>
+            )}
+            {age && (
+              <div className="flex items-center gap-1">
+                <Calendar size={14} />
+                <span>{age} an{age > 1 ? 's' : ''}</span>
+              </div>
+            )}
+          </div>
         </div>
+
+        {/* Bouton Instagram */}
+        <button
+          onClick={handleInstagramClick}
+          className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs font-medium rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all duration-200 shadow-md hover:shadow-lg"
+        >
+          <Camera size={16} />
+          <span>Post Instagram</span>
+        </button>
       </div>
     </div>
   );
@@ -482,37 +498,45 @@ const ProDashboard = () => {
     }
   };
 
+  // Fonction helper pour formater les chiens pour la modal
+  const formatDogsForModal = useCallback((dogsList) => {
+    return dogsList.map(dog => ({
+      ...dog,
+      foster_family_name: dog.foster_family?.full_name || null
+    }));
+  }, []);
+
   // Handlers avec useCallback pour éviter re-renders
   const handleTotalDogsClick = useCallback(() => {
     setModalTitle(`Total chiens (${dogs.length})`);
-    setModalItems(dogs);
+    setModalItems(formatDogsForModal(dogs));
     setModalType('dogs');
     setShowModal(true);
-  }, [dogs]);
+  }, [dogs, formatDogsForModal]);
 
   const handleAvailableDogsClick = useCallback(() => {
     const availableDogs = dogs.filter(d => d.adoption_status === 'available' && !d.foster_family_contact_id);
     setModalTitle(`Chiens disponibles (${availableDogs.length})`);
-    setModalItems(availableDogs);
+    setModalItems(formatDogsForModal(availableDogs));
     setModalType('dogs');
     setShowModal(true);
-  }, [dogs]);
+  }, [dogs, formatDogsForModal]);
 
   const handleInFosterClick = useCallback(() => {
     const inFosterDogs = dogs.filter(d => d.foster_family_contact_id);
     setModalTitle(`Chiens en famille d'accueil (${inFosterDogs.length})`);
-    setModalItems(inFosterDogs);
+    setModalItems(formatDogsForModal(inFosterDogs));
     setModalType('dogs');
     setShowModal(true);
-  }, [dogs]);
+  }, [dogs, formatDogsForModal]);
 
   const handlePendingClick = useCallback(() => {
     const pendingDogs = dogs.filter(d => d.adoption_status === 'pending');
     setModalTitle(`Chiens en cours d'adoption (${pendingDogs.length})`);
-    setModalItems(pendingDogs);
+    setModalItems(formatDogsForModal(pendingDogs));
     setModalType('dogs');
     setShowModal(true);
-  }, [dogs]);
+  }, [dogs, formatDogsForModal]);
 
   const handleApplicationsClick = useCallback(() => {
     navigate('/pro/applications');
@@ -527,6 +551,21 @@ const ProDashboard = () => {
 
   const handleDogClick = useCallback((dogId) => {
     navigate(`/pro/dogs/${dogId}`);
+  }, [navigate]);
+
+  const handleInstagramClick = useCallback((dog) => {
+    // Pré-remplir les données du chien dans le générateur Instagram
+    const dogData = {
+      name: dog.name,
+      breed: dog.breed,
+      age: dog.birth_date ? new Date().getFullYear() - new Date(dog.birth_date).getFullYear() : null,
+      gender: dog.gender,
+      description: dog.notes || dog.adoption_story || '',
+      photo: dog.photo_url
+    };
+
+    // Naviguer vers le générateur Instagram avec les données
+    navigate('/pro/instagram-generator', { state: { dogData } });
   }, [navigate]);
 
   const handleApplicationClick = useCallback((appId) => {
@@ -798,6 +837,7 @@ const ProDashboard = () => {
                       key={dog.id}
                       dog={dog}
                       onClick={() => handleDogClick(dog.id)}
+                      onInstagramClick={handleInstagramClick}
                     />
                   ))}
                 </div>

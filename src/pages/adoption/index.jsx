@@ -117,10 +117,16 @@ const AdoptionPage = () => {
         .order('is_urgent', { ascending: false })
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erreur Supabase lors du chargement des chiens:', error);
+        throw error;
+      }
+
+      console.log('Chiens récupérés pour adoption:', data?.length || 0, data);
       setDogs(data || []);
     } catch (error) {
       console.error('Erreur chargement chiens:', error);
+      setDogs([]);
     } finally {
       setLoading(false);
     }
