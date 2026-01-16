@@ -33,20 +33,36 @@ COMMENT ON COLUMN public.placement_history.placement_type IS 'Type de placement:
 COMMENT ON COLUMN public.placement_history.status IS 'Statut: active (en cours), completed (terminé), cancelled (annulé)';
 
 -- ============================================================================
--- 2. FIX NOTIFICATIONS TABLE - ADD ACTOR_ID FOREIGN KEY
+-- 2. FIX NOTIFICATIONS TABLE - ADD ACTOR_ID COLUMN AND FOREIGN KEY
 -- ============================================================================
 
 -- Check if notifications table exists and add actor_id properly
 DO $$
 BEGIN
     IF EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'notifications') THEN
+        -- Add actor_id column if it doesn't exist
+        IF NOT EXISTS (
+            SELECT FROM information_schema.columns
+            WHERE table_schema = 'public'
+            AND table_name = 'notifications'
+            AND column_name = 'actor_id'
+        ) THEN
+            ALTER TABLE public.notifications
+            ADD COLUMN actor_id UUID REFERENCES auth.users(id) ON DELETE CASCADE;
+        END IF;
+
         -- Drop existing constraint if it exists (wrong name)
         ALTER TABLE public.notifications DROP CONSTRAINT IF EXISTS notifications_actor_id_fkey;
 
-        -- Add proper foreign key constraint
-        ALTER TABLE public.notifications
-        ADD CONSTRAINT notifications_actor_id_fkey
-        FOREIGN KEY (actor_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+        -- Add proper foreign key constraint (only if column exists but constraint doesn't)
+        IF NOT EXISTS (
+            SELECT FROM pg_constraint
+            WHERE conname = 'notifications_actor_id_fkey'
+        ) THEN
+            ALTER TABLE public.notifications
+            ADD CONSTRAINT notifications_actor_id_fkey
+            FOREIGN KEY (actor_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+        END IF;
 
         -- Create index if not exists
         CREATE INDEX IF NOT EXISTS idx_notifications_actor_id ON public.notifications(actor_id);
