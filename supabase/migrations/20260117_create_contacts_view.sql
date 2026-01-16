@@ -20,9 +20,9 @@ SELECT
                 'id', d.id,
                 'name', d.name,
                 'breed', d.breed,
-                'age', d.age,
+                'birth_date', d.birth_date,
                 'gender', d.gender,
-                'photo', d.photo,
+                'photo_url', d.photo_url,
                 'adoption_status', d.adoption_status
             )
             ORDER BY d.created_at DESC
