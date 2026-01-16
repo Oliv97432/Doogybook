@@ -4,7 +4,19 @@
 
 -- Ajouter la colonne foster_family_contact_id pour lier un chien à une famille d'accueil
 ALTER TABLE public.dogs
-ADD COLUMN IF NOT EXISTS foster_family_contact_id UUID REFERENCES public.contacts(id) ON DELETE SET NULL;
+ADD COLUMN IF NOT EXISTS foster_family_contact_id UUID;
+
+-- Ajouter la contrainte de clé étrangère avec un nom explicite
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint WHERE conname = 'dogs_foster_family_contact_id_fkey'
+    ) THEN
+        ALTER TABLE public.dogs
+        ADD CONSTRAINT dogs_foster_family_contact_id_fkey
+        FOREIGN KEY (foster_family_contact_id) REFERENCES public.contacts(id) ON DELETE SET NULL;
+    END IF;
+END $$;
 
 -- Ajouter la colonne is_published pour contrôler la visibilité publique des chiens
 ALTER TABLE public.dogs

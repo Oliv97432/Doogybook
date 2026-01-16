@@ -8,9 +8,9 @@
 
 CREATE TABLE IF NOT EXISTS public.placement_history (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    dog_id UUID NOT NULL REFERENCES public.dogs(id) ON DELETE CASCADE,
-    contact_id UUID REFERENCES public.contacts(id) ON DELETE SET NULL,
-    professional_account_id UUID REFERENCES public.professional_accounts(id) ON DELETE CASCADE,
+    dog_id UUID NOT NULL,
+    contact_id UUID,
+    professional_account_id UUID,
     placement_type TEXT NOT NULL CHECK (placement_type IN ('foster', 'adoption', 'return')),
     status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'completed', 'cancelled')),
     start_date TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
@@ -19,6 +19,28 @@ CREATE TABLE IF NOT EXISTS public.placement_history (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+-- Add foreign key constraints with explicit names
+ALTER TABLE public.placement_history
+DROP CONSTRAINT IF EXISTS placement_history_dog_id_fkey;
+
+ALTER TABLE public.placement_history
+ADD CONSTRAINT placement_history_dog_id_fkey
+FOREIGN KEY (dog_id) REFERENCES public.dogs(id) ON DELETE CASCADE;
+
+ALTER TABLE public.placement_history
+DROP CONSTRAINT IF EXISTS placement_history_contact_id_fkey;
+
+ALTER TABLE public.placement_history
+ADD CONSTRAINT placement_history_contact_id_fkey
+FOREIGN KEY (contact_id) REFERENCES public.contacts(id) ON DELETE SET NULL;
+
+ALTER TABLE public.placement_history
+DROP CONSTRAINT IF EXISTS placement_history_professional_account_id_fkey;
+
+ALTER TABLE public.placement_history
+ADD CONSTRAINT placement_history_professional_account_id_fkey
+FOREIGN KEY (professional_account_id) REFERENCES public.professional_accounts(id) ON DELETE CASCADE;
 
 -- Indexes for placement_history
 CREATE INDEX IF NOT EXISTS idx_placement_history_dog_id ON public.placement_history(dog_id);
