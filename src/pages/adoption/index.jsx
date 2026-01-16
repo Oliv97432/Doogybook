@@ -160,8 +160,8 @@ const AdoptionPage = () => {
   const cities = [...new Set(dogs.map(d => d.professional_accounts?.city).filter(Boolean))].sort();
 
   return (
-    <div 
-      className="min-h-screen bg-background flex flex-col"
+    <div
+      className="min-h-[100dvh] sm:min-h-screen bg-background flex flex-col"
       style={{
         touchAction: 'pan-y',
         WebkitTouchCallout: 'none',
@@ -178,17 +178,11 @@ const AdoptionPage = () => {
             (function() {
               var meta = document.querySelector('meta[name="viewport"]');
               if (meta) {
-                meta.content = 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no';
+                // ✅ WCAG 2.1 Conforme: Permet le zoom utilisateur
+                meta.content = 'width=device-width, initial-scale=1';
               }
-              
-              // Empêcher le zoom avec la molette
-              document.addEventListener('wheel', function(e) {
-                if (e.ctrlKey) {
-                  e.preventDefault();
-                }
-              }, { passive: false });
-              
-              // Garantir une taille minimale pour les inputs (prévient le zoom iOS)
+
+              // Garantir une taille minimale pour les inputs (prévient le zoom automatique iOS)
               var style = document.createElement('style');
               style.textContent = '@media screen and (max-width: 768px) {' +
                 'input, select, textarea { font-size: 16px !important; }' +

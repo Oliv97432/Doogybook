@@ -1098,7 +1098,7 @@ const DogProfile = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="min-h-[100dvh] sm:min-h-screen bg-background flex items-center justify-center p-4">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
           <p className="text-muted-foreground">Chargement du profil...</p>
@@ -1109,7 +1109,7 @@ const DogProfile = () => {
 
   if (!currentProfile) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-[100dvh] sm:min-h-screen bg-background">
         <TabNavigation />
         <div className="main-content">
           <div className="max-w-7xl mx-auto px-4 py-6">
@@ -1139,7 +1139,7 @@ const DogProfile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-[100dvh] sm:min-h-screen bg-background flex flex-col">
       {/* Header sticky - OPTIMISÉ MOBILE */}
       <div className="sticky top-0 z-50 bg-card border-b border-border shadow-soft px-3 sm:px-4 py-3">
         <div className="flex items-center justify-between gap-2">

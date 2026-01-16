@@ -70,15 +70,15 @@ const TabNavigationPro = () => {
               <button
                 key={tab.path}
                 onClick={() => navigate(tab.path)}
-                className={`flex items-center gap-2 px-3 sm:px-4 py-3 border-b-2 whitespace-nowrap text-xs sm:text-sm font-medium transition-colors min-h-[44px] flex-shrink-0 ${
+                className={`flex items-center gap-1.5 xs:gap-2 px-2 xs:px-3 sm:px-4 py-3 border-b-2 whitespace-nowrap text-sm xs:text-sm sm:text-base font-medium transition-colors min-h-[44px] flex-shrink-0 ${
                   active
                     ? 'border-primary text-primary'
                     : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
                 }`}
                 style={{ scrollSnapAlign: 'start' }}
               >
-                <Icon size={18} />
-                <span className="hidden sm:inline">{tab.label}</span>
+                <Icon size={20} className="xs:w-5 xs:h-5" />
+                <span className="text-xs xs:text-sm sm:text-base">{tab.label}</span>
               </button>
             );
           })}

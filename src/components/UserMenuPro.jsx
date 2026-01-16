@@ -131,11 +131,11 @@ const UserMenuPro = () => {
           <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center text-white font-bold text-sm sm:text-base flex-shrink-0">
             {proAccount?.organization_name?.charAt(0).toUpperCase() || 'P'}
           </div>
-          <div className="hidden sm:block text-left">
-            <p className="font-medium text-sm text-foreground truncate max-w-[150px]">
+          <div className="text-left min-w-0 flex-1">
+            <p className="font-medium text-xs xs:text-sm text-foreground truncate">
               {proAccount?.organization_name || 'Mon Refuge'}
             </p>
-            <p className="text-xs text-muted-foreground flex items-center gap-1">
+            <p className="text-xs text-muted-foreground items-center gap-1 hidden xs:flex">
               <CheckCircle size={12} className="text-green-500" />
               Compte vérifié
             </p>
@@ -147,7 +147,7 @@ const UserMenuPro = () => {
         </button>
 
         {isOpen && (
-          <div className="absolute right-0 mt-2 w-64 bg-card border border-border rounded-xl shadow-lg py-2 z-50">
+          <div className="absolute right-0 mt-2 w-56 xs:w-64 sm:w-72 bg-card border border-border rounded-xl shadow-lg py-2 z-50">
             {/* Header */}
             <div className="px-4 py-3 border-b border-border">
               <p className="font-medium text-sm text-foreground truncate">

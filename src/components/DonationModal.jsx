@@ -10,10 +10,10 @@ const DonationModal = ({ isOpen, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-card rounded-xl shadow-2xl max-w-md w-full overflow-hidden max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-3 xs:p-4">
+      <div className="bg-card rounded-xl shadow-2xl max-w-xs xs:max-w-sm sm:max-w-md w-full overflow-hidden max-h-[90vh] overflow-y-auto">
         {/* Header avec dégradé */}
-        <div className="bg-gradient-to-r from-pink-500 to-purple-600 p-5 text-white relative overflow-hidden">
+        <div className="bg-gradient-to-r from-pink-500 to-purple-600 p-4 xs:p-5 text-white relative overflow-hidden">
           <div className="absolute top-2 right-2 opacity-20">
             <Sparkles size={80} />
           </div>
@@ -29,17 +29,17 @@ const DonationModal = ({ isOpen, onClose }) => {
             <div className="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center mb-3">
               <Heart size={24} className="text-white fill-white" />
             </div>
-            <h2 className="text-xl font-heading font-bold mb-1">
+            <h2 className="text-lg xs:text-xl font-heading font-bold mb-1">
               Soutenez Woofly ❤️
             </h2>
-            <p className="text-pink-100 text-xs">
+            <p className="text-pink-100 text-xs xs:text-sm">
               Votre don nous aide à aider plus de chiens
             </p>
           </div>
         </div>
 
         {/* Contenu */}
-        <div className="p-5">
+        <div className="p-4 xs:p-5">
           <div className="mb-5">
             <p className="text-foreground mb-4 leading-relaxed text-sm">
               Woofly vous aide à <strong>gérer vos chiens</strong>, <strong>placer en famille d'accueil</strong> et <strong>trouver des adoptants</strong> gratuitement. 🐕

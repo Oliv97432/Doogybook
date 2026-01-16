@@ -93,11 +93,11 @@ const EditProfileModal = ({ isOpen, onClose, onSave, profile }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-      <div className="bg-card rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 xs:p-4 bg-black/50">
+      <div className="bg-card rounded-xl xs:rounded-2xl shadow-xl max-w-xs xs:max-w-sm sm:max-w-md md:max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="sticky top-0 bg-card border-b border-border p-6 flex items-center justify-between">
-          <h2 className="text-2xl font-heading font-semibold text-foreground">
+        <div className="sticky top-0 bg-card border-b border-border p-4 xs:p-5 sm:p-6 flex items-center justify-between z-10">
+          <h2 className="text-lg xs:text-xl sm:text-2xl font-heading font-semibold text-foreground">
             Modifier le profil
           </h2>
           <button
@@ -109,7 +109,7 @@ const EditProfileModal = ({ isOpen, onClose, onSave, profile }) => {
         </div>
 
         {/* Body */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+        <form onSubmit={handleSubmit} className="p-4 xs:p-5 sm:p-6 space-y-4 xs:space-y-5 sm:space-y-6">
           {/* Nom */}
           <div>
             <label className="block text-sm font-medium text-foreground mb-2">

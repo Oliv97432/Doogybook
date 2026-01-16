@@ -35,11 +35,8 @@ const MultiProfileManagement = lazy(() => import('./pages/multi-profile-manageme
 const HybridDogProfile = lazy(() => import('./pages/chien/HybridDogProfile'));
 const ClaimDogPage = lazy(() => import('./pages/ClaimDogPage'));
 
-// Social & Forum
+// Social
 const SocialFeed = lazy(() => import('./pages/social-feed'));
-const ForumHub = lazy(() => import('./pages/forum-hub'));
-const ForumDetail = lazy(() => import('./pages/forum-detail'));
-const ForumDiscussion = lazy(() => import('./pages/forum-discussion'));
 const PostDetail = lazy(() => import('./pages/post-detail'));
 
 // Utilitaires
@@ -109,11 +106,8 @@ const Routes = () => {
             <Route path="/multi-profile-management" element={<MultiProfileManagement />} />
             <Route path="/claim-dog" element={<ClaimDogPage />} />
             
-            {/* Social & Forum */}
+            {/* Social */}
             <Route path="/social-feed" element={<SocialFeed />} />
-            <Route path="/forum-hub" element={<ForumHub />} />
-            <Route path="/forum/:slug" element={<ForumDetail />} />
-            <Route path="/forum-discussion" element={<ForumDiscussion />} />
             <Route path="/post/:id" element={<PostDetail />} />
             
             {/* Utilitaires */}

@@ -64,7 +64,7 @@ const StatCard = memo(({
 }) => (
   <button
     onClick={onClick}
-    className={`${gradient} rounded-xl p-4 border hover:shadow-lg hover:scale-105 transition-all duration-200 cursor-pointer text-left min-h-[120px]`}
+    className={`${gradient} rounded-lg xs:rounded-xl p-3 xs:p-4 border hover:shadow-lg hover:scale-105 transition-all duration-200 cursor-pointer text-left min-h-[100px] xs:min-h-[120px]`}
   >
     <div className="flex items-center justify-between mb-2">
       <div className={`p-2 ${iconBg} rounded-lg`}>
@@ -340,7 +340,7 @@ const ProDashboard = () => {
         const { data: accountByEmail, error: error2 } = await supabase
           .from('professional_accounts')
           .select('id, organization_name, organization_type, is_verified, is_active, email, user_id')
-          .eq('contact_email', user.email)
+          .eq('email', user.email)
           .maybeSingle();
 
         console.log('ProDashboard: Account by email:', { accountByEmail, error2 });
@@ -579,7 +579,7 @@ const ProDashboard = () => {
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header sticky optimisé */}
       <div className="sticky top-0 z-50 bg-card border-b border-border shadow-soft">
-        <div className="max-w-7xl mx-auto px-3 sm:px-4 py-3 sm:py-4">
+        <div className="max-w-7xl mx-auto px-2 xs:px-3 sm:px-4 lg:px-6 py-2 xs:py-3 sm:py-4">
           {/* Titre + Actions */}
           <div className="flex items-center justify-between mb-4 sm:mb-6">
             <div className="flex-1 min-w-0 mr-3">
@@ -606,13 +606,13 @@ const ProDashboard = () => {
 
           {/* Stats Cards - Grid responsive */}
           {loading ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3 lg:gap-4">
+            <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 xs:gap-2 sm:gap-3 lg:gap-4">
               {[...Array(6)].map((_, i) => (
                 <StatCardSkeleton key={i} />
               ))}
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3 lg:gap-4">
+            <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 xs:gap-2 sm:gap-3 lg:gap-4">
               <StatCard
                 icon={Heart}
                 label="Total chiens"
@@ -682,9 +682,9 @@ const ProDashboard = () => {
 
       {/* Main Content */}
       <main className="main-content flex-1 pb-20">
-        <div className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
+        <div className="max-w-7xl mx-auto px-2 xs:px-3 sm:px-4 lg:px-6 py-3 xs:py-4 sm:py-6">
           {/* Search + Filters */}
-          <div className="bg-card rounded-xl shadow-soft p-3 sm:p-4 mb-4 sm:mb-6">
+          <div className="bg-card rounded-xl shadow-soft p-2 xs:p-3 sm:p-4 mb-3 xs:mb-4 sm:mb-6">
             <div className="flex flex-col sm:flex-row gap-3">
               {/* Search input */}
               <div className="flex-1 relative">
@@ -699,7 +699,7 @@ const ProDashboard = () => {
               </div>
 
               {/* Filter buttons */}
-              <div className="flex gap-2 overflow-x-auto pb-1 sm:pb-0 -mx-3 px-3 sm:mx-0 sm:px-0">
+              <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-2 sm:pb-0 scroll-smooth" style={{ WebkitOverflowScrolling: 'touch', scrollSnapType: 'x proximity' }}>
                 <button
                   onClick={() => setFilterStatus('all')}
                   className={`px-4 py-2.5 rounded-lg font-medium text-sm whitespace-nowrap transition-smooth min-h-[44px] ${
@@ -744,48 +744,77 @@ const ProDashboard = () => {
             </div>
           </div>
 
-          {/* Dogs Grid */}
-          {loading ? (
-            <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
-              {[...Array(8)].map((_, i) => (
-                <DogCardSkeleton key={i} />
-              ))}
-            </div>
-          ) : filteredDogs.length === 0 ? (
-            <div className="bg-card rounded-xl shadow-soft p-8 sm:p-12 text-center">
-              <div className="w-16 h-16 sm:w-20 sm:h-20 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
-                <Heart size={32} className="sm:w-10 sm:h-10 text-muted-foreground" />
-              </div>
-              <h3 className="text-lg sm:text-xl font-heading font-bold text-foreground mb-2">
-                Aucun chien trouvé
-              </h3>
-              <p className="text-sm sm:text-base text-muted-foreground mb-6">
-                {searchTerm 
-                  ? 'Essayez avec d\'autres mots-clés'
-                  : 'Commencez par ajouter votre premier chien'
-                }
-              </p>
-              {!searchTerm && (
+          {/* Dogs Preview - Limited to 4 */}
+          <div className="mb-4">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg sm:text-xl font-heading font-bold text-foreground">
+                Mes chiens
+              </h2>
+              {filteredDogs.length > 4 && (
                 <button
-                  onClick={() => navigate('/pro/dogs/new')}
-                  className="px-6 py-3 bg-primary text-primary-foreground rounded-xl font-medium hover:bg-primary/90 transition-smooth inline-flex items-center gap-2 min-h-[44px]"
+                  onClick={() => navigate('/pro/dogs-list')}
+                  className="text-primary hover:text-primary/80 font-medium text-sm min-h-[44px] px-3 flex items-center gap-1"
                 >
-                  <Plus size={20} />
-                  Ajouter un chien
+                  Voir tout ({filteredDogs.length}) →
                 </button>
               )}
             </div>
-          ) : (
-            <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
-              {filteredDogs.map((dog) => (
-                <DogCard
-                  key={dog.id}
-                  dog={dog}
-                  onClick={() => handleDogClick(dog.id)}
-                />
-              ))}
-            </div>
-          )}
+
+            {loading ? (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 xs:gap-3 sm:gap-4">
+                {[...Array(4)].map((_, i) => (
+                  <DogCardSkeleton key={i} />
+                ))}
+              </div>
+            ) : filteredDogs.length === 0 ? (
+              <div className="bg-card rounded-xl shadow-soft p-6 xs:p-8 sm:p-12 text-center">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Heart size={32} className="sm:w-10 sm:h-10 text-muted-foreground" />
+                </div>
+                <h3 className="text-lg sm:text-xl font-heading font-bold text-foreground mb-2">
+                  Aucun chien trouvé
+                </h3>
+                <p className="text-sm sm:text-base text-muted-foreground mb-6">
+                  {searchTerm
+                    ? 'Essayez avec d\'autres mots-clés'
+                    : 'Commencez par ajouter votre premier chien'
+                  }
+                </p>
+                {!searchTerm && (
+                  <button
+                    onClick={() => navigate('/pro/dogs/new')}
+                    className="px-6 py-3 bg-primary text-primary-foreground rounded-xl font-medium hover:bg-primary/90 transition-smooth inline-flex items-center gap-2 min-h-[44px]"
+                  >
+                    <Plus size={20} />
+                    Ajouter un chien
+                  </button>
+                )}
+              </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 xs:gap-3 sm:gap-4">
+                  {filteredDogs.slice(0, 4).map((dog) => (
+                    <DogCard
+                      key={dog.id}
+                      dog={dog}
+                      onClick={() => handleDogClick(dog.id)}
+                    />
+                  ))}
+                </div>
+
+                {filteredDogs.length > 4 && (
+                  <div className="mt-4 text-center">
+                    <button
+                      onClick={() => navigate('/pro/dogs-list')}
+                      className="px-6 py-3 bg-muted hover:bg-muted/80 text-foreground rounded-xl font-medium transition-smooth inline-flex items-center gap-2 min-h-[44px]"
+                    >
+                      Voir tous les chiens ({filteredDogs.length})
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
 
           {/* Recent Applications */}
           {applications.length > 0 && (

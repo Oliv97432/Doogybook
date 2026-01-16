@@ -10,7 +10,6 @@ const Footer = () => {
   const pagesWithoutFooter = [
     '/recipes',
     '/social-feed',
-    '/forum',
     '/daily-tip',
     '/dog-profile'
   ];
@@ -29,7 +28,7 @@ const Footer = () => {
       path: '/social-feed',
       icon: Users,
       label: 'Communauté',
-      isActive: location.pathname === '/social-feed' || location.pathname.includes('/forum')
+      isActive: location.pathname === '/social-feed'
     },
     {
       path: '/daily-tip',
@@ -43,8 +42,8 @@ const Footer = () => {
     <>
       {/* Navigation mobile (bottom bar) - Visible uniquement sur mobile ET sur certaines pages */}
       {!hideFooter && (
-        <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 md:hidden z-50">
-          <div className="flex items-center justify-around h-16 max-w-screen-xl mx-auto px-2">
+        <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 md:hidden z-50 landscape:h-12">
+          <div className="flex items-center justify-around h-16 landscape:h-12 max-w-screen-xl mx-auto px-2">
             {navItems.map((item) => {
               const Icon = item.icon;
               return (
@@ -60,9 +59,9 @@ const Footer = () => {
                   <Icon
                     size={24}
                     strokeWidth={item.isActive ? 2.5 : 2}
-                    className="mb-1"
+                    className="mb-1 landscape:mb-0"
                   />
-                  <span className={`text-xs font-medium ${item.isActive ? 'font-semibold' : ''}`}>
+                  <span className={`text-xs font-medium landscape:text-[10px] ${item.isActive ? 'font-semibold' : ''}`}>
                     {item.label}
                   </span>
                 </Link>

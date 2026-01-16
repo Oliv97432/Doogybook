@@ -27,7 +27,7 @@ serve(async (req) => {
     const { to_email, dog_name, dog_photo, transfer_token, expires_days }: EmailRequest = await req.json()
 
     // Construire l'URL de réclamation
-    const claimUrl = `https://app.wooflyapp.com/claim-dog?token=${transfer_token}`
+    const claimUrl = `https://app.doogybookapp.com/claim-dog?token=${transfer_token}`
 
     // Template HTML de l'email
     const htmlContent = `
@@ -158,7 +158,7 @@ Doogybook - L'app de santé pour votre chien
         'Authorization': `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: 'Doogybook <noreply@wooflyapp.com>',
+        from: 'Doogybook <noreply@doogybookapp.com>',
         to: [to_email],
         subject: `🎉 ${dog_name} vous attend sur Doogybook !`,
         html: htmlContent,

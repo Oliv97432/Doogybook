@@ -32,11 +32,11 @@ const ContactListModal = ({ isOpen, onClose, title, items, type }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-2">
-      <div className="bg-card rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-hidden mx-2">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-3 xs:p-4">
+      <div className="bg-card rounded-xl shadow-2xl w-full max-w-xs xs:max-w-sm sm:max-w-md max-h-[90vh] overflow-hidden">
         {/* Header */}
-        <div className="bg-gradient-to-r from-primary/10 to-primary/5 px-4 py-3 border-b border-border flex items-center justify-between sticky top-0 z-10">
-          <h2 className="text-lg font-heading font-bold text-foreground truncate pr-2">
+        <div className="bg-gradient-to-r from-primary/10 to-primary/5 px-3 xs:px-4 py-3 border-b border-border flex items-center justify-between sticky top-0 z-10">
+          <h2 className="text-base xs:text-lg font-heading font-bold text-foreground truncate pr-2">
             {title}
           </h2>
           <button
@@ -51,7 +51,7 @@ const ContactListModal = ({ isOpen, onClose, title, items, type }) => {
         {/* Content */}
         <div className="overflow-y-auto max-h-[calc(90vh-120px)]">
           {items.length === 0 ? (
-            <div className="p-8 text-center">
+            <div className="p-6 xs:p-8 text-center">
               <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center mx-auto mb-3">
                 <Users size={24} className="text-muted-foreground" />
               </div>

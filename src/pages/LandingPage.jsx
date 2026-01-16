@@ -28,7 +28,7 @@ const LandingPage = () => {
   // Afficher le loader pendant le chargement d'auth
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-[100dvh] sm:min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent mb-4"></div>
           <p className="text-gray-600">Chargement...</p>
@@ -61,7 +61,7 @@ const LandingPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-[100dvh] sm:min-h-screen bg-background">
       
       {/* Header Simple */}
       <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200">

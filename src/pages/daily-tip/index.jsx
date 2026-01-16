@@ -405,7 +405,7 @@ const DailyTip = () => {
   const Icon = categoryData.icon;
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-[100dvh] sm:min-h-screen bg-background flex flex-col">
       {/* Header avec ajustements mobile */}
       <div className="sticky top-0 z-50 bg-card border-b border-border shadow-soft">
         <div className="max-w-screen-xl mx-auto px-3 sm:px-4 py-3 sm:py-4">

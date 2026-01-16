@@ -12,7 +12,7 @@ const Register = () => {
         <meta name="description" content="Créez votre compte Doogybook et commencez à gérer la santé de votre chien. Rejoignez une communauté de propriétaires passionnés." />
       </Helmet>
 
-      <div className="min-h-screen bg-background">
+      <div className="min-h-[100dvh] sm:min-h-screen bg-background">
         <div className="container mx-auto px-4 py-8 lg:py-12">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 max-w-7xl mx-auto">
             <div className="hidden lg:flex flex-col justify-center">
