@@ -565,7 +565,7 @@ const ProDashboard = () => {
     };
 
     // Naviguer vers le générateur Instagram avec les données
-    navigate('/pro/instagram-generator', { state: { dogData } });
+    navigate('/pro/instagram', { state: { dogData } });
   }, [navigate]);
 
   const handleApplicationClick = useCallback((appId) => {
