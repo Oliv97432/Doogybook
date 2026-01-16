@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Générateur d'icônes Woofly</title>
+</head>
+<body>
+    <h1>Générateur d'icônes PWA pour Woofly</h1>
+    <canvas id="canvas"></canvas>
+    <script>
+        // Fonction pour créer une icône Woofly
+        function generateIcon(size) {
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            
+            // Fond dégradé violet/rose
+            const gradient = ctx.createLinearGradient(0, 0, size, size);
+            gradient.addColorStop(0, '#8B5CF6');
+            gradient.addColorStop(1, '#EC4899');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, size, size);
+            
+            // Dessiner un cercle blanc au centre
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.arc(size / 2, size / 2, size * 0.35, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Dessiner une empreinte de patte (stylisé)
+            const centerX = size / 2;
+            const centerY = size / 2;
+            const scale = size / 512;
+            
+            // Patte principale (grande)
+            ctx.fillStyle = '#8B5CF6';
+            ctx.beginPath();
+            ctx.ellipse(centerX, centerY + 30 * scale, 45 * scale, 55 * scale, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // 4 doigts (petits cercles)
+            const toeSize = 25 * scale;
+            const toePositions = [
+                { x: centerX - 50 * scale, y: centerY - 30 * scale },
+                { x: centerX - 15 * scale, y: centerY - 50 * scale },
+                { x: centerX + 15 * scale, y: centerY - 50 * scale },
+                { x: centerX + 50 * scale, y: centerY - 30 * scale }
+            ];
+            
+            toePositions.forEach(pos => {
+                ctx.beginPath();
+                ctx.arc(pos.x, pos.y, toeSize, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            
+            return canvas;
+        }
+        
+        // Générer et télécharger les icônes
+        const sizes = [72, 96, 128, 144, 152, 192, 384, 512];
+        
+        sizes.forEach(size => {
+            const canvas = generateIcon(size);
+            canvas.toBlob(blob => {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `icon-${size}x${size}.png`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            });
+        });
+        
+        console.log('Icônes générées ! Téléchargement en cours...');
+    </script>
+    <p>Les icônes sont en cours de téléchargement. Placez-les dans le dossier /public/icons/</p>
+</body>
+</html>
