@@ -1,4 +1,4 @@
--- Migration: Fix user_profiles RLS and ensure proper structure
+--- Migration: Fix user_profiles RLS and ensure proper structure
 -- Date: 2026-01-17
 -- Description: Ensure user_profiles table has correct structure and RLS policies
 
