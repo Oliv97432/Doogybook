@@ -39,6 +39,18 @@ const PremiumModal = ({ isOpen, onClose, reason = 'dogs' }) => {
         'Historique illimité 📚',
         'Export PDF 📄'
       ]
+    },
+    'photo-album': {
+      icon: <Camera size={48} className="text-primary" />,
+      title: 'Album Photo Premium',
+      description: 'Créez des albums photo personnalisés et téléchargez-les en PDF pour garder vos meilleurs souvenirs.',
+      features: [
+        'Albums personnalisés 📸',
+        'Mise en page professionnelle 🎨',
+        'Téléchargement PDF 📄',
+        'Photos illimitées ♾️',
+        'Qualité haute définition ✨'
+      ]
     }
   };
 
