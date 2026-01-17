@@ -1654,6 +1654,8 @@ const DogProfile = () => {
         onAddPhoto={handleAddPhoto}
         currentProfilePhotoUrl={currentProfile?.image}
         onSetProfilePhoto={handleSetProfilePhoto}
+        isPremium={isPremium}
+        onShowPremiumModal={() => setShowPremiumModal(true)}
       />
 
       <PremiumModal

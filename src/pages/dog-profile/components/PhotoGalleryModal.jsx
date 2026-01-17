@@ -2,12 +2,15 @@ import React, { useState } from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 
-const PhotoGalleryModal = ({ isOpen, onClose, photos, onAddPhoto, currentProfilePhotoUrl, onSetProfilePhoto }) => {
+const PhotoGalleryModal = ({ isOpen, onClose, photos, onAddPhoto, currentProfilePhotoUrl, onSetProfilePhoto, isPremium, onShowPremiumModal }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [selectedPhoto, setSelectedPhoto] = useState(null);
   const [imageErrors, setImageErrors] = useState({});
 
   if (!isOpen) return null;
+
+  // Vérifier si l'utilisateur a atteint la limite de photos
+  const hasReachedLimit = !isPremium && photos && photos.length >= 5;
 
   // Gestion de l'input file
   const handleFileSelect = async (e) => {
@@ -37,6 +40,13 @@ const PhotoGalleryModal = ({ isOpen, onClose, photos, onAddPhoto, currentProfile
   };
 
   const handleAddPhotoClick = () => {
+    // Vérifier la limite avant d'ouvrir le sélecteur de fichiers
+    if (hasReachedLimit) {
+      if (onShowPremiumModal) {
+        onShowPremiumModal();
+      }
+      return;
+    }
     document.getElementById('photo-upload-input').click();
   };
 
@@ -89,11 +99,21 @@ const PhotoGalleryModal = ({ isOpen, onClose, photos, onAddPhoto, currentProfile
         {/* Header */}
         <div className="bg-card border-b border-border p-6 flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-heading font-semibold text-foreground">
-              Galerie photos
-            </h2>
+            <div className="flex items-center gap-3 mb-1">
+              <h2 className="text-2xl font-heading font-semibold text-foreground">
+                Galerie photos
+              </h2>
+              {!isPremium && (
+                <span className="text-xs bg-muted text-muted-foreground px-2 py-1 rounded">
+                  {photos?.length || 0}/5
+                </span>
+              )}
+            </div>
             <p className="text-sm text-muted-foreground mt-1">
-              {photos?.length || 0} photo{photos?.length > 1 ? 's' : ''}
+              {isPremium
+                ? `${photos?.length || 0} photo${photos?.length > 1 ? 's' : ''} (illimité)`
+                : `${photos?.length || 0} photo${photos?.length > 1 ? 's' : ''} sur 5 max`
+              }
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -102,9 +122,9 @@ const PhotoGalleryModal = ({ isOpen, onClose, photos, onAddPhoto, currentProfile
               iconName="Plus"
               iconPosition="left"
               onClick={handleAddPhotoClick}
-              disabled={isUploading}
+              disabled={isUploading || hasReachedLimit}
             >
-              {isUploading ? 'Upload...' : 'Ajouter une photo'}
+              {isUploading ? 'Upload...' : hasReachedLimit ? 'Limite atteinte' : 'Ajouter une photo'}
             </Button>
             <button
               onClick={onClose}
@@ -226,10 +246,42 @@ const PhotoGalleryModal = ({ isOpen, onClose, photos, onAddPhoto, currentProfile
 
         {/* Footer */}
         <div className="border-t border-border p-4 bg-muted/50">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Icon name="Info" size={16} />
-            <span>Formats acceptés : JPG, PNG, WEBP • Taille max : 5 MB</span>
-          </div>
+          {hasReachedLimit ? (
+            <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0 mt-0.5">
+                  <Icon name="Lock" size={20} className="text-orange-600" />
+                </div>
+                <div className="flex-1">
+                  <h4 className="text-sm font-semibold text-orange-900 mb-1">
+                    Limite de 5 photos atteinte
+                  </h4>
+                  <p className="text-xs text-orange-700 mb-3">
+                    Vous avez atteint la limite de photos en version gratuite.
+                    Passez à Premium pour ajouter des photos illimitées !
+                  </p>
+                  <Button
+                    variant="default"
+                    size="sm"
+                    iconName="Sparkles"
+                    onClick={() => {
+                      if (onShowPremiumModal) {
+                        onShowPremiumModal();
+                      }
+                    }}
+                    className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
+                  >
+                    Passer à Premium
+                  </Button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Icon name="Info" size={16} />
+              <span>Formats acceptés : JPG, PNG, WEBP • Taille max : 5 MB</span>
+            </div>
+          )}
         </div>
       </div>
 
