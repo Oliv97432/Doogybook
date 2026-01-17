@@ -70,7 +70,7 @@ const TabNavigation = () => {
     <nav className="sticky top-[73px] z-40 bg-white border-b border-gray-200 relative">
       <div
         ref={scrollContainerRef}
-        className="flex w-full overflow-x-auto overflow-y-hidden scrollbar-hide"
+        className="flex w-full overflow-x-auto overflow-y-hidden scrollbar-hide justify-center"
         style={{
           WebkitOverflowScrolling: 'touch',
           scrollbarWidth: 'none',
