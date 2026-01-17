@@ -5,6 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import TabNavigation from '../components/TabNavigation';
 import UserMenu from '../components/UserMenu';
 import Icon from '../components/AppIcon';
+import CreateDogModal from './dog-profile/components/CreateDogModal';
 
 const UserDashboard = () => {
   const { user } = useAuth();
@@ -12,6 +13,7 @@ const UserDashboard = () => {
   const [dogs, setDogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({});
+  const [showCreateDogModal, setShowCreateDogModal] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -224,7 +226,7 @@ const UserDashboard = () => {
           <button
             onClick={() => {
               console.log('🐕 UserDashboard: Clic sur Ajouter un chien');
-              navigate('/dog-profile');
+              setShowCreateDogModal(true);
             }}
             className="w-full md:w-auto px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2"
           >
@@ -246,7 +248,7 @@ const UserDashboard = () => {
             <button
               onClick={() => {
                 console.log('🐕 UserDashboard: Clic sur Ajouter mon premier chien');
-                navigate('/dog-profile');
+                setShowCreateDogModal(true);
               }}
               className="inline-block px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
             >
@@ -375,6 +377,18 @@ const UserDashboard = () => {
 
       {/* Bottom Navigation */}
       <TabNavigation />
+
+      {/* Modal de création de chien */}
+      <CreateDogModal
+        isOpen={showCreateDogModal}
+        onClose={() => setShowCreateDogModal(false)}
+        onSuccess={() => {
+          setShowCreateDogModal(false);
+          // Recharger les données du dashboard
+          loadDashboardData();
+        }}
+        userId={user?.id}
+      />
     </div>
   );
 };
