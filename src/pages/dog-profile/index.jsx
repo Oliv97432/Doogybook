@@ -1114,7 +1114,15 @@ const DogProfile = () => {
     return (
       <div className="min-h-[100dvh] sm:min-h-screen bg-background">
         <TabNavigation />
-        <WelcomeOnboarding onCreateDog={() => setModals(prev => ({ ...prev, createDog: true }))} />
+        <WelcomeOnboarding onCreateDog={() => {
+          console.log('🐕 Ouverture modal CreateDog');
+          setModals(prev => {
+            console.log('📋 Modals avant:', prev);
+            const newModals = { ...prev, createDog: true };
+            console.log('📋 Modals après:', newModals);
+            return newModals;
+          });
+        }} />
         <CreateDogModal
           isOpen={modals.createDog}
           onClose={() => setModals(prev => ({ ...prev, createDog: false }))}
