@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Dog, Users, Heart, BookOpen, ChefHat, Bell } from 'lucide-react';
+import { Dog, Users, Heart, BookOpen, ChefHat, Bell, Camera } from 'lucide-react';
 import PremiumBadge from './PremiumBadge';
 
 const TabNavigation = () => {
@@ -9,35 +9,41 @@ const TabNavigation = () => {
   const scrollContainerRef = useRef(null);
 
   const tabs = [
-    { 
+    {
       path: '/dog-profile',
-      label: 'Mon Chien', 
-      icon: Dog 
+      label: 'Mon Chien',
+      icon: Dog
     },
-    { 
+    {
       path: '/social-feed',
-      label: 'Communauté', 
-      icon: Users 
+      label: 'Communauté',
+      icon: Users
     },
-    { 
+    {
       path: '/adoption',
-      label: 'Adoption', 
-      icon: Heart 
+      label: 'Adoption',
+      icon: Heart
     },
-    { 
+    {
       path: '/daily-tip',
-      label: 'Conseils', 
-      icon: BookOpen 
+      label: 'Conseils',
+      icon: BookOpen
     },
-    { 
+    {
       path: '/recipes',
-      label: 'Recettes', 
+      label: 'Recettes',
       icon: ChefHat,
       premium: true
     },
-    { 
+    {
+      path: '/photo-album',
+      label: 'Album Photo',
+      icon: Camera,
+      premium: true
+    },
+    {
       path: '/reminders',
-      label: 'Rappels', 
+      label: 'Rappels',
       icon: Bell,
       premium: true
     }

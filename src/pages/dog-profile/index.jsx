@@ -15,6 +15,7 @@ import AddTreatmentModal from './components/AddTreatmentModal';
 import AddWeightModal from './components/AddWeightModal';
 import EditProfileModal from './components/EditProfileModal';
 import PhotoGalleryModal from './components/PhotoGalleryModal';
+import WelcomeOnboarding from './components/WelcomeOnboarding';
 import Footer from '../../components/Footer';
 import PremiumModal from '../../components/PremiumModal';
 import jsPDF from 'jspdf';
@@ -1111,29 +1112,7 @@ const DogProfile = () => {
     return (
       <div className="min-h-[100dvh] sm:min-h-screen bg-background">
         <TabNavigation />
-        <div className="main-content">
-          <div className="max-w-7xl mx-auto px-4 py-6">
-            <div className="text-center py-12 sm:py-16">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-muted rounded-full mb-4">
-                <span className="text-3xl">🐕</span>
-              </div>
-              <h3 className="text-lg font-heading font-semibold text-foreground mb-2">
-                Aucun chien enregistré
-              </h3>
-              <p className="text-sm sm:text-base text-muted-foreground mb-4">
-                Ajoutez votre premier chien pour commencer
-              </p>
-              <Button
-                variant="default"
-                size="sm"
-                onClick={() => navigate('/multi-profile-management')}
-                className="min-h-[44px]"
-              >
-                Ajouter un chien
-              </Button>
-            </div>
-          </div>
-        </div>
+        <WelcomeOnboarding />
       </div>
     );
   }

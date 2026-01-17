@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import Icon from './AppIcon';
 import DonationModalUser from './DonationModalUser';
+import PremiumBadge from './PremiumBadge';
 
 const UserMenu = ({ dogProfiles = [], currentDog, onDogChange }) => {
   const navigate = useNavigate();
@@ -53,6 +54,11 @@ const UserMenu = ({ dogProfiles = [], currentDog, onDogChange }) => {
 
   const handleRecipes = () => {
     navigate('/recipes');
+    setIsOpen(false);
+  };
+
+  const handlePhotoAlbum = () => {
+    navigate('/photo-album');
     setIsOpen(false);
   };
 
@@ -277,6 +283,17 @@ const UserMenu = ({ dogProfiles = [], currentDog, onDogChange }) => {
                 </div>
                 <span className="text-sm font-medium">Recettes</span>
               </button>
+
+              <button
+                onClick={handlePhotoAlbum}
+                className="w-full flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 sm:py-2.5 rounded-lg hover:bg-muted transition-smooth text-foreground"
+              >
+                <div className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center bg-purple-100 rounded-full flex-shrink-0">
+                  <Icon name="Camera" size={16} className="sm:w-4 sm:h-4 text-purple-600" />
+                </div>
+                <span className="text-sm font-medium flex-1 text-left">Créer votre album photo</span>
+                <PremiumBadge size="sm" variant="minimal" />
+              </button>
             </div>
 
             <div className="border-t border-border"></div>
@@ -286,8 +303,8 @@ const UserMenu = ({ dogProfiles = [], currentDog, onDogChange }) => {
                 onClick={handleShare}
                 className="w-full flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 sm:py-2.5 rounded-lg hover:bg-muted transition-smooth text-foreground"
               >
-                <div className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center bg-purple-100 rounded-full flex-shrink-0">
-                  <Icon name="Share2" size={16} className="sm:w-4 sm:h-4 text-purple-600" />
+                <div className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center bg-indigo-100 rounded-full flex-shrink-0">
+                  <Icon name="Share2" size={16} className="sm:w-4 sm:h-4 text-indigo-600" />
                 </div>
                 <span className="text-sm font-medium">Partager l'app</span>
               </button>
