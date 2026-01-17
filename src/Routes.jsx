@@ -56,6 +56,7 @@ const PublicDogDetail = lazy(() => import('./pages/PublicDogDetail'));
 const PremiumPage = lazy(() => import('./pages/PremiumPage'));
 const RecipesPage = lazy(() => import('./pages/RecipesPage'));
 const RemindersPage = lazy(() => import('./pages/RemindersPage'));
+const PhotoAlbumPage = lazy(() => import('./pages/PhotoAlbumPage'));
 
 // Pages professionnelles
 const ProRegistration = lazy(() => import('./pages/pro/ProRegistration'));
@@ -127,6 +128,7 @@ const Routes = () => {
             <Route path="/premium" element={<PremiumPage />} />
             <Route path="/recipes" element={<RecipesPage />} />
             <Route path="/reminders" element={<RemindersPage />} />
+            <Route path="/photo-album" element={<PhotoAlbumPage />} />
             
             {/* Professionnel */}
             <Route path="/pro/register" element={<ProRegistration />} />
