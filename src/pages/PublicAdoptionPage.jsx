@@ -37,8 +37,8 @@ const PublicAdoptionPage = () => {
   // Fonction retour intelligent
   const handleBack = () => {
     if (user) {
-      // Si connecté, retourner à la page précédente
-      navigate(-1);
+      // Si connecté, retourner au dashboard utilisateur
+      navigate('/dashboard');
     } else {
       // Si invité, retourner à la landing page
       navigate('/');
