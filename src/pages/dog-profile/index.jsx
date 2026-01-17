@@ -1114,12 +1114,12 @@ const DogProfile = () => {
     return (
       <div className="min-h-[100dvh] sm:min-h-screen bg-background">
         <TabNavigation />
-        <WelcomeOnboarding onCreateDog={() => setModals({ ...modals, createDog: true })} />
+        <WelcomeOnboarding onCreateDog={() => setModals(prev => ({ ...prev, createDog: true }))} />
         <CreateDogModal
           isOpen={modals.createDog}
-          onClose={() => setModals({ ...modals, createDog: false })}
+          onClose={() => setModals(prev => ({ ...prev, createDog: false }))}
           onSuccess={() => {
-            setModals({ ...modals, createDog: false });
+            setModals(prev => ({ ...prev, createDog: false }));
             // Recharger les chiens
             window.location.reload();
           }}

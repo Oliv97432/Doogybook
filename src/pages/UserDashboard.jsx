@@ -33,7 +33,7 @@ const UserDashboard = () => {
           *,
           vaccinations (count),
           treatments (count),
-          weights (count),
+          weight_records (count),
           dog_photos (count)
         `)
         .eq('user_id', user.id)
@@ -46,7 +46,7 @@ const UserDashboard = () => {
         (dogsData || []).map(async (dog) => {
           // Récupérer le dernier poids
           const { data: lastWeight } = await supabase
-            .from('weights')
+            .from('weight_records')
             .select('weight, date')
             .eq('dog_id', dog.id)
             .order('date', { ascending: false })
@@ -88,7 +88,7 @@ const UserDashboard = () => {
             upcomingTreatments: upcomingTreatments || [],
             totalVaccinations: dog.vaccinations?.[0]?.count || 0,
             totalTreatments: dog.treatments?.[0]?.count || 0,
-            totalWeights: dog.weights?.[0]?.count || 0,
+            totalWeights: dog.weight_records?.[0]?.count || 0,
             totalPhotos: dog.dog_photos?.[0]?.count || 0
           };
         })
