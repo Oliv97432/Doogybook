@@ -227,7 +227,7 @@ const UserMenu = ({ dogProfiles = [], currentDog, onDogChange }) => {
                     )}
                     <button
                       onClick={() => {
-                        navigate('/multi-profile-management');
+                        navigate('/dog-profile');
                         setIsOpen(false);
                         setShowDogsSubmenu(false);
                       }}

@@ -245,7 +245,7 @@ const RemindersPage = () => {
                 Créez d'abord un profil de chien pour gérer ses rappels
               </p>
               <button
-                onClick={() => navigate('/multi-profile-management')}
+                onClick={() => navigate('/dog-profile')}
                 className="px-6 py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-smooth"
               >
                 Créer un profil

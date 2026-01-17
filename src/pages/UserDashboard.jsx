@@ -222,7 +222,7 @@ const UserDashboard = () => {
         {/* Bouton ajouter un chien */}
         <div className="mb-6">
           <button
-            onClick={() => navigate('/multi-profile-management')}
+            onClick={() => navigate('/dog-profile')}
             className="w-full md:w-auto px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2"
           >
             <Icon name="add" className="w-5 h-5" />
@@ -241,7 +241,7 @@ const UserDashboard = () => {
               Commencez par ajouter votre premier compagnon
             </p>
             <button
-              onClick={() => navigate('/multi-profile-management')}
+              onClick={() => navigate('/dog-profile')}
               className="inline-block px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
             >
               Ajouter mon premier chien

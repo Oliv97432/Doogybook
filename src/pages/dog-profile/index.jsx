@@ -16,6 +16,7 @@ import AddWeightModal from './components/AddWeightModal';
 import EditProfileModal from './components/EditProfileModal';
 import PhotoGalleryModal from './components/PhotoGalleryModal';
 import WelcomeOnboarding from './components/WelcomeOnboarding';
+import CreateDogModal from './components/CreateDogModal';
 import Footer from '../../components/Footer';
 import PremiumModal from '../../components/PremiumModal';
 import jsPDF from 'jspdf';
@@ -139,7 +140,8 @@ const DogProfile = () => {
     flea: false,
     weight: false,
     editProfile: false,
-    gallery: false
+    gallery: false,
+    createDog: false
   });
 
   const [editingItem, setEditingItem] = useState(null);
@@ -1112,7 +1114,17 @@ const DogProfile = () => {
     return (
       <div className="min-h-[100dvh] sm:min-h-screen bg-background">
         <TabNavigation />
-        <WelcomeOnboarding />
+        <WelcomeOnboarding onCreateDog={() => setModals({ ...modals, createDog: true })} />
+        <CreateDogModal
+          isOpen={modals.createDog}
+          onClose={() => setModals({ ...modals, createDog: false })}
+          onSuccess={() => {
+            setModals({ ...modals, createDog: false });
+            // Recharger les chiens
+            window.location.reload();
+          }}
+          userId={user?.id}
+        />
       </div>
     );
   }

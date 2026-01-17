@@ -252,7 +252,7 @@ const RegistrationForm = () => {
       }
 
       // Étape 4 : Rediriger vers le dashboard
-      navigate('/multi-profile-management');
+      navigate('/dog-profile');
 
     } catch (err) {
       console.error('Erreur inscription:', err);

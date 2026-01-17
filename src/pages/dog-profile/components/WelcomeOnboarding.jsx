@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 
-const WelcomeOnboarding = () => {
+const WelcomeOnboarding = ({ onCreateDog }) => {
   const navigate = useNavigate();
 
   const features = [
@@ -91,7 +91,7 @@ const WelcomeOnboarding = () => {
           <Button
             size="lg"
             className="px-8 shadow-lg hover:shadow-xl transition-all bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 min-h-[48px] text-base font-semibold"
-            onClick={() => navigate('/multi-profile-management')}
+            onClick={onCreateDog}
             iconName="Plus"
           >
             Créer le profil de mon chien
@@ -179,7 +179,7 @@ const WelcomeOnboarding = () => {
           <Button
             size="xl"
             className="bg-white text-blue-600 hover:bg-gray-100 shadow-xl hover:shadow-2xl transition-all font-semibold px-10"
-            onClick={() => navigate('/multi-profile-management')}
+            onClick={onCreateDog}
             iconName="Sparkles"
           >
             Commencer gratuitement
