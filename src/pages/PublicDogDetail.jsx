@@ -29,7 +29,6 @@ const PublicDogDetail = () => {
             organization_name,
             phone,
             email,
-            address,
             city,
             postal_code
           )
