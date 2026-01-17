@@ -162,7 +162,11 @@ const UserDashboard = () => {
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Statistiques globales */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+          <button
+            onClick={() => dogs.length > 0 && navigate(`/dog-profile/${dogs[0].id}`)}
+            disabled={dogs.length === 0}
+            className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md hover:border-indigo-200 transition-all text-left disabled:cursor-not-allowed disabled:hover:shadow-sm disabled:hover:border-gray-100"
+          >
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Chiens</p>
@@ -170,9 +174,13 @@ const UserDashboard = () => {
               </div>
               <div className="text-3xl">🐕</div>
             </div>
-          </div>
+          </button>
 
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+          <button
+            onClick={() => dogs.length > 0 && navigate(`/dog-profile/${dogs[0].id}`)}
+            disabled={dogs.length === 0}
+            className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md hover:border-indigo-200 transition-all text-left disabled:cursor-not-allowed disabled:hover:shadow-sm disabled:hover:border-gray-100"
+          >
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Photos</p>
@@ -180,9 +188,13 @@ const UserDashboard = () => {
               </div>
               <div className="text-3xl">📸</div>
             </div>
-          </div>
+          </button>
 
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+          <button
+            onClick={() => dogs.length > 0 && navigate(`/dog-profile/${dogs[0].id}`)}
+            disabled={dogs.length === 0}
+            className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md hover:border-indigo-200 transition-all text-left disabled:cursor-not-allowed disabled:hover:shadow-sm disabled:hover:border-gray-100"
+          >
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Vaccins</p>
@@ -190,9 +202,13 @@ const UserDashboard = () => {
               </div>
               <div className="text-3xl">💉</div>
             </div>
-          </div>
+          </button>
 
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+          <button
+            onClick={() => dogs.length > 0 && navigate(`/dog-profile/${dogs[0].id}`)}
+            disabled={dogs.length === 0}
+            className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md hover:border-indigo-200 transition-all text-left disabled:cursor-not-allowed disabled:hover:shadow-sm disabled:hover:border-gray-100"
+          >
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Traitements</p>
@@ -200,13 +216,13 @@ const UserDashboard = () => {
               </div>
               <div className="text-3xl">💊</div>
             </div>
-          </div>
+          </button>
         </div>
 
         {/* Bouton ajouter un chien */}
         <div className="mb-6">
           <button
-            onClick={() => navigate('/dog-profile')}
+            onClick={() => navigate('/multi-profile-management')}
             className="w-full md:w-auto px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2"
           >
             <Icon name="add" className="w-5 h-5" />
@@ -225,7 +241,7 @@ const UserDashboard = () => {
               Commencez par ajouter votre premier compagnon
             </p>
             <button
-              onClick={() => navigate('/dog-profile')}
+              onClick={() => navigate('/multi-profile-management')}
               className="inline-block px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
             >
               Ajouter mon premier chien
