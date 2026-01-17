@@ -698,6 +698,12 @@ const DogProfile = () => {
       return;
     }
 
+    // Vérifier la limite de 5 photos pour les utilisateurs gratuits
+    if (!isPremium && photoGallery.length >= 5) {
+      setShowPremiumModal(true);
+      return;
+    }
+
     if (!file.name || typeof file.name !== 'string') {
       alert('⚠️ Fichier invalide');
       return;
@@ -769,7 +775,7 @@ const DogProfile = () => {
       console.error('Erreur upload photo:', err);
       alert('❌ Erreur lors de l\'upload: ' + err.message);
     }
-  }, [user, currentProfile]);
+  }, [user, currentProfile, isPremium, photoGallery.length]);
 
   // Fonction pour enlever les accents
   const removeAccents = (str) => {
@@ -1093,6 +1099,7 @@ const DogProfile = () => {
     { id: 'vermifuge', label: 'Vermifuge', icon: 'Pill' },
     { id: 'flea', label: 'Anti-puces', icon: 'Bug' },
     { id: 'weight', label: 'Poids', icon: 'TrendingUp' },
+    { id: 'photos', label: 'Photos', icon: 'Camera' },
     { id: 'notes', label: 'Notes médicales', icon: 'FileText' }
   ];
 
@@ -1472,6 +1479,110 @@ const DogProfile = () => {
                     data={weightData}
                     onAddWeight={() => openModal('weight')}
                   />
+                )}
+
+                {activeTab === 'photos' && (
+                  <div className="space-y-4">
+                    <div className="flex flex-col items-start justify-between gap-3 mb-4">
+                      <div className="flex-1 w-full">
+                        <div className="flex items-center justify-between mb-1">
+                          <h3 className="text-base sm:text-lg font-heading font-semibold text-foreground">
+                            Album Photos
+                          </h3>
+                          {!isPremium && (
+                            <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
+                              {photoGallery.length}/5 photos
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground font-caption">
+                          {isPremium
+                            ? `Gérez les photos de ${currentProfile.name} (illimité)`
+                            : `Gérez les photos de ${currentProfile.name} (5 max en version gratuite)`
+                          }
+                        </p>
+                      </div>
+                      <Button
+                        variant="default"
+                        iconName="Plus"
+                        iconPosition="left"
+                        onClick={() => openModal('gallery')}
+                        className="w-full sm:w-auto"
+                        disabled={!isPremium && photoGallery.length >= 5}
+                      >
+                        {!isPremium && photoGallery.length >= 5 ? 'Limite atteinte' : 'Ajouter une photo'}
+                      </Button>
+                    </div>
+
+                    {photoGallery.length === 0 ? (
+                      <div className="text-center py-12 bg-muted/30 rounded-lg border-2 border-dashed border-border">
+                        <div className="flex justify-center mb-4">
+                          <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center">
+                            <Icon name="Camera" size={32} className="text-muted-foreground" />
+                          </div>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-4">
+                          Aucune photo pour le moment
+                        </p>
+                        <Button
+                          variant="outline"
+                          iconName="Plus"
+                          onClick={() => openModal('gallery')}
+                        >
+                          Ajouter votre première photo
+                        </Button>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                          {photoGallery.map((photo) => (
+                            <div
+                              key={photo.id}
+                              className="aspect-square rounded-lg overflow-hidden bg-muted cursor-pointer hover:opacity-90 transition-opacity"
+                              onClick={() => openModal('gallery')}
+                            >
+                              <OptimizedImage
+                                src={photo.photo_url}
+                                alt={`Photo de ${currentProfile.name}`}
+                                width={400}
+                                quality={80}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Message de limite atteinte */}
+                        {!isPremium && photoGallery.length >= 5 && (
+                          <div className="mt-4 p-4 bg-orange-50 border border-orange-200 rounded-lg">
+                            <div className="flex items-start gap-3">
+                              <div className="flex-shrink-0">
+                                <Icon name="Lock" size={20} className="text-orange-600" />
+                              </div>
+                              <div className="flex-1">
+                                <h4 className="text-sm font-semibold text-orange-900 mb-1">
+                                  Limite de photos atteinte
+                                </h4>
+                                <p className="text-xs text-orange-700 mb-3">
+                                  Vous avez atteint la limite de 5 photos en version gratuite.
+                                  Passez à Premium pour ajouter des photos illimitées !
+                                </p>
+                                <Button
+                                  variant="default"
+                                  size="sm"
+                                  iconName="Sparkles"
+                                  onClick={() => setShowPremiumModal(true)}
+                                  className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
+                                >
+                                  Passer à Premium
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
                 )}
 
                 {activeTab === 'notes' && (
