@@ -1,6 +1,6 @@
 // Service Worker pour Doogybook PWA - Optimisé pour performances
-const CACHE_NAME = 'doogybook-v1.0.1';
-const RUNTIME_CACHE = 'doogybook-runtime-v1.0.1';
+const CACHE_NAME = 'doogybook-v1.0.2';
+const RUNTIME_CACHE = 'doogybook-runtime-v1.0.2';
 
 // Fichiers à mettre en cache lors de l'installation (minimisé pour FCP)
 const PRECACHE_ASSETS = [
