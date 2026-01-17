@@ -28,6 +28,7 @@ const Register = lazy(() => import('./pages/register'));
 // Dashboard
 const DashboardRedirect = lazy(() => import('./components/DashboardRedirect'));
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
+const UserDashboard = lazy(() => import('./pages/UserDashboard'));
 
 // Profils chiens
 const DogProfile = lazy(() => import('./pages/dog-profile'));
@@ -99,6 +100,7 @@ const Routes = () => {
             {/* Dashboard */}
             <Route path="/dashboard" element={<DashboardRedirect />} />
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            <Route path="/user-dashboard" element={<UserDashboard />} />
             
             {/* Profils chiens */}
             <Route path="/chien/:id" element={<HybridDogProfile />} />

@@ -78,13 +78,13 @@ const DashboardRedirect = () => {
           console.log('DashboardRedirect: User has pro account, redirecting to pro dashboard');
           navigate('/pro/dashboard');
         } else {
-          console.log('DashboardRedirect: Regular user, redirecting to dog-profile');
-          navigate('/dog-profile');
+          console.log('DashboardRedirect: Regular user, redirecting to user dashboard');
+          navigate('/user-dashboard');
         }
       } catch (error) {
         console.error('DashboardRedirect: Error checking account:', error);
         // En cas d'erreur → Dashboard User
-        navigate('/dog-profile');
+        navigate('/user-dashboard');
       } finally {
         setChecking(false);
       }

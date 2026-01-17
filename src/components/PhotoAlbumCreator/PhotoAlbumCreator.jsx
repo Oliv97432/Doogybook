@@ -1,4 +1,5 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
+import { supabase } from '../../lib/supabase';
 import AlbumViewer from './AlbumViewer';
 import PhotoSidebar from './PhotoSidebar';
 import ConfigPanel from './ConfigPanel';
@@ -7,6 +8,11 @@ import { generateAlbumPDF, previewAlbumData } from '../../utils/albumPdfGenerato
 import './PhotoAlbumCreator.css';
 
 const PhotoAlbumCreator = () => {
+  // Sélection du chien
+  const [userDogs, setUserDogs] = useState([]);
+  const [selectedDogId, setSelectedDogId] = useState(null);
+  const [loading, setLoading] = useState(true);
+
   // État principal de l'album
   const [albumData, setAlbumData] = useState({
     pages: [
@@ -22,17 +28,67 @@ const PhotoAlbumCreator = () => {
   const [selectedLayout, setSelectedLayout] = useState('fullPage');
   const [showThumbnails, setShowThumbnails] = useState(false);
 
-  // Importation de photos
-  const handlePhotoImport = useCallback((files) => {
-    const newPhotos = Array.from(files).map((file, index) => ({
-      id: `photo-${Date.now()}-${index}`,
-      file,
-      url: URL.createObjectURL(file),
-      name: file.name
-    }));
+  // Charger les chiens de l'utilisateur
+  useEffect(() => {
+    const fetchUserDogs = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
 
-    setImportedPhotos(prev => [...prev, ...newPhotos]);
+        const { data: dogs, error } = await supabase
+          .from('dogs')
+          .select('id, name, breed, photo_url')
+          .eq('user_id', user.id)
+          .order('name');
+
+        if (error) throw error;
+        setUserDogs(dogs || []);
+
+        // Sélectionner automatiquement le premier chien s'il y en a un seul
+        if (dogs && dogs.length === 1) {
+          setSelectedDogId(dogs[0].id);
+        }
+      } catch (error) {
+        console.error('Erreur chargement chiens:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserDogs();
   }, []);
+
+  // Charger les photos du chien sélectionné
+  useEffect(() => {
+    const fetchDogPhotos = async () => {
+      if (!selectedDogId) {
+        setImportedPhotos([]);
+        return;
+      }
+
+      try {
+        const { data: photos, error } = await supabase
+          .from('dog_photos')
+          .select('id, photo_url, created_at')
+          .eq('dog_id', selectedDogId)
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        const formattedPhotos = (photos || []).map((photo, index) => ({
+          id: photo.id,
+          url: photo.photo_url,
+          name: `Photo ${index + 1}`
+        }));
+
+        setImportedPhotos(formattedPhotos);
+      } catch (error) {
+        console.error('Erreur chargement photos:', error);
+      }
+    };
+
+    fetchDogPhotos();
+  }, [selectedDogId]);
 
   // Remplissage aléatoire
   const handleRandomFill = useCallback(() => {
@@ -235,13 +291,105 @@ const PhotoAlbumCreator = () => {
     setAlbumData({ pages: newPages });
   }, [albumData.pages]);
 
+  // Écran de chargement
+  if (loading) {
+    return (
+      <div className="photo-album-creator">
+        <div className="flex items-center justify-center h-screen">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Chargement...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Écran de sélection du chien
+  if (!selectedDogId) {
+    return (
+      <div className="photo-album-creator">
+        <div className="album-header">
+          <h1 className="text-3xl font-bold text-gray-800">
+            Créateur d'Album Photo Premium
+          </h1>
+        </div>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="max-w-2xl w-full p-8">
+            <div className="text-center mb-8">
+              <div className="text-6xl mb-4">📸</div>
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">
+                Sélectionnez un chien pour créer son album
+              </h2>
+              <p className="text-gray-600">
+                Choisissez le chien dont vous souhaitez utiliser les photos pour créer un album PDF
+              </p>
+            </div>
+
+            {userDogs.length === 0 ? (
+              <div className="text-center p-8 bg-gray-50 rounded-lg">
+                <p className="text-gray-600 mb-4">
+                  Vous n'avez pas encore de chien enregistré.
+                </p>
+                <a
+                  href="/dog-profile"
+                  className="inline-block px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                >
+                  Ajouter un chien
+                </a>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {userDogs.map((dog) => (
+                  <button
+                    key={dog.id}
+                    onClick={() => setSelectedDogId(dog.id)}
+                    className="flex items-center p-4 border-2 border-gray-200 rounded-lg hover:border-indigo-500 hover:bg-indigo-50 transition-all"
+                  >
+                    <div className="w-16 h-16 rounded-full overflow-hidden bg-gray-200 flex-shrink-0">
+                      {dog.photo_url ? (
+                        <img
+                          src={dog.photo_url}
+                          alt={dog.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-2xl">
+                          🐕
+                        </div>
+                      )}
+                    </div>
+                    <div className="ml-4 text-left">
+                      <h3 className="font-semibold text-gray-800">{dog.name}</h3>
+                      <p className="text-sm text-gray-600">{dog.breed}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const selectedDog = userDogs.find(d => d.id === selectedDogId);
+
   return (
     <div className="photo-album-creator">
       {/* En-tête */}
       <div className="album-header">
-        <h1 className="text-3xl font-bold text-gray-800">
-          Créateur d'Album Photo Premium
-        </h1>
+        <div>
+          <h1 className="text-3xl font-bold text-gray-800">
+            Album de {selectedDog?.name}
+          </h1>
+          <button
+            onClick={() => setSelectedDogId(null)}
+            className="text-sm text-indigo-600 hover:text-indigo-700 mt-1"
+          >
+            ← Changer de chien
+          </button>
+        </div>
         <div className="header-actions">
           <button
             onClick={() => setShowThumbnails(!showThumbnails)}
@@ -260,11 +408,11 @@ const PhotoAlbumCreator = () => {
 
       {/* Zone principale */}
       <div className="album-main-content">
-        {/* Panneau latéral gauche - Photos importées */}
+        {/* Panneau latéral gauche - Photos du chien */}
         <PhotoSidebar
           photos={importedPhotos}
-          onPhotoImport={handlePhotoImport}
           onRandomFill={handleRandomFill}
+          dogName={selectedDog?.name}
         />
 
         {/* Zone centrale - Visualisation de l'album */}
