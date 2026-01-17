@@ -86,12 +86,14 @@ const AddDogModal = ({ isOpen, onClose, onSubmit }) => {
   };
 
   const uploadPhoto = async (userId) => {
-    if (!photoFile) return null;
+    if (!photoFile) return { success: true, url: null };
 
     try {
       // Créer un nom de fichier unique
       const fileExt = photoFile.name.split('.').pop();
       const fileName = `${userId}/${Date.now()}.${fileExt}`;
+
+      console.log('📸 Upload photo vers:', fileName);
 
       // Upload vers Supabase Storage
       const { data, error } = await supabase.storage
@@ -102,19 +104,29 @@ const AddDogModal = ({ isOpen, onClose, onSubmit }) => {
         });
 
       if (error) {
-        console.error('Erreur upload photo:', error);
-        return null;
+        console.error('❌ Erreur upload photo:', error);
+        return {
+          success: false,
+          error: error.message || 'Erreur lors de l\'upload de la photo'
+        };
       }
+
+      console.log('✅ Photo uploadée:', data);
 
       // Obtenir l'URL publique
       const { data: urlData } = supabase.storage
         .from('dog-photos')
         .getPublicUrl(fileName);
 
-      return urlData.publicUrl;
+      console.log('🔗 URL publique:', urlData.publicUrl);
+
+      return { success: true, url: urlData.publicUrl };
     } catch (err) {
-      console.error('Erreur upload:', err);
-      return null;
+      console.error('❌ Erreur upload:', err);
+      return {
+        success: false,
+        error: 'Une erreur inattendue est survenue lors de l\'upload'
+      };
     }
   };
 
@@ -157,7 +169,7 @@ const AddDogModal = ({ isOpen, onClose, onSubmit }) => {
 
   const handleSubmit = async (e) => {
     e?.preventDefault();
-    
+
     if (!validateForm()) return;
 
     setUploading(true);
@@ -167,7 +179,16 @@ const AddDogModal = ({ isOpen, onClose, onSubmit }) => {
       let photoUrl = null;
       if (photoFile) {
         const { data: { user } } = await supabase.auth.getUser();
-        photoUrl = await uploadPhoto(user?.id);
+        const uploadResult = await uploadPhoto(user?.id);
+
+        // Vérifier si l'upload a réussi
+        if (!uploadResult.success) {
+          alert(`❌ Erreur d'upload de la photo: ${uploadResult.error}`);
+          setUploading(false);
+          return;
+        }
+
+        photoUrl = uploadResult.url;
       }
 
       // Envoyer les données
@@ -181,17 +202,17 @@ const AddDogModal = ({ isOpen, onClose, onSubmit }) => {
         isSterilized: formData.isSterilized === 'yes',
         image: photoUrl || formData.image.trim() || null
       });
-      
+
       // Reset form
-      setFormData({ 
-        name: '', 
-        breed: '', 
-        age: '', 
+      setFormData({
+        name: '',
+        breed: '',
+        age: '',
         ageUnit: 'years',
         weight: '',
         gender: '',
         isSterilized: 'no',
-        image: '' 
+        image: ''
       });
       setPhotoFile(null);
       setErrors({});
