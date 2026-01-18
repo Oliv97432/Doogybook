@@ -6,16 +6,16 @@ import { Bell, Plus, ChevronLeft, Calendar } from 'lucide-react';
 import TabNavigation from '../components/TabNavigation';
 import UserMenu from '../components/UserMenu';
 import Footer from '../components/Footer';
-import PremiumModal from '../components/PremiumModal';
+import usePremiumModal from '../hooks/usePremiumModal';
 import ReminderCard from '../components/reminders/ReminderCard';
 
 const RemindersPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  
+  const { showPremiumModal } = usePremiumModal();
+
   const [loading, setLoading] = useState(true);
   const [isPremium, setIsPremium] = useState(false);
-  const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [dogs, setDogs] = useState([]);
   const [reminders, setReminders] = useState([]);
 
@@ -35,7 +35,7 @@ const RemindersPage = () => {
         const userIsPremium = premiumTiers.includes(profile?.subscription_tier);
 
         if (!userIsPremium) {
-          setShowPremiumModal(true);
+          showPremiumModal('reminders');
           setLoading(false);
           return;
         }
@@ -178,19 +178,9 @@ const RemindersPage = () => {
 
   if (!isPremium) {
     return (
-      <>
-        <div className="min-h-screen bg-background">
-          <TabNavigation />
-        </div>
-        <PremiumModal
-          isOpen={showPremiumModal}
-          onClose={() => {
-            setShowPremiumModal(false);
-            navigate('/dog-profile');
-          }}
-          reason="reminders"
-        />
-      </>
+      <div className="min-h-screen bg-background">
+        <TabNavigation />
+      </div>
     );
   }
 

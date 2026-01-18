@@ -3,9 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import OptimizedImage from '../components/OptimizedImage';
-import { 
-  Heart, Stethoscope, Users, Calendar, ArrowRight,
-  Check, Sparkles, Shield, MapPin
+import {
+  Heart, Stethoscope, Users, ArrowRight,
+  Check, Sparkles, Shield, Crown, X
 } from 'lucide-react';
 
 const LandingPage = () => {
@@ -243,20 +243,20 @@ const LandingPage = () => {
                 <Users size={24} className="sm:size-6 md:size-8 text-white" />
               </div>
               <h4 className="text-lg sm:text-xl md:text-2xl font-heading font-bold text-gray-900 mb-3 sm:mb-4">
-                Communauté active
+                Fonctionnalités Premium
               </h4>
               <ul className="space-y-2 sm:space-y-3 text-gray-700">
                 <li className="flex items-start gap-2">
                   <Check size={16} className="sm:size-5 text-purple-600 flex-shrink-0 mt-0.5" />
-                  <span className="text-sm sm:text-base">Partagez vos moments</span>
+                  <span className="text-sm sm:text-base">Recettes personnalisées</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <Check size={16} className="sm:size-5 text-purple-600 flex-shrink-0 mt-0.5" />
-                  <span className="text-sm sm:text-base">Conseils d'experts</span>
+                  <span className="text-sm sm:text-base">Albums photos PDF</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <Check size={16} className="sm:size-5 text-purple-600 flex-shrink-0 mt-0.5" />
-                  <span className="text-sm sm:text-base">Groupes par race</span>
+                  <span className="text-sm sm:text-base">Rappels intelligents</span>
                 </li>
               </ul>
             </div>
@@ -353,6 +353,232 @@ const LandingPage = () => {
           </div>
         </section>
       )}
+
+      {/* Section Plans Gratuit / Premium */}
+      <section className="py-8 sm:py-12 md:py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4">
+          <div className="text-center mb-8 sm:mb-12 md:mb-16">
+            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 py-2 rounded-full text-sm font-medium mb-6">
+              <Sparkles size={16} />
+              <span>Choisissez votre plan</span>
+            </div>
+            <h3 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-heading font-bold text-gray-900 mb-3 sm:mb-4 leading-tight">
+              Profitez pleinement de Doogybook
+            </h3>
+            <p className="text-sm sm:text-base md:text-xl text-gray-600 max-w-2xl mx-auto">
+              Commencez gratuitement ou passez Premium pour débloquer toutes les fonctionnalités
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-6 lg:gap-8 max-w-5xl mx-auto">
+            {/* Plan Gratuit */}
+            <div className="relative rounded-2xl sm:rounded-3xl p-6 sm:p-8 border-2 border-gray-200 bg-white hover:shadow-lg transition-all">
+              <div className="mb-6">
+                <h4 className="text-2xl sm:text-3xl font-heading font-bold text-gray-900 mb-2">
+                  Gratuit
+                </h4>
+                <div className="flex items-baseline gap-1 mb-2">
+                  <span className="text-4xl sm:text-5xl font-bold text-gray-900">0€</span>
+                  <span className="text-lg text-gray-600">/mois</span>
+                </div>
+                <p className="text-gray-600">Pour découvrir Doogybook</p>
+              </div>
+
+              <div className="space-y-4 mb-8">
+                <div className="flex gap-3">
+                  <div className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center bg-green-100 text-green-600">
+                    <Check size={14} />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-medium text-gray-900">1 chien</p>
+                    <p className="text-sm text-gray-600">Gérez le profil d'un seul chien</p>
+                  </div>
+                </div>
+
+                <div className="flex gap-3">
+                  <div className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center bg-green-100 text-green-600">
+                    <Check size={14} />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-medium text-gray-900">10 photos maximum</p>
+                    <p className="text-sm text-gray-600">Album photo limité</p>
+                  </div>
+                </div>
+
+                <div className="flex gap-3">
+                  <div className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center bg-green-100 text-green-600">
+                    <Check size={14} />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-medium text-gray-900">Mode sombre</p>
+                    <p className="text-sm text-gray-600">Interface adaptée à vos yeux</p>
+                  </div>
+                </div>
+
+                <div className="flex gap-3">
+                  <div className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center bg-green-100 text-green-600">
+                    <Check size={14} />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-medium text-gray-900">Conseils quotidiens</p>
+                    <p className="text-sm text-gray-600">Tips pour votre chien</p>
+                  </div>
+                </div>
+
+                <div className="flex gap-3 opacity-40">
+                  <div className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center bg-gray-100 text-gray-400">
+                    <X size={14} />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-medium text-gray-900">Chiens illimités</p>
+                  </div>
+                </div>
+
+                <div className="flex gap-3 opacity-40">
+                  <div className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center bg-gray-100 text-gray-400">
+                    <X size={14} />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-medium text-gray-900">Photos illimitées</p>
+                  </div>
+                </div>
+
+                <div className="flex gap-3 opacity-40">
+                  <div className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center bg-gray-100 text-gray-400">
+                    <X size={14} />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-medium text-gray-900">Recettes personnalisées</p>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                onClick={() => navigate('/register')}
+                className="w-full py-4 bg-gray-100 text-gray-700 rounded-xl font-semibold text-lg hover:bg-gray-200 transition-all"
+              >
+                Commencer gratuitement
+              </button>
+            </div>
+
+            {/* Plan Premium */}
+            <div className="relative rounded-2xl sm:rounded-3xl p-6 sm:p-8 border-2 border-blue-500 shadow-2xl bg-gradient-to-br from-blue-50 to-purple-50 scale-105">
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                <span className="inline-flex items-center gap-1 px-4 py-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full text-sm font-medium shadow-lg">
+                  <Sparkles size={14} />
+                  Populaire
+                </span>
+              </div>
+
+              <div className="mb-6">
+                <div className="flex items-center gap-2 mb-2">
+                  <Crown className="text-blue-600" size={28} />
+                  <h4 className="text-2xl sm:text-3xl font-heading font-bold text-gray-900">
+                    Premium
+                  </h4>
+                </div>
+                <div className="flex items-baseline gap-1 mb-2">
+                  <span className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">3,99€</span>
+                  <span className="text-lg text-gray-600">/mois</span>
+                </div>
+                <p className="text-sm text-blue-600 bg-blue-100 inline-block px-3 py-1 rounded-full mb-2">
+                  ou 39€/an (économisez 9€)
+                </p>
+                <p className="text-gray-600">Pour les propriétaires passionnés</p>
+              </div>
+
+              <div className="space-y-4 mb-8">
+                <div className="flex gap-3">
+                  <div className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center bg-blue-100 text-blue-600">
+                    <Check size={14} />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-medium text-gray-900">Chiens illimités 🐕</p>
+                    <p className="text-sm text-gray-600">Gérez autant de chiens que vous voulez</p>
+                  </div>
+                </div>
+
+                <div className="flex gap-3">
+                  <div className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center bg-blue-100 text-blue-600">
+                    <Check size={14} />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-medium text-gray-900">Photos illimitées 📸</p>
+                    <p className="text-sm text-gray-600">Albums photo sans limite</p>
+                  </div>
+                </div>
+
+                <div className="flex gap-3">
+                  <div className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center bg-blue-100 text-blue-600">
+                    <Check size={14} />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-medium text-gray-900">Recettes personnalisées 🍽️</p>
+                    <p className="text-sm text-gray-600">Créez des recettes sur mesure</p>
+                  </div>
+                </div>
+
+                <div className="flex gap-3">
+                  <div className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center bg-blue-100 text-blue-600">
+                    <Check size={14} />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-medium text-gray-900">Albums photo PDF 📄</p>
+                    <p className="text-sm text-gray-600">Téléchargez vos souvenirs</p>
+                  </div>
+                </div>
+
+                <div className="flex gap-3">
+                  <div className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center bg-blue-100 text-blue-600">
+                    <Check size={14} />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-medium text-gray-900">Rappels intelligents 🔔</p>
+                    <p className="text-sm text-gray-600">Ne manquez plus aucun soin</p>
+                  </div>
+                </div>
+
+                <div className="flex gap-3">
+                  <div className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center bg-blue-100 text-blue-600">
+                    <Check size={14} />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-medium text-gray-900">Badge Premium 👑</p>
+                    <p className="text-sm text-gray-600">Visible sur votre profil</p>
+                  </div>
+                </div>
+
+                <div className="flex gap-3">
+                  <div className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center bg-blue-100 text-blue-600">
+                    <Check size={14} />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-medium text-gray-900">Mode sombre</p>
+                    <p className="text-sm text-gray-600">Interface adaptée à vos yeux</p>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                onClick={() => navigate('/register')}
+                className="w-full py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl font-bold text-lg hover:from-blue-600 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
+              >
+                <Crown size={20} />
+                <span>Commencer avec Premium</span>
+              </button>
+
+              <p className="text-center text-xs text-gray-600 mt-4">
+                ✨ Annulation possible à tout moment
+              </p>
+            </div>
+          </div>
+
+          {/* Info section */}
+          <div className="text-center mt-8 sm:mt-12 text-sm text-gray-600">
+            <p>🔒 Paiement sécurisé • ⚡ Activation instantanée</p>
+          </div>
+        </div>
+      </section>
 
       {/* CTA Final */}
       <section className="py-8 sm:py-12 md:py-20 bg-gradient-to-br from-blue-500 to-purple-600 text-white">

@@ -18,7 +18,7 @@ import PhotoGalleryModal from './components/PhotoGalleryModal';
 import WelcomeOnboarding from './components/WelcomeOnboarding';
 import CreateDogModal from './components/CreateDogModal';
 import Footer from '../../components/Footer';
-import PremiumModal from '../../components/PremiumModal';
+import usePremiumModal from '../../hooks/usePremiumModal';
 import jsPDF from 'jspdf';
 
 // ==========================================
@@ -112,10 +112,10 @@ const CardSkeleton = () => (
 const DogProfile = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { showPremiumModal } = usePremiumModal();
   const [activeTab, setActiveTab] = useState('vaccinations');
   const [loading, setLoading] = useState(true);
   const [isPremium, setIsPremium] = useState(false);
-  const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [generatingPDF, setGeneratingPDF] = useState(false);
 
   // États pour les données
@@ -700,7 +700,7 @@ const DogProfile = () => {
 
     // Vérifier la limite de 5 photos pour les utilisateurs gratuits
     if (!isPremium && photoGallery.length >= 5) {
-      setShowPremiumModal(true);
+      showPremiumModal('photos');
       return;
     }
 
@@ -801,7 +801,7 @@ const DogProfile = () => {
   // Export PDF - ULTRA-SÉCURISÉ
   const handleExportPDF = useCallback(async () => {
     if (!isPremium) {
-      setShowPremiumModal(true);
+      showPremiumModal('limit');
       return;
     }
 
@@ -1571,7 +1571,7 @@ const DogProfile = () => {
                                   variant="default"
                                   size="sm"
                                   iconName="Sparkles"
-                                  onClick={() => setShowPremiumModal(true)}
+                                  onClick={() => showPremiumModal('photos')}
                                   className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
                                 >
                                   Passer à Premium
@@ -1655,13 +1655,7 @@ const DogProfile = () => {
         currentProfilePhotoUrl={currentProfile?.image}
         onSetProfilePhoto={handleSetProfilePhoto}
         isPremium={isPremium}
-        onShowPremiumModal={() => setShowPremiumModal(true)}
-      />
-
-      <PremiumModal
-        isOpen={showPremiumModal}
-        onClose={() => setShowPremiumModal(false)}
-        reason="health-pdf"
+        onShowPremiumModal={() => showPremiumModal('photos')}
       />
 
       <Footer />

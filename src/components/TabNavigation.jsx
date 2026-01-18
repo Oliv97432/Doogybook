@@ -70,7 +70,7 @@ const TabNavigation = () => {
     <nav className="sticky top-[73px] z-40 bg-white border-b border-gray-200 relative">
       <div
         ref={scrollContainerRef}
-        className="flex w-full overflow-x-auto overflow-y-hidden scrollbar-hide justify-center"
+        className="flex w-full overflow-x-auto overflow-y-hidden scrollbar-hide lg:justify-center"
         style={{
           WebkitOverflowScrolling: 'touch',
           scrollbarWidth: 'none',
@@ -79,6 +79,8 @@ const TabNavigation = () => {
           overscrollBehavior: 'contain'
         }}
       >
+        {/* Extra padding at the start for scroll */}
+        <div className="flex-none w-4 lg:hidden" aria-hidden="true" />
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const active = isActive(tab.path);
@@ -113,11 +115,15 @@ const TabNavigation = () => {
           );
         })}
         {/* Extra padding at the end for scroll */}
-        <div className="flex-none w-4" aria-hidden="true" />
+        <div className="flex-none w-4 lg:hidden" aria-hidden="true" />
       </div>
 
+      {/* Indicateur visuel de scroll à gauche (mobile uniquement) */}
+      <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white via-white/70 to-transparent pointer-events-none lg:hidden"
+           style={{ zIndex: 1 }} />
+
       {/* Indicateur visuel de scroll à droite (mobile uniquement) */}
-      <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-white via-white/80 to-transparent pointer-events-none lg:hidden"
+      <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white via-white/70 to-transparent pointer-events-none lg:hidden"
            style={{ zIndex: 1 }} />
     </nav>
   );

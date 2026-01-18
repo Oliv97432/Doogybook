@@ -3,14 +3,14 @@ import { AreaChart, Area, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
 import { TrendingUp, TrendingDown, Minus, Download, AlertTriangle, Camera } from 'lucide-react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
-import PremiumModal from '../../../components/PremiumModal';
+import usePremiumModal from '../../../hooks/usePremiumModal';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../contexts/AuthContext';
 
 const WeightChart = ({ data, onAddWeight }) => {
   const { user } = useAuth();
+  const { showPremiumModal } = usePremiumModal();
   const [isPremium, setIsPremium] = useState(false);
-  const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [exporting, setExporting] = useState(false);
 
   // Vérifier statut Premium
@@ -108,7 +108,7 @@ const WeightChart = ({ data, onAddWeight }) => {
   // Export graphique (Premium)
   const handleExportChart = async () => {
     if (!isPremium) {
-      setShowPremiumModal(true);
+      showPremiumModal('limit');
       return;
     }
 
@@ -435,13 +435,6 @@ const WeightChart = ({ data, onAddWeight }) => {
           <p className="text-lg font-semibold text-foreground">{stats.max.toFixed(1)} kg</p>
         </div>
       </div>
-
-      {/* Modal Premium */}
-      <PremiumModal
-        isOpen={showPremiumModal}
-        onClose={() => setShowPremiumModal(false)}
-        reason="weight-export"
-      />
     </div>
   );
 };

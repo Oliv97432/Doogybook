@@ -135,6 +135,11 @@ const placePhotosOnPDF = async (pdf, page, margin, contentWidth, contentHeight) 
       pdf.setLineWidth(0.5);
       pdf.rect(position.x, position.y, position.width, position.height);
 
+      // Ajouter le titre et la légende si présents
+      if (photo.title || photo.caption) {
+        addPhotoText(pdf, photo, position);
+      }
+
     } catch (error) {
       console.error('Erreur lors du chargement de l\'image:', error);
       // Afficher un placeholder en cas d'erreur
@@ -204,6 +209,121 @@ const calculateImageDimensions = (imgData, maxWidth, maxHeight) => {
   }
 
   return { finalWidth, finalHeight, offsetX, offsetY };
+};
+
+/**
+ * Ajoute le titre et la légende sur une photo
+ */
+const addPhotoText = (pdf, photo, position) => {
+  const { title, caption, fontFamily, fontSize, textColor } = photo;
+
+  // Convertir la couleur hex en RGB
+  const rgb = hexToRgb(textColor || '#FFFFFF');
+
+  // Zone de texte en bas de l'image
+  const textAreaHeight = 25; // Hauteur de la zone de texte
+  const textX = position.x + 5;
+  const textY = position.y + position.height - textAreaHeight;
+
+  // Fond semi-transparent pour le texte (simulation avec rectangle opaque)
+  pdf.setFillColor(0, 0, 0);
+  pdf.setGState(new pdf.GState({ opacity: 0.7 }));
+  pdf.rect(position.x, textY, position.width, textAreaHeight, 'F');
+  pdf.setGState(new pdf.GState({ opacity: 1 }));
+
+  // Définir la police (utiliser une police de base compatible jsPDF)
+  const pdfFont = mapFontToPDF(fontFamily);
+  pdf.setFont(pdfFont.font, pdfFont.style);
+
+  // Définir la couleur du texte
+  pdf.setTextColor(rgb.r, rgb.g, rgb.b);
+
+  let currentY = textY + 5;
+
+  // Ajouter le titre
+  if (title) {
+    const titleSize = Math.min((fontSize || 14) * 0.35, 12); // Convertir px en pt pour PDF
+    pdf.setFontSize(titleSize);
+    pdf.setFont(pdfFont.font, 'bold');
+
+    // Tronquer le texte s'il est trop long
+    const maxWidth = position.width - 10;
+    const titleText = truncateText(pdf, title, maxWidth);
+    pdf.text(titleText, textX, currentY);
+    currentY += titleSize * 0.5;
+  }
+
+  // Ajouter la légende
+  if (caption) {
+    const captionSize = Math.min(((fontSize || 14) - 2) * 0.35, 10);
+    pdf.setFontSize(captionSize);
+    pdf.setFont(pdfFont.font, 'normal');
+
+    // Diviser le texte en plusieurs lignes si nécessaire
+    const maxWidth = position.width - 10;
+    const lines = pdf.splitTextToSize(caption, maxWidth);
+
+    // Limiter à 2 lignes pour éviter le débordement
+    const displayLines = lines.slice(0, 2);
+    displayLines.forEach((line) => {
+      if (currentY + captionSize * 0.5 < position.y + position.height - 2) {
+        pdf.text(line, textX, currentY);
+        currentY += captionSize * 0.5;
+      }
+    });
+  }
+};
+
+/**
+ * Convertit une couleur hex en RGB
+ */
+const hexToRgb = (hex) => {
+  // Enlever le # si présent
+  hex = hex.replace('#', '');
+
+  // Convertir en RGB
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+
+  return { r, g, b };
+};
+
+/**
+ * Mappe les noms de polices web vers les polices jsPDF
+ */
+const mapFontToPDF = (fontFamily) => {
+  const fontMap = {
+    'Arial': { font: 'helvetica', style: 'normal' },
+    'Georgia': { font: 'times', style: 'normal' },
+    'Times New Roman': { font: 'times', style: 'normal' },
+    'Courier New': { font: 'courier', style: 'normal' },
+    'Verdana': { font: 'helvetica', style: 'normal' },
+    'Comic Sans MS': { font: 'helvetica', style: 'normal' },
+    'Impact': { font: 'helvetica', style: 'bold' },
+    'Brush Script MT': { font: 'times', style: 'italic' }
+  };
+
+  return fontMap[fontFamily] || { font: 'helvetica', style: 'normal' };
+};
+
+/**
+ * Tronque le texte s'il dépasse la largeur maximale
+ */
+const truncateText = (pdf, text, maxWidth) => {
+  const textWidth = pdf.getTextWidth(text);
+
+  if (textWidth <= maxWidth) {
+    return text;
+  }
+
+  // Ajouter des points de suspension
+  let truncated = text;
+  while (pdf.getTextWidth(truncated + '...') > maxWidth && truncated.length > 0) {
+    truncated = truncated.slice(0, -1);
+  }
+
+  return truncated + '...';
 };
 
 /**

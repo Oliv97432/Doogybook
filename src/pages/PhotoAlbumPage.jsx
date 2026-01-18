@@ -7,16 +7,16 @@ import { useNotifications } from '../hooks/useNotifications';
 import TabNavigation from '../components/TabNavigation';
 import UserMenu from '../components/UserMenu';
 import Footer from '../components/Footer';
-import PremiumModal from '../components/PremiumModal';
+import usePremiumModal from '../hooks/usePremiumModal';
 import PhotoAlbumCreator from '../components/PhotoAlbumCreator/PhotoAlbumCreator';
 
 const PhotoAlbumPage = () => {
   const { user } = useAuth();
   const { unreadCount } = useNotifications();
   const navigate = useNavigate();
+  const { showPremiumModal } = usePremiumModal();
 
   const [isPremium, setIsPremium] = useState(false);
-  const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [currentProfile, setCurrentProfile] = useState(null);
   const [dogProfiles, setDogProfiles] = useState([]);
@@ -82,7 +82,7 @@ const PhotoAlbumPage = () => {
       setIsPremium(userIsPremium);
 
       if (!userIsPremium) {
-        setShowPremiumModal(true);
+        showPremiumModal('photo-album');
       }
     } catch (error) {
       console.error('Erreur vérification premium:', error);
@@ -196,7 +196,7 @@ const PhotoAlbumPage = () => {
                 Cette fonctionnalité est réservée aux membres Premium
               </p>
               <button
-                onClick={() => setShowPremiumModal(true)}
+                onClick={() => showPremiumModal('photo-album')}
                 className="px-6 py-3 bg-gradient-to-r from-primary to-purple-600 text-white rounded-xl font-bold hover:shadow-lg transition-all"
               >
                 Découvrir Premium
@@ -207,12 +207,6 @@ const PhotoAlbumPage = () => {
       </main>
 
       <Footer />
-
-      <PremiumModal
-        isOpen={showPremiumModal}
-        onClose={() => setShowPremiumModal(false)}
-        reason="photo-album"
-      />
     </div>
   );
 };

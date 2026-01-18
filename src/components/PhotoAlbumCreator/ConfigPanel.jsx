@@ -1,6 +1,6 @@
 import React from 'react';
 
-const ConfigPanel = ({ currentPage, selectedLayout, onLayoutChange, onAddPage }) => {
+const ConfigPanel = ({ currentPage, selectedLayout, onLayoutChange, onAddPage, currentPageCount, maxPages }) => {
   const layouts = [
     {
       id: 'fullPage',
@@ -99,10 +99,20 @@ const ConfigPanel = ({ currentPage, selectedLayout, onLayoutChange, onAddPage })
 
         <button
           onClick={onAddPage}
+          disabled={currentPageCount >= maxPages}
           className="action-btn add-page"
+          title={currentPageCount >= maxPages ? `Limite de ${maxPages} pages atteinte` : 'Ajouter une nouvelle page'}
         >
           ➕ Ajouter une Nouvelle Page
+          {currentPageCount >= maxPages && (
+            <span className="text-xs block mt-1">({currentPageCount}/{maxPages} pages)</span>
+          )}
         </button>
+        {currentPageCount < maxPages && (
+          <p className="text-xs text-gray-500 mt-2">
+            {currentPageCount}/{maxPages} pages utilisées
+          </p>
+        )}
       </div>
 
       {/* Aide */}

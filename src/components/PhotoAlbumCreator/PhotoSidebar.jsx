@@ -1,9 +1,13 @@
 import React from 'react';
 
-const PhotoSidebar = ({ photos, onRandomFill, dogName }) => {
+const PhotoSidebar = ({ photos, onRandomFill, dogName, selectedPhoto, onPhotoSelect }) => {
   const handleDragStart = (e, photo) => {
     e.dataTransfer.effectAllowed = 'copy';
     e.dataTransfer.setData('photoId', photo.id);
+  };
+
+  const handlePhotoClick = (photo) => {
+    onPhotoSelect(photo);
   };
 
   return (
@@ -27,6 +31,21 @@ const PhotoSidebar = ({ photos, onRandomFill, dogName }) => {
         </button>
       </div>
 
+      {/* Message de sélection pour mobile */}
+      {selectedPhoto && (
+        <div className="bg-blue-100 border border-blue-300 rounded-lg p-3 mb-3">
+          <p className="text-xs text-blue-800 font-medium">
+            📸 Photo sélectionnée - Cliquez sur un emplacement dans l'album
+          </p>
+          <button
+            onClick={() => onPhotoSelect(null)}
+            className="mt-2 text-xs text-blue-600 hover:text-blue-800 underline"
+          >
+            Annuler la sélection
+          </button>
+        </div>
+      )}
+
       {/* Liste des miniatures */}
       <div className="photo-grid">
         {photos.length === 0 ? (
@@ -47,9 +66,11 @@ const PhotoSidebar = ({ photos, onRandomFill, dogName }) => {
           photos.map((photo) => (
             <div
               key={photo.id}
-              className="photo-thumbnail"
+              className={`photo-thumbnail ${selectedPhoto?.id === photo.id ? 'selected' : ''}`}
               draggable
               onDragStart={(e) => handleDragStart(e, photo)}
+              onClick={() => handlePhotoClick(photo)}
+              style={{ cursor: 'pointer' }}
             >
               <img
                 src={photo.url}
@@ -57,8 +78,14 @@ const PhotoSidebar = ({ photos, onRandomFill, dogName }) => {
                 className="thumbnail-image"
               />
               <div className="thumbnail-overlay">
-                <span className="drag-hint">Glisser</span>
+                <span className="drag-hint hidden sm:inline">Glisser</span>
+                <span className="drag-hint sm:hidden">Cliquer</span>
               </div>
+              {selectedPhoto?.id === photo.id && (
+                <div className="absolute top-1 right-1 bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center">
+                  ✓
+                </div>
+              )}
             </div>
           ))
         )}
@@ -67,8 +94,11 @@ const PhotoSidebar = ({ photos, onRandomFill, dogName }) => {
       {/* Instructions */}
       {photos.length > 0 && (
         <div className="sidebar-footer">
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-gray-500 hidden sm:block">
             💡 Glissez une photo vers l'album ou utilisez le remplissage aléatoire
+          </p>
+          <p className="text-xs text-gray-500 sm:hidden">
+            💡 Cliquez sur une photo puis sur un emplacement dans l'album
           </p>
         </div>
       )}

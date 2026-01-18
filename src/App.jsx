@@ -3,6 +3,7 @@ import Routes from './Routes';
 import { AuthProvider } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import PWAInstallPrompt from './components/PWAInstallPrompt';
+import GlobalPremiumModal from './components/GlobalPremiumModal';
 
 function App() {
   return (
@@ -10,6 +11,7 @@ function App() {
       <AuthProvider>
         <Routes />
         <PWAInstallPrompt />
+        <GlobalPremiumModal />
       </AuthProvider>
     </ThemeProvider>
   );

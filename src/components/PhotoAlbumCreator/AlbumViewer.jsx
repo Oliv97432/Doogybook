@@ -1,15 +1,22 @@
 import React, { useState } from 'react';
+import { Type } from 'lucide-react';
+import PhotoTextEditor from './PhotoTextEditor';
 
 const AlbumViewer = ({
   pages,
   currentPageIndex,
   onPageChange,
   onPhotoDrop,
-  onRemovePhoto
+  onRemovePhoto,
+  selectedPhoto,
+  onPhotoSelect,
+  onUpdatePhotoText
 }) => {
   const [isFlipping, setIsFlipping] = useState(false);
   const [flipDirection, setFlipDirection] = useState('');
   const [draggedPhoto, setDraggedPhoto] = useState(null);
+  const [editingPhoto, setEditingPhoto] = useState(null);
+  const [editingPageId, setEditingPageId] = useState(null);
 
   const currentPage = pages[currentPageIndex];
   const nextPageIndex = currentPageIndex + 1;
@@ -62,17 +69,40 @@ const AlbumViewer = ({
     setDraggedPhoto(null);
   };
 
+  // Gestion du clic sur un slot (pour mobile)
+  const handleSlotClick = (pageId, slotIndex) => {
+    if (selectedPhoto) {
+      onPhotoDrop(selectedPhoto.id, pageId, slotIndex);
+      onPhotoSelect(null); // Désélectionner après placement
+    }
+  };
+
+  // Ouvrir l'éditeur de texte pour une photo
+  const handleEditText = (photo, pageId) => {
+    setEditingPhoto(photo);
+    setEditingPageId(pageId);
+  };
+
+  // Fermer l'éditeur
+  const handleCloseEditor = () => {
+    setEditingPhoto(null);
+    setEditingPageId(null);
+  };
+
   // Rendu d'une photo slot
   const renderPhotoSlot = (page, slotIndex) => {
     const photo = page.photos.find(p => p.slotIndex === slotIndex);
     const layoutClass = `photo-slot layout-${page.layout}`;
+    const isClickable = selectedPhoto && !photo;
 
     return (
       <div
         key={slotIndex}
-        className={layoutClass}
+        className={`${layoutClass} ${isClickable ? 'clickable-slot' : ''}`}
         onDragOver={handleDragOver}
         onDrop={(e) => handleDrop(e, page.id, slotIndex)}
+        onClick={() => handleSlotClick(page.id, slotIndex)}
+        style={{ cursor: isClickable ? 'pointer' : 'default' }}
       >
         {photo ? (
           <div className="photo-container">
@@ -83,9 +113,54 @@ const AlbumViewer = ({
               draggable
               onDragStart={(e) => handleDragStart(e, photo.id)}
             />
+
+            {/* Overlay avec titre et légende */}
+            {(photo.title || photo.caption) && (
+              <div
+                className="photo-text-overlay"
+                style={{
+                  fontFamily: photo.fontFamily || 'Arial',
+                  color: photo.textColor || '#ffffff'
+                }}
+              >
+                {photo.title && (
+                  <div
+                    className="photo-title"
+                    style={{ fontSize: `${photo.fontSize || 14}px` }}
+                  >
+                    {photo.title}
+                  </div>
+                )}
+                {photo.caption && (
+                  <div
+                    className="photo-caption"
+                    style={{ fontSize: `${(photo.fontSize || 14) - 2}px` }}
+                  >
+                    {photo.caption}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Boutons d'action */}
+            <button
+              className="edit-text-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleEditText(photo, page.id);
+              }}
+              title="Ajouter/modifier le texte"
+            >
+              <Type size={14} />
+              Texte
+            </button>
+
             <button
               className="remove-photo-btn"
-              onClick={() => onRemovePhoto(page.id, slotIndex)}
+              onClick={(e) => {
+                e.stopPropagation();
+                onRemovePhoto(page.id, slotIndex);
+              }}
               title="Supprimer cette photo"
             >
               ×
@@ -93,7 +168,10 @@ const AlbumViewer = ({
           </div>
         ) : (
           <div className="empty-slot">
-            <span className="text-gray-400">Glissez une photo ici</span>
+            <span className="text-gray-400 hidden sm:inline">Glissez une photo ici</span>
+            <span className="text-gray-400 sm:hidden text-xs">
+              {selectedPhoto ? 'Cliquez ici' : 'Sélectionnez une photo'}
+            </span>
           </div>
         )}
       </div>
@@ -137,12 +215,15 @@ const AlbumViewer = ({
           disabled={currentPageIndex === 0 || isFlipping}
           className="nav-btn prev-btn"
           title="Page précédente"
+          style={{ minHeight: '44px', minWidth: '44px' }}
         >
-          ← Précédent
+          <span className="hidden sm:inline">← Précédent</span>
+          <span className="sm:hidden">←</span>
         </button>
 
         <span className="page-indicator">
-          Page {currentPageIndex + 1} sur {pages.length}
+          <span className="hidden sm:inline">Page {currentPageIndex + 1} sur {pages.length}</span>
+          <span className="sm:hidden">{currentPageIndex + 1}/{pages.length}</span>
         </span>
 
         <button
@@ -150,8 +231,10 @@ const AlbumViewer = ({
           disabled={!hasNextPage || isFlipping}
           className="nav-btn next-btn"
           title="Page suivante"
+          style={{ minHeight: '44px', minWidth: '44px' }}
         >
-          Suivant →
+          <span className="hidden sm:inline">Suivant →</span>
+          <span className="sm:hidden">→</span>
         </button>
       </div>
 
@@ -185,6 +268,16 @@ const AlbumViewer = ({
       <div className="album-instructions">
         <p>💡 Glissez-déposez des photos depuis le panneau latéral ou utilisez le bouton "Remplissage Aléatoire"</p>
       </div>
+
+      {/* Éditeur de texte modal */}
+      {editingPhoto && editingPageId && (
+        <PhotoTextEditor
+          photo={editingPhoto}
+          pageId={editingPageId}
+          onUpdate={onUpdatePhotoText}
+          onClose={handleCloseEditor}
+        />
+      )}
     </div>
   );
 };

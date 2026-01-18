@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, Check, X, Crown, Dog, Camera, Users, BookOpen, Sparkles, ChefHat } from 'lucide-react';
+import { ChevronLeft, Check, X, Crown, Dog, Camera, BookOpen, Sparkles, ChefHat } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import UserMenu from '../components/UserMenu';
@@ -45,7 +45,6 @@ const PremiumPage = () => {
       features: [
         { icon: Dog, text: '1 chien', subtext: 'Gérez le profil d\'un seul chien', included: true },
         { icon: Camera, text: '10 photos maximum', subtext: 'Album photo limité', included: true },
-        { icon: Users, text: 'Communauté', subtext: 'Accès aux forums et posts', included: true },
         { icon: BookOpen, text: 'Conseils quotidiens', subtext: 'Tips pour votre chien', included: true },
         { icon: Dog, text: 'Chiens illimités', subtext: '', included: false },
         { icon: Camera, text: 'Photos illimitées', subtext: '', included: false },
@@ -70,8 +69,7 @@ const PremiumPage = () => {
         { icon: Dog, text: 'Chiens illimités 🐕', subtext: 'Gérez autant de chiens que vous voulez', included: true },
         { icon: Camera, text: 'Photos illimitées 📸', subtext: 'Albums photo sans limite', included: true },
         { icon: ChefHat, text: 'Recettes personnalisées 🍽️', subtext: 'Créez des recettes sur mesure', included: true },
-        { icon: Crown, text: 'Badge Premium 👑', subtext: 'Visible sur votre profil et vos posts', included: true },
-        { icon: Users, text: 'Communauté', subtext: 'Accès complet aux forums', included: true },
+        { icon: Crown, text: 'Badge Premium 👑', subtext: 'Visible sur votre profil', included: true },
         { icon: BookOpen, text: 'Conseils quotidiens', subtext: 'Tips avancés', included: true },
         { icon: Sparkles, text: 'Priorité support', subtext: 'Réponses en priorité', included: true }
       ],

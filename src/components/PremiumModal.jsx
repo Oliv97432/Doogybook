@@ -2,12 +2,25 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Crown, X, Sparkles, Dog, Camera, ChefHat } from 'lucide-react';
 
-const PremiumModal = ({ isOpen, onClose, reason = 'dogs' }) => {
+const PremiumModal = ({ isOpen, onClose, reason = 'limit' }) => {
   const navigate = useNavigate();
 
   if (!isOpen) return null;
 
   const content = {
+    limit: {
+      icon: <Sparkles size={48} className="text-primary" />,
+      title: 'Passez Premium',
+      description: 'Vous avez atteint les limites du compte gratuit. Débloquez toutes les fonctionnalités avec Premium !',
+      features: [
+        'Chiens illimités ♾️',
+        'Photos illimitées 📸',
+        'Recettes personnalisées 🍽️',
+        'Album photo PDF 📄',
+        'Rappels intelligents 🔔',
+        'Badge Premium 👑'
+      ]
+    },
     dogs: {
       icon: <Dog size={48} className="text-primary" />,
       title: 'Limite atteinte : 1 chien',
@@ -15,6 +28,9 @@ const PremiumModal = ({ isOpen, onClose, reason = 'dogs' }) => {
       features: [
         'Chiens illimités ♾️',
         'Photos illimitées 📸',
+        'Recettes personnalisées 🍽️',
+        'Album photo PDF 📄',
+        'Rappels intelligents 🔔',
         'Badge Premium 👑'
       ]
     },
@@ -25,6 +41,9 @@ const PremiumModal = ({ isOpen, onClose, reason = 'dogs' }) => {
       features: [
         'Photos illimitées 📸',
         'Chiens illimités ♾️',
+        'Album photo PDF 📄',
+        'Recettes personnalisées 🍽️',
+        'Rappels intelligents 🔔',
         'Badge Premium 👑'
       ]
     },
@@ -37,7 +56,8 @@ const PremiumModal = ({ isOpen, onClose, reason = 'dogs' }) => {
         'Calcul nutritionnel automatique 📊',
         'Ingrédients 100% sécurisés ✅',
         'Historique illimité 📚',
-        'Export PDF 📄'
+        'Export PDF 📄',
+        'Badge Premium 👑'
       ]
     },
     'photo-album': {
@@ -49,12 +69,26 @@ const PremiumModal = ({ isOpen, onClose, reason = 'dogs' }) => {
         'Mise en page professionnelle 🎨',
         'Téléchargement PDF 📄',
         'Photos illimitées ♾️',
-        'Qualité haute définition ✨'
+        'Qualité haute définition ✨',
+        'Badge Premium 👑'
+      ]
+    },
+    reminders: {
+      icon: <Sparkles size={48} className="text-primary" />,
+      title: 'Rappels Premium',
+      description: 'Programmez des rappels intelligents pour ne jamais oublier les soins de votre chien.',
+      features: [
+        'Rappels illimités 🔔',
+        'Notifications personnalisées 📲',
+        'Calendrier complet 📅',
+        'Chiens illimités ♾️',
+        'Photos illimitées 📸',
+        'Badge Premium 👑'
       ]
     }
   };
 
-  const currentContent = content[reason] || content.dogs;
+  const currentContent = content[reason] || content.limit;
 
   const handleUpgrade = () => {
     onClose();
