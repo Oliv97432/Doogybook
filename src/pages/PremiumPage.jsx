@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, Check, X, Crown, Dog, Camera, BookOpen, Sparkles, ChefHat } from 'lucide-react';
+import { ChevronLeft, Check, X, Crown, Sparkles } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import UserMenu from '../components/UserMenu';
@@ -35,48 +35,27 @@ const PremiumPage = () => {
     }
   };
 
-  const plans = [
-    {
-      id: 'free',
-      name: 'Gratuit',
-      price: '0€',
-      period: '/mois',
-      description: 'Pour découvrir Doogybook',
-      features: [
-        { icon: Dog, text: '1 chien', subtext: 'Gérez le profil d\'un seul chien', included: true },
-        { icon: Camera, text: '10 photos maximum', subtext: 'Album photo limité', included: true },
-        { icon: BookOpen, text: 'Conseils quotidiens', subtext: 'Tips pour votre chien', included: true },
-        { icon: Dog, text: 'Chiens illimités', subtext: '', included: false },
-        { icon: Camera, text: 'Photos illimitées', subtext: '', included: false },
-        { icon: ChefHat, text: 'Recettes personnalisées', subtext: '', included: false },
-        { icon: Crown, text: 'Badge Premium', subtext: '', included: false },
-        { icon: Sparkles, text: 'Fonctionnalités avancées', subtext: '', included: false }
-      ],
-      cta: 'Gratuit',
-      ctaDisabled: true,
-      gradient: 'from-gray-50 to-gray-100',
-      textColor: 'text-gray-900'
-    },
-    {
-      id: 'premium',
-      name: 'Premium',
-      price: '3,99€',
-      period: '/mois',
-      yearlyPrice: 'ou 39€/an (économisez 9€ !)',
-      description: 'Pour les propriétaires passionnés',
-      popular: true,
-      features: [
-        { icon: Dog, text: 'Chiens illimités 🐕', subtext: 'Gérez autant de chiens que vous voulez', included: true },
-        { icon: Camera, text: 'Photos illimitées 📸', subtext: 'Albums photo sans limite', included: true },
-        { icon: ChefHat, text: 'Recettes personnalisées 🍽️', subtext: 'Créez des recettes sur mesure', included: true },
-        { icon: Crown, text: 'Badge Premium 👑', subtext: 'Visible sur votre profil', included: true },
-        { icon: BookOpen, text: 'Conseils quotidiens', subtext: 'Tips avancés', included: true },
-        { icon: Sparkles, text: 'Priorité support', subtext: 'Réponses en priorité', included: true }
-      ],
-      cta: 'Passer à Premium',
-      gradient: 'from-green-500 via-blue-500 to-purple-600',
-      textColor: 'text-white'
-    }
+  // Plans data - matching landing page design
+  const freePlanFeatures = [
+    { text: '1 chien', subtext: 'Gérez le profil d\'un seul chien', included: true },
+    { text: '10 photos', subtext: 'Stockage limité à 10 photos', included: true },
+    { text: 'Conseils quotidiens', subtext: 'Tips pour votre chien', included: true },
+    { text: 'Mode sombre', subtext: 'Interface adaptée à vos yeux', included: true },
+    { text: 'Chiens illimités', included: false },
+    { text: 'Photos illimitées', included: false },
+    { text: 'Recettes personnalisées', included: false },
+    { text: 'Badge Premium', included: false }
+  ];
+
+  const premiumPlanFeatures = [
+    { text: 'Chiens illimités 🐕', subtext: 'Gérez autant de chiens que vous voulez', included: true },
+    { text: 'Photos illimitées 📸', subtext: 'Albums photo sans limite', included: true },
+    { text: 'Recettes personnalisées 🍽️', subtext: 'Créez des recettes sur mesure', included: true },
+    { text: 'Badge Premium 👑', subtext: 'Visible sur votre profil', included: true },
+    { text: 'Albums photo PDF 📄', subtext: 'Téléchargez vos souvenirs', included: true },
+    { text: 'Rappels intelligents 🔔', subtext: 'Ne manquez plus aucun soin', included: true },
+    { text: 'Conseils quotidiens', subtext: 'Tips avancés', included: true },
+    { text: 'Mode sombre', subtext: 'Interface adaptée à vos yeux', included: true }
   ];
 
   if (loading) {
@@ -112,110 +91,123 @@ const PremiumPage = () => {
         <div className="max-w-5xl mx-auto px-4 py-8 sm:py-12">
           {/* Header section */}
           <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-100 text-green-700 rounded-full text-sm font-medium mb-6">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full text-sm font-medium mb-6">
               <Sparkles size={16} />
-              Passez Premium
+              <span>Choisissez votre plan</span>
             </div>
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-heading font-bold text-foreground mb-4">
               Profitez pleinement de Doogybook
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Chiens illimités, photos illimitées, recettes personnalisées et bien plus encore
+              Commencez gratuitement ou passez Premium pour débloquer toutes les fonctionnalités
             </p>
           </div>
 
-          {/* Plans */}
+          {/* Plans Grid */}
           <div className="grid md:grid-cols-2 gap-6 lg:gap-8 mb-12">
-            {plans.map((plan) => (
-              <div
-                key={plan.id}
-                className={`relative rounded-2xl p-8 border-2 transition-all ${
-                  plan.popular
-                    ? 'border-primary shadow-2xl scale-105'
-                    : 'border-border bg-card'
-                }`}
-              >
-                {plan.popular && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                    <span className="inline-flex items-center gap-1 px-4 py-1 bg-primary text-primary-foreground rounded-full text-sm font-medium shadow-lg">
-                      <Sparkles size={14} />
-                      Populaire
-                    </span>
-                  </div>
-                )}
-
-                {/* Header */}
-                <div className={`mb-6 ${plan.popular ? `bg-gradient-to-r ${plan.gradient} text-white rounded-xl p-6 -m-8 mb-6` : ''}`}>
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className={`text-2xl font-heading font-bold ${plan.popular ? 'text-white' : 'text-foreground'}`}>
-                      {plan.id === 'premium' && <Crown className="inline mr-2" size={24} />}
-                      {plan.name}
-                    </h3>
-                  </div>
-                  <div className="flex items-baseline gap-1 mb-2">
-                    <span className={`text-5xl font-bold ${plan.popular ? 'text-white' : 'text-foreground'}`}>
-                      {plan.price}
-                    </span>
-                    <span className={`text-lg ${plan.popular ? 'text-white/80' : 'text-muted-foreground'}`}>
-                      {plan.period}
-                    </span>
-                  </div>
-                  {plan.yearlyPrice && (
-                    <p className="text-sm text-white/90 bg-white/20 inline-block px-3 py-1 rounded-full">
-                      {plan.yearlyPrice}
-                    </p>
-                  )}
-                  <p className={`mt-3 ${plan.popular ? 'text-white/90' : 'text-muted-foreground'}`}>
-                    {plan.description}
-                  </p>
+            {/* Plan Gratuit */}
+            <div className="relative rounded-2xl p-6 sm:p-8 border-2 border-border bg-card">
+              <div className="mb-6">
+                <h3 className="text-2xl sm:text-3xl font-heading font-bold text-foreground mb-2">
+                  Gratuit
+                </h3>
+                <div className="flex items-baseline gap-1 mb-2">
+                  <span className="text-4xl sm:text-5xl font-bold text-foreground">0€</span>
+                  <span className="text-lg text-muted-foreground">/mois</span>
                 </div>
-
-                {/* Features */}
-                <div className="space-y-4 mb-8">
-                  {plan.features.map((feature, index) => {
-                    const Icon = feature.icon;
-                    return (
-                      <div
-                        key={index}
-                        className={`flex gap-3 ${!feature.included ? 'opacity-40' : ''}`}
-                      >
-                        <div className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center ${
-                          feature.included
-                            ? 'bg-green-100 text-green-600'
-                            : 'bg-gray-100 text-gray-400'
-                        }`}>
-                          {feature.included ? <Check size={14} /> : <X size={14} />}
-                        </div>
-                        <div className="flex-1">
-                          <p className="font-medium text-foreground">{feature.text}</p>
-                          {feature.subtext && (
-                            <p className="text-sm text-muted-foreground">{feature.subtext}</p>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {/* CTA */}
-                <button
-                  disabled={plan.ctaDisabled}
-                  className={`w-full py-4 rounded-xl font-semibold text-lg transition-all ${
-                    plan.popular
-                      ? 'bg-gradient-to-r from-green-500 via-blue-500 to-purple-600 text-white hover:shadow-xl hover:scale-105'
-                      : 'bg-muted text-muted-foreground cursor-not-allowed'
-                  }`}
-                >
-                  {plan.cta}
-                </button>
+                <p className="text-muted-foreground">Pour découvrir Doogybook</p>
               </div>
-            ))}
+
+              <div className="space-y-4 mb-8">
+                {freePlanFeatures.map((feature, index) => (
+                  <div
+                    key={index}
+                    className={`flex gap-3 ${!feature.included ? 'opacity-40' : ''}`}
+                  >
+                    <div className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center ${
+                      feature.included
+                        ? 'bg-green-100 text-green-600'
+                        : 'bg-gray-100 text-gray-400'
+                    }`}>
+                      {feature.included ? <Check size={14} /> : <X size={14} />}
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-medium text-foreground">{feature.text}</p>
+                      {feature.subtext && (
+                        <p className="text-sm text-muted-foreground">{feature.subtext}</p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <button
+                onClick={() => navigate('/register')}
+                className="w-full py-4 bg-gray-100 text-gray-700 rounded-xl font-semibold text-lg hover:bg-gray-200 transition-all"
+              >
+                Commencer gratuitement
+              </button>
+            </div>
+
+            {/* Plan Premium */}
+            <div className="relative rounded-2xl p-6 sm:p-8 border-2 border-blue-500 shadow-2xl bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 md:scale-105">
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                <span className="inline-flex items-center gap-1 px-4 py-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full text-sm font-medium shadow-lg">
+                  <Sparkles size={14} />
+                  Populaire
+                </span>
+              </div>
+
+              <div className="mb-6">
+                <div className="flex items-center gap-2 mb-2">
+                  <Crown className="text-blue-600" size={28} />
+                  <h3 className="text-2xl sm:text-3xl font-heading font-bold text-foreground">
+                    Premium
+                  </h3>
+                </div>
+                <div className="flex items-baseline gap-1 mb-2">
+                  <span className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">3,99€</span>
+                  <span className="text-lg text-muted-foreground">/mois</span>
+                </div>
+                <p className="text-sm text-blue-600 bg-blue-100 dark:bg-blue-900/30 inline-block px-3 py-1 rounded-full mb-2">
+                  ou 39€/an (économisez 9€ !)
+                </p>
+                <p className="text-muted-foreground">Pour les propriétaires passionnés</p>
+              </div>
+
+              <div className="space-y-4 mb-8">
+                {premiumPlanFeatures.map((feature, index) => (
+                  <div key={index} className="flex gap-3">
+                    <div className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center bg-blue-100 text-blue-600">
+                      <Check size={14} />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-medium text-foreground">{feature.text}</p>
+                      {feature.subtext && (
+                        <p className="text-sm text-muted-foreground">{feature.subtext}</p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <button
+                onClick={() => navigate('/register')}
+                className="w-full py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl font-bold text-lg hover:from-blue-600 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
+              >
+                <Crown size={20} />
+                <span>Commencer avec Premium</span>
+              </button>
+
+              <p className="text-center text-xs text-muted-foreground mt-4">
+                ✨ Annulation possible à tout moment
+              </p>
+            </div>
           </div>
 
           {/* Info section */}
           <div className="text-center text-sm text-muted-foreground">
-            <p>✨ Annulation possible à tout moment</p>
-            <p className="mt-1">🔒 Paiement sécurisé</p>
+            <p>🔒 Paiement sécurisé • ⚡ Activation instantanée</p>
           </div>
         </div>
       </main>

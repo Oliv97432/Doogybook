@@ -400,8 +400,8 @@ const LandingPage = () => {
                     <Check size={14} />
                   </div>
                   <div className="flex-1">
-                    <p className="font-medium text-gray-900">10 photos maximum</p>
-                    <p className="text-sm text-gray-600">Album photo limité</p>
+                    <p className="font-medium text-gray-900">10 photos</p>
+                    <p className="text-sm text-gray-600">Stockage limité à 10 photos</p>
                   </div>
                 </div>
 
@@ -563,19 +563,18 @@ const LandingPage = () => {
                 onClick={() => navigate('/register')}
                 className="w-full py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl font-bold text-lg hover:from-blue-600 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
               >
-                <Crown size={20} />
-                <span>Commencer avec Premium</span>
+                <span>Créer un compte gratuit</span>
               </button>
 
               <p className="text-center text-xs text-gray-600 mt-4">
-                ✨ Annulation possible à tout moment
+                💎 Passez Premium après inscription depuis votre dashboard
               </p>
             </div>
           </div>
 
           {/* Info section */}
           <div className="text-center mt-8 sm:mt-12 text-sm text-gray-600">
-            <p>🔒 Paiement sécurisé • ⚡ Activation instantanée</p>
+            <p>✨ Commencez gratuitement • 🔒 Aucune carte bancaire requise</p>
           </div>
         </div>
       </section>

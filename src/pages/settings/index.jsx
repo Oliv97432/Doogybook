@@ -421,26 +421,218 @@ const Settings = () => {
               </div>
             </section>
           ) : (
-            // SI GRATUIT : Bouton Passer à Premium (jaune/ambre)
-            <section 
-              onClick={() => navigate('/premium')}
-              className="bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/20 rounded-xl border-2 border-amber-200 dark:border-amber-700 p-6 mx-4 cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02]"
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-400 to-yellow-500 flex items-center justify-center flex-shrink-0 shadow-md">
-                    <Crown className="text-white" size={24} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-lg font-heading font-semibold text-amber-900 dark:text-amber-100 flex items-center gap-2">
-                      Passer à Premium
-                    </h3>
-                    <p className="text-sm text-amber-700 dark:text-amber-300 font-medium">
-                      Chiens et photos illimités • 3,99€/mois
-                    </p>
-                  </div>
+            // SI GRATUIT : Afficher les plans Gratuit et Premium côte à côte
+            <section className="mx-4">
+              {/* Header section */}
+              <div className="text-center mb-8">
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full text-sm font-medium mb-4">
+                  <Crown size={16} />
+                  <span>Choisissez votre plan</span>
                 </div>
-                <ChevronLeft size={24} className="text-amber-600 dark:text-amber-400 flex-shrink-0 rotate-180" />
+                <h3 className="text-2xl sm:text-3xl font-heading font-bold text-foreground mb-2">
+                  Profitez pleinement de Doogybook
+                </h3>
+                <p className="text-sm sm:text-base text-muted-foreground">
+                  Commencez gratuitement ou passez Premium pour débloquer toutes les fonctionnalités
+                </p>
+              </div>
+
+              {/* Plans Grid */}
+              <div className="grid md:grid-cols-2 gap-6">
+                {/* Plan Gratuit */}
+                <div className="relative rounded-2xl p-6 border-2 border-border bg-card">
+                  <div className="mb-6">
+                    <h4 className="text-2xl font-heading font-bold text-foreground mb-2">
+                      Gratuit
+                    </h4>
+                    <div className="flex items-baseline gap-1 mb-2">
+                      <span className="text-4xl font-bold text-foreground">0€</span>
+                      <span className="text-lg text-muted-foreground">/mois</span>
+                    </div>
+                    <p className="text-muted-foreground">Pour découvrir Doogybook</p>
+                  </div>
+
+                  <div className="space-y-4 mb-8">
+                    <div className="flex gap-3">
+                      <div className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center bg-green-100 text-green-600">
+                        <Check size={14} />
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium text-foreground">1 chien</p>
+                        <p className="text-sm text-muted-foreground">Gérez le profil d'un seul chien</p>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-3">
+                      <div className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center bg-green-100 text-green-600">
+                        <Check size={14} />
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium text-foreground">10 photos</p>
+                        <p className="text-sm text-muted-foreground">Stockage limité à 10 photos</p>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-3">
+                      <div className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center bg-green-100 text-green-600">
+                        <Check size={14} />
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium text-foreground">Conseils quotidiens</p>
+                        <p className="text-sm text-muted-foreground">Tips pour votre chien</p>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-3 opacity-40">
+                      <div className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center bg-gray-100 text-gray-400">
+                        <X size={14} />
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium text-foreground">Chiens illimités</p>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-3 opacity-40">
+                      <div className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center bg-gray-100 text-gray-400">
+                        <X size={14} />
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium text-foreground">Photos illimitées</p>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-3 opacity-40">
+                      <div className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center bg-gray-100 text-gray-400">
+                        <X size={14} />
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium text-foreground">Recettes personnalisées</p>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-3 opacity-40">
+                      <div className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center bg-gray-100 text-gray-400">
+                        <X size={14} />
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium text-foreground">Badge Premium</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <button
+                    disabled
+                    className="w-full py-4 bg-muted text-muted-foreground rounded-xl font-semibold text-lg cursor-not-allowed"
+                  >
+                    Gratuit
+                  </button>
+                </div>
+
+                {/* Plan Premium */}
+                <div className="relative rounded-2xl p-6 border-2 border-blue-500 shadow-2xl bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 md:scale-105">
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                    <span className="inline-flex items-center gap-1 px-4 py-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full text-sm font-medium shadow-lg">
+                      <Crown size={14} />
+                      Populaire
+                    </span>
+                  </div>
+
+                  <div className="mb-6">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Crown className="text-blue-600" size={28} />
+                      <h4 className="text-2xl font-heading font-bold text-foreground">
+                        Premium
+                      </h4>
+                    </div>
+                    <div className="flex items-baseline gap-1 mb-2">
+                      <span className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">3,99€</span>
+                      <span className="text-lg text-muted-foreground">/mois</span>
+                    </div>
+                    <p className="text-sm text-blue-600 bg-blue-100 dark:bg-blue-900/30 inline-block px-3 py-1 rounded-full mb-2">
+                      ou 39€/an (économisez 9€ !)
+                    </p>
+                    <p className="text-muted-foreground">Pour les propriétaires passionnés</p>
+                  </div>
+
+                  <div className="space-y-4 mb-8">
+                    <div className="flex gap-3">
+                      <div className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center bg-blue-100 text-blue-600">
+                        <Check size={14} />
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium text-foreground">Chiens illimités 🐕</p>
+                        <p className="text-sm text-muted-foreground">Gérez autant de chiens que vous voulez</p>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-3">
+                      <div className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center bg-blue-100 text-blue-600">
+                        <Check size={14} />
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium text-foreground">Photos illimitées 📸</p>
+                        <p className="text-sm text-muted-foreground">Albums photo sans limite</p>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-3">
+                      <div className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center bg-blue-100 text-blue-600">
+                        <Check size={14} />
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium text-foreground">Recettes personnalisées 🍽️</p>
+                        <p className="text-sm text-muted-foreground">Créez des recettes sur mesure</p>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-3">
+                      <div className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center bg-blue-100 text-blue-600">
+                        <Check size={14} />
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium text-foreground">Badge Premium 👑</p>
+                        <p className="text-sm text-muted-foreground">Visible sur votre profil</p>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-3">
+                      <div className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center bg-blue-100 text-blue-600">
+                        <Check size={14} />
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium text-foreground">Conseils quotidiens</p>
+                        <p className="text-sm text-muted-foreground">Tips avancés</p>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-3">
+                      <div className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center bg-blue-100 text-blue-600">
+                        <Check size={14} />
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium text-foreground">Priorité support</p>
+                        <p className="text-sm text-muted-foreground">Réponses en priorité</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => navigate('/premium')}
+                    className="w-full py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl font-bold text-lg hover:from-blue-600 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
+                  >
+                    <Crown size={20} />
+                    <span>Passer à Premium</span>
+                  </button>
+
+                  <p className="text-center text-xs text-muted-foreground mt-4">
+                    ✨ Annulation possible à tout moment
+                  </p>
+                </div>
+              </div>
+
+              {/* Info section */}
+              <div className="text-center mt-8 text-sm text-muted-foreground">
+                <p>🔒 Paiement sécurisé • ⚡ Activation instantanée</p>
               </div>
             </section>
           )}
