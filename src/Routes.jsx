@@ -86,11 +86,15 @@ const Contact = lazy(() => import('./pages/Contact'));
 // ==========================================
 // 🎯 ROUTES COMPONENT
 // ==========================================
+// Import du GlobalPremiumModal
+import GlobalPremiumModal from './components/GlobalPremiumModal';
+
 const Routes = () => {
   return (
     <BrowserRouter>
       <ErrorBoundary>
         <ScrollToTop />
+        <GlobalPremiumModal />
         <Suspense fallback={<LoadingScreen />}>
           <RouterRoutes>
             {/* Landing & Auth */}
