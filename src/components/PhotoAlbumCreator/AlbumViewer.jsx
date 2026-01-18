@@ -264,10 +264,6 @@ const AlbumViewer = ({
         )}
       </div>
 
-      {/* Instructions */}
-      <div className="album-instructions">
-        <p>💡 Glissez-déposez des photos depuis le panneau latéral ou utilisez le bouton "Remplissage Aléatoire"</p>
-      </div>
 
       {/* Éditeur de texte modal */}
       {editingPhoto && editingPageId && (

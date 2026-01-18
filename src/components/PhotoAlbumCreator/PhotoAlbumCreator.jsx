@@ -2,7 +2,6 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import AlbumViewer from './AlbumViewer';
 import PhotoSidebar from './PhotoSidebar';
-import ConfigPanel from './ConfigPanel';
 import PageThumbnails from './PageThumbnails';
 import AlbumSelector from './AlbumSelector';
 import { generateAlbumPDF, previewAlbumData } from '../../utils/albumPdfGenerator';
@@ -885,6 +884,66 @@ const PhotoAlbumCreator = () => {
             onUpdatePhotoText={handleUpdatePhotoText}
           />
 
+          {/* Barre de configuration en bas */}
+          <div className="bottom-controls">
+            <div className="layout-controls">
+              <span className="control-label">Mise en page:</span>
+              <div className="layout-buttons">
+                <button
+                  onClick={() => {
+                    setSelectedLayout('fullPage');
+                    handleLayoutChange(albumData.pages[currentPageIndex].id, 'fullPage');
+                  }}
+                  className={`layout-btn ${albumData.pages[currentPageIndex].layout === 'fullPage' ? 'active' : ''}`}
+                  title="Pleine page"
+                >
+                  <span className="layout-icon">🖼️</span>
+                  <span className="hidden sm:inline">Pleine page</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setSelectedLayout('twoPerPage');
+                    handleLayoutChange(albumData.pages[currentPageIndex].id, 'twoPerPage');
+                  }}
+                  className={`layout-btn ${albumData.pages[currentPageIndex].layout === 'twoPerPage' ? 'active' : ''}`}
+                  title="2 photos"
+                >
+                  <span className="layout-icon">📐</span>
+                  <span className="hidden sm:inline">2 photos</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setSelectedLayout('threePerPage');
+                    handleLayoutChange(albumData.pages[currentPageIndex].id, 'threePerPage');
+                  }}
+                  className={`layout-btn ${albumData.pages[currentPageIndex].layout === 'threePerPage' ? 'active' : ''}`}
+                  title="3 photos"
+                >
+                  <span className="layout-icon">🎨</span>
+                  <span className="hidden sm:inline">3 photos</span>
+                </button>
+              </div>
+            </div>
+
+            <div className="page-controls">
+              <button
+                onClick={handleAddPage}
+                disabled={albumData.pages.length >= MAX_PAGES}
+                className="add-page-btn"
+              >
+                <span>➕</span>
+                <span className="hidden sm:inline">Ajouter une page</span>
+              </button>
+              <button
+                onClick={() => setShowThumbnails(!showThumbnails)}
+                className="thumbnails-btn"
+              >
+                <span>🔍</span>
+                <span className="hidden sm:inline">{showThumbnails ? 'Masquer' : 'Afficher'} miniatures</span>
+              </button>
+            </div>
+          </div>
+
           {/* Miniatures de pages */}
           {showThumbnails && (
             <PageThumbnails
@@ -897,19 +956,6 @@ const PhotoAlbumCreator = () => {
             />
           )}
         </div>
-
-        {/* Panneau de configuration à droite */}
-        <ConfigPanel
-          currentPage={albumData.pages[currentPageIndex]}
-          selectedLayout={selectedLayout}
-          onLayoutChange={(layout) => {
-            setSelectedLayout(layout);
-            handleLayoutChange(albumData.pages[currentPageIndex].id, layout);
-          }}
-          onAddPage={handleAddPage}
-          currentPageCount={albumData.pages.length}
-          maxPages={MAX_PAGES}
-        />
       </div>
     </div>
   );
