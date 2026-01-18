@@ -98,15 +98,15 @@ const PremiumModal = ({ isOpen, onClose, reason = 'limit' }) => {
   return (
     <>
       {/* Overlay */}
-      <div 
-        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 animate-fadeIn"
+      <div
+        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 animate-in fade-in duration-200"
         onClick={onClose}
       />
 
       {/* Modal */}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div 
-          className="bg-card rounded-3xl max-w-md w-full shadow-2xl animate-slideUp"
+        <div
+          className="bg-card rounded-3xl max-w-md w-full shadow-2xl animate-in slide-in-from-bottom-4 fade-in duration-300"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Close button */}
@@ -181,32 +181,6 @@ const PremiumModal = ({ isOpen, onClose, reason = 'limit' }) => {
           </div>
         </div>
       </div>
-
-      <style jsx>{`
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        
-        @keyframes slideUp {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        .animate-fadeIn {
-          animation: fadeIn 0.2s ease-out;
-        }
-
-        .animate-slideUp {
-          animation: slideUp 0.3s ease-out;
-        }
-      `}</style>
     </>
   );
 };
