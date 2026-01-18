@@ -3,7 +3,7 @@ import { AreaChart, Area, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
 import { TrendingUp, TrendingDown, Minus, Download, AlertTriangle, Camera } from 'lucide-react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
-import usePremiumModal from '../../../hooks/usePremiumModal';
+import { usePremiumModal } from '../../../hooks/usePremiumModal';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../contexts/AuthContext';
 

@@ -7,7 +7,7 @@ import { useNotifications } from '../hooks/useNotifications';
 import TabNavigation from '../components/TabNavigation';
 import UserMenu from '../components/UserMenu';
 import Footer from '../components/Footer';
-import usePremiumModal from '../hooks/usePremiumModal';
+import { usePremiumModal } from '../hooks/usePremiumModal';
 import RecipeGenerator from '../components/recipes/RecipeGenerator';
 import RecipeHistory from '../components/recipes/RecipeHistory';
 

@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
 /**
- * Hook global pour gérer l'affichage du modal Premium
+ * Store global pour gérer l'affichage du modal Premium
  * Permet d'afficher le modal depuis n'importe où dans l'app
  *
  * Usage:
@@ -10,7 +10,7 @@ import { create } from 'zustand';
  * showPremiumModal('photos'); // Affiche le modal avec la raison 'photos'
  * showPremiumModal(); // Affiche le modal avec la raison par défaut 'limit'
  */
-const usePremiumModal = create((set) => ({
+export const usePremiumModal = create((set) => ({
   isOpen: false,
   reason: 'limit',
 
@@ -22,5 +22,3 @@ const usePremiumModal = create((set) => ({
     set({ isOpen: false });
   },
 }));
-
-export default usePremiumModal;

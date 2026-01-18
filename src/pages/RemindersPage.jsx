@@ -6,7 +6,7 @@ import { Bell, Plus, ChevronLeft, Calendar } from 'lucide-react';
 import TabNavigation from '../components/TabNavigation';
 import UserMenu from '../components/UserMenu';
 import Footer from '../components/Footer';
-import usePremiumModal from '../hooks/usePremiumModal';
+import { usePremiumModal } from '../hooks/usePremiumModal';
 import ReminderCard from '../components/reminders/ReminderCard';
 
 const RemindersPage = () => {

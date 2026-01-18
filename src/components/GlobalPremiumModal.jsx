@@ -1,6 +1,6 @@
 import React from 'react';
 import PremiumModal from './PremiumModal';
-import usePremiumModal from '../hooks/usePremiumModal';
+import { usePremiumModal } from '../hooks/usePremiumModal';
 
 /**
  * Composant global pour le modal Premium

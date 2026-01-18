@@ -18,7 +18,7 @@ import PhotoGalleryModal from './components/PhotoGalleryModal';
 import WelcomeOnboarding from './components/WelcomeOnboarding';
 import CreateDogModal from './components/CreateDogModal';
 import Footer from '../../components/Footer';
-import usePremiumModal from '../../hooks/usePremiumModal';
+import { usePremiumModal } from '../../hooks/usePremiumModal';
 import jsPDF from 'jspdf';
 
 // ==========================================
