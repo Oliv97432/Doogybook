@@ -14,7 +14,7 @@ import SubscriptionBadge from '../../components/SubscriptionBadge';
 
 const Settings = () => {
   const { user, signOut } = useAuth();
-  const { theme, setTheme, isPremium: isThemePremium } = useTheme();
+  const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
   
   const [isProAccount, setIsProAccount] = useState(false);
@@ -168,11 +168,7 @@ const Settings = () => {
   };
 
   const handleThemeToggle = () => {
-    if (!isThemePremium) {
-      navigate('/premium');
-      return;
-    }
-    setTheme(); // Toggle le thème
+    setTheme(); // Toggle le thème (gratuit pour tous)
   };
 
   // Vérifier si l'utilisateur est Premium ou Professional
@@ -350,7 +346,7 @@ const Settings = () => {
             </div>
           </section>
 
-          {/* Section Apparence - MODE SOMBRE (Premium) */}
+          {/* Section Apparence - MODE SOMBRE (GRATUIT) */}
           <section className="bg-card rounded-xl border border-border p-6 mx-4">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
@@ -361,18 +357,11 @@ const Settings = () => {
                 )}
               </div>
               <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <h3 className="text-lg font-heading font-semibold text-foreground">
-                    Apparence
-                  </h3>
-                  {isThemePremium && (
-                    <span className="px-2 py-0.5 bg-gradient-to-r from-amber-400 to-yellow-500 text-white text-xs font-bold rounded-full">
-                      👑 PREMIUM
-                    </span>
-                  )}
-                </div>
+                <h3 className="text-lg font-heading font-semibold text-foreground">
+                  Apparence
+                </h3>
                 <p className="text-sm text-muted-foreground">
-                  {isThemePremium ? 'Mode sombre disponible' : 'Réservé aux membres Premium'}
+                  Choisissez votre thème préféré
                 </p>
               </div>
             </div>
@@ -399,14 +388,9 @@ const Settings = () => {
               {/* Toggle Switch */}
               <button
                 onClick={handleThemeToggle}
-                disabled={!isThemePremium}
-                className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
-                  theme === 'dark' 
-                    ? 'bg-purple-600' 
-                    : isThemePremium 
-                      ? 'bg-gray-300' 
-                      : 'bg-gray-200'
-                } ${!isThemePremium ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 cursor-pointer ${
+                  theme === 'dark' ? 'bg-purple-600' : 'bg-gray-300'
+                }`}
               >
                 <span
                   className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
@@ -415,14 +399,6 @@ const Settings = () => {
                 />
               </button>
             </div>
-
-            {!isThemePremium && (
-              <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                <p className="text-sm text-amber-800">
-                  💡 <strong>Passez à Premium</strong> pour débloquer le mode sombre et bien plus encore !
-                </p>
-              </div>
-            )}
           </section>
 
           {/* Section Premium - CONDITIONNEL */}
