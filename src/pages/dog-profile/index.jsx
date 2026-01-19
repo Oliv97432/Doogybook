@@ -4,6 +4,7 @@ import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import TabNavigation from '../../components/TabNavigation';
 import UserMenu from '../../components/UserMenu';
+import NotificationButton from '../../components/NotificationButton';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
 import VaccinationCard from './components/VaccinationCard';
@@ -1172,6 +1173,7 @@ const DogProfile = () => {
             )}
           </button>
 
+          <NotificationButton />
           <UserMenu />
         </div>
       </div>

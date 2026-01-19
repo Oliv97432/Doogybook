@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import TabNavigation from '../components/TabNavigation';
 import UserMenu from '../components/UserMenu';
+import NotificationButton from '../components/NotificationButton';
 import Icon from '../components/AppIcon';
 import CreateDogModal from './dog-profile/components/CreateDogModal';
 
@@ -156,7 +157,10 @@ const UserDashboard = () => {
                 Gérez vos {dogs.length} {dogs.length > 1 ? 'compagnons' : 'compagnon'}
               </p>
             </div>
-            <UserMenu />
+            <div className="flex items-center gap-3">
+              <NotificationButton />
+              <UserMenu />
+            </div>
           </div>
         </div>
       </div>

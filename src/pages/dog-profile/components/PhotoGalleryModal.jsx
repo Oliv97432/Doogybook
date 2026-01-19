@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
+import CameraCapture from '../../../components/CameraCapture';
 
 const PhotoGalleryModal = ({ isOpen, onClose, photos, onAddPhoto, currentProfilePhotoUrl, onSetProfilePhoto, isPremium, onShowPremiumModal }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [selectedPhoto, setSelectedPhoto] = useState(null);
   const [imageErrors, setImageErrors] = useState({});
+  const [showCamera, setShowCamera] = useState(false);
 
   if (!isOpen) return null;
 
@@ -48,6 +50,29 @@ const PhotoGalleryModal = ({ isOpen, onClose, photos, onAddPhoto, currentProfile
       return;
     }
     document.getElementById('photo-upload-input').click();
+  };
+
+  // Ouvrir la caméra
+  const handleCameraClick = () => {
+    if (hasReachedLimit) {
+      if (onShowPremiumModal) {
+        onShowPremiumModal();
+      }
+      return;
+    }
+    setShowCamera(true);
+  };
+
+  // Gérer la capture de photo depuis la caméra
+  const handleCameraCapture = async (file) => {
+    setIsUploading(true);
+    try {
+      await onAddPhoto(file);
+    } catch (err) {
+      console.error('Erreur upload photo caméra:', err);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   // Définir une photo comme photo de profil
@@ -118,6 +143,16 @@ const PhotoGalleryModal = ({ isOpen, onClose, photos, onAddPhoto, currentProfile
           </div>
           <div className="flex items-center gap-3">
             <Button
+              variant="outline"
+              iconName="Camera"
+              iconPosition="left"
+              onClick={handleCameraClick}
+              disabled={isUploading || hasReachedLimit}
+              className="hidden sm:flex"
+            >
+              Prendre une photo
+            </Button>
+            <Button
               variant="default"
               iconName="Plus"
               iconPosition="left"
@@ -157,15 +192,26 @@ const PhotoGalleryModal = ({ isOpen, onClose, photos, onAddPhoto, currentProfile
               <p className="text-muted-foreground mb-4">
                 Ajoutez des photos de votre chien pour créer sa galerie
               </p>
-              <Button
-                variant="default"
-                iconName="Plus"
-                iconPosition="left"
-                onClick={handleAddPhotoClick}
-                disabled={isUploading}
-              >
-                {isUploading ? 'Upload en cours...' : 'Ajouter une photo'}
-              </Button>
+              <div className="flex flex-col sm:flex-row items-center gap-3">
+                <Button
+                  variant="outline"
+                  iconName="Camera"
+                  iconPosition="left"
+                  onClick={handleCameraClick}
+                  disabled={isUploading}
+                >
+                  Prendre une photo
+                </Button>
+                <Button
+                  variant="default"
+                  iconName="Plus"
+                  iconPosition="left"
+                  onClick={handleAddPhotoClick}
+                  disabled={isUploading}
+                >
+                  {isUploading ? 'Upload en cours...' : 'Ajouter une photo'}
+                </Button>
+              </div>
             </div>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -309,6 +355,15 @@ const PhotoGalleryModal = ({ isOpen, onClose, photos, onAddPhoto, currentProfile
             />
           </div>
         </div>
+      )}
+
+      {/* Composant CameraCapture */}
+      {showCamera && (
+        <CameraCapture
+          onCapture={handleCameraCapture}
+          onClose={() => setShowCamera(false)}
+          aspectRatio={1}
+        />
       )}
     </div>
   );
