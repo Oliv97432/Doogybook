@@ -108,7 +108,7 @@ CROSS JOIN (
             'available'::public.adoption_status,
             false,
             'Max est un Labrador adorable et très joueur. Il adore les enfants et les longues promenades. C''est un chien très sociable qui s''entend bien avec les autres animaux. Idéal pour une famille active. Vacciné, stérilisé, pucé.',
-            'https://images.unsplash.com/photo-1597633425046-08f5110420b5?w=800&h=600&fit=crop',
+            '/placeholder-dog-1.jpg',
             30.5
         ),
         -- Chien 2: Luna - Berger Allemand (URGENT)
@@ -120,7 +120,7 @@ CROSS JOIN (
             'available'::public.adoption_status,
             true,
             '⚠️ URGENCE - Refuge plein. Luna est une femelle Berger Allemand intelligente et loyale. Elle a besoin d''un foyer rapidement. Excellente gardienne, très obéissante et affectueuse. Parfaite pour personne sportive. Vaccinée, stérilisée, pucée.',
-            'https://images.unsplash.com/photo-1568572933382-74d440642117?w=800&h=600&fit=crop',
+            '/placeholder-dog-2.jpg',
             28.0
         ),
         -- Chien 3: Rocky - Croisé (En cours d'adoption)
@@ -132,7 +132,7 @@ CROSS JOIN (
             'pending'::public.adoption_status,
             false,
             'Rocky est en cours d''adoption ! Croisé adorable au caractère doux. Rencontre prévue ce week-end avec une famille. C''est un chien calme et affectueux qui adore les câlins. Vacciné, stérilisé, pucé.',
-            'https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=800&h=600&fit=crop',
+            '/placeholder-dog-3.jpg',
             15.5
         ),
         -- Chien 4: Bella - Golden Retriever
@@ -144,7 +144,7 @@ CROSS JOIN (
             'available'::public.adoption_status,
             false,
             'Bella est une Golden Retriever douce et patiente. Parfaite avec les enfants, elle a un tempérament calme et affectueux. Elle aime nager et jouer à rapporter la balle. Chienne idéale pour une famille. Vaccinée, stérilisée, pucée.',
-            'https://images.unsplash.com/photo-1633722715463-d30f4f325e24?w=800&h=600&fit=crop',
+            '/placeholder-dog-4.jpg',
             32.0
         ),
         -- Chien 5: Buddy - Beagle
@@ -156,7 +156,7 @@ CROSS JOIN (
             'available'::public.adoption_status,
             false,
             'Buddy est un jeune Beagle plein d''énergie ! Très curieux et joueur, il adore explorer. Il a besoin d''une famille qui saura canaliser son énergie avec des promenades régulières et du jeu. Vacciné, stérilisé, pucé.',
-            'https://images.unsplash.com/photo-1505628346881-b72b27e84530?w=800&h=600&fit=crop',
+            '/placeholder-dog-5.jpg',
             12.0
         )
 ) AS dogs_data(name, breed, gender, birth_date, adoption_status, is_urgent, notes, photo_url, weight)

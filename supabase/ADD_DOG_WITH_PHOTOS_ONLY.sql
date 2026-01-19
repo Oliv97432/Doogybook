@@ -48,8 +48,8 @@ BEGIN
         'large',
         'FR250269812345678',
         true,
-        'https://images.unsplash.com/photo-1633722715463-d30f4f325e24?w=400',
-        'https://images.unsplash.com/photo-1558788353-f76d92427f16?w=1200',
+        '/placeholder-dog.jpg',
+        '/placeholder-dog-cover.jpg',
         'Golden Retriever mâle de couleur dorée. Très affectueux et joueur.'
     )
     RETURNING id INTO v_dog_id;
@@ -59,19 +59,20 @@ BEGIN
     -- ============================================================================
     -- 2. AJOUTER 10 PHOTOS POUR L'ALBUM
     -- ============================================================================
+    -- Note: Remplacez ces placeholders par de vraies photos uploadées via l'interface
     INSERT INTO public.dog_photos (dog_id, photo_url) VALUES
-    (v_dog_id, 'https://images.unsplash.com/photo-1633722715463-d30f4f325e24?w=800'),
-    (v_dog_id, 'https://images.unsplash.com/photo-1558788353-f76d92427f16?w=800'),
-    (v_dog_id, 'https://images.unsplash.com/photo-1552053831-71594a27632d?w=800'),
-    (v_dog_id, 'https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=800'),
-    (v_dog_id, 'https://images.unsplash.com/photo-1537151608828-ea2b11777ee8?w=800'),
-    (v_dog_id, 'https://images.unsplash.com/photo-1611003228941-98852ba62227?w=800'),
-    (v_dog_id, 'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=800'),
-    (v_dog_id, 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=800'),
-    (v_dog_id, 'https://images.unsplash.com/photo-1568572933382-74d440642117?w=800'),
-    (v_dog_id, 'https://images.unsplash.com/photo-1534361960057-19889db9621e?w=800');
+    (v_dog_id, '/placeholder-dog-1.jpg'),
+    (v_dog_id, '/placeholder-dog-2.jpg'),
+    (v_dog_id, '/placeholder-dog-3.jpg'),
+    (v_dog_id, '/placeholder-dog-4.jpg'),
+    (v_dog_id, '/placeholder-dog-5.jpg'),
+    (v_dog_id, '/placeholder-dog-6.jpg'),
+    (v_dog_id, '/placeholder-dog-7.jpg'),
+    (v_dog_id, '/placeholder-dog-8.jpg'),
+    (v_dog_id, '/placeholder-dog-9.jpg'),
+    (v_dog_id, '/placeholder-dog-10.jpg');
 
-    RAISE NOTICE '✅ 10 photos ajoutées à la galerie';
+    RAISE NOTICE '✅ 10 photos ajoutées à la galerie (placeholders - uploadez de vraies images via l''interface)';
 
     -- ============================================================================
     -- RÉSUMÉ

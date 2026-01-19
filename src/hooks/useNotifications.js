@@ -40,29 +40,10 @@ export const useNotifications = () => {
 
     try {
       setLoading(true);
-      
+
       const { data, error } = await supabase
         .from('notifications')
-        .select(`
-          *,
-          actor:actor_id (
-            id,
-            email,
-            user_profiles (
-              full_name,
-              avatar_url
-            )
-          ),
-          post:post_id (
-            id,
-            title,
-            content
-          ),
-          comment:comment_id (
-            id,
-            content
-          )
-        `)
+        .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(50);
