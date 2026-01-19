@@ -106,6 +106,24 @@ const AlbumViewer = ({
       >
         {photo ? (
           <div className="photo-container">
+            {/* Titre en haut */}
+            {photo.title && (
+              <div
+                className="photo-title-top"
+                style={{
+                  fontFamily: photo.fontFamily || 'Arial',
+                  color: photo.textColor || '#ffffff'
+                }}
+              >
+                <div
+                  className="photo-title"
+                  style={{ fontSize: `${photo.fontSize || 16}px` }}
+                >
+                  {photo.title}
+                </div>
+              </div>
+            )}
+
             <img
               src={photo.url}
               alt={`Photo ${slotIndex + 1}`}
@@ -114,31 +132,21 @@ const AlbumViewer = ({
               onDragStart={(e) => handleDragStart(e, photo.id)}
             />
 
-            {/* Overlay avec titre et légende */}
-            {(photo.title || photo.caption) && (
+            {/* Légende en bas */}
+            {photo.caption && (
               <div
-                className="photo-text-overlay"
+                className="photo-caption-bottom"
                 style={{
                   fontFamily: photo.fontFamily || 'Arial',
                   color: photo.textColor || '#ffffff'
                 }}
               >
-                {photo.title && (
-                  <div
-                    className="photo-title"
-                    style={{ fontSize: `${photo.fontSize || 14}px` }}
-                  >
-                    {photo.title}
-                  </div>
-                )}
-                {photo.caption && (
-                  <div
-                    className="photo-caption"
-                    style={{ fontSize: `${(photo.fontSize || 14) - 2}px` }}
-                  >
-                    {photo.caption}
-                  </div>
-                )}
+                <div
+                  className="photo-caption"
+                  style={{ fontSize: `${(photo.fontSize || 16) - 2}px` }}
+                >
+                  {photo.caption}
+                </div>
               </div>
             )}
 
